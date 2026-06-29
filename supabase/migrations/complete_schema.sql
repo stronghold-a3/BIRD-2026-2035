@@ -1,565 +1,757 @@
--- ═══════════════════════════════════════════════════════════════════════════════
--- BIRD 2026–2035 · Complete Database Migration v2.1.0
--- Project: lydsisparsmvextskevw.supabase.co (primary data project)
--- Run via: supabase db push  OR  paste in Supabase SQL Editor
---
--- FIXES IN THIS MIGRATION:
---   1.  strategic_plans  — add is_archived, archived_at, data, swot_items,
---                          strategic_options, objectives, paps, cld_nodes, cld_links,
---                          is_public, public_access, version, created_by, organization_id
---   2.  swot_items       — add leverage_point, beie_cluster, audit columns
---   3.  bsc_objectives   — FIX constraint 'customer'→'stakeholder', add BIRD columns
---   4.  kpis             — add target_2030, leverage_point, benchmark_source
---   5.  strategic_options— add leverage_point, beie_cluster, bird_phase, swot_pairs
---   6.  paps             — add beie_cluster, bird_phase, leverage_point, agency cols
---   7.  user_profiles    — add notification_preferences, role, is_active, last_seen_at
---   8.  user_settings    — fix default AI model (Gemini→GPT-4o)
---   9.  CREATE strategic_planner_state (was missing — caused silent sync failures)
---   10. CREATE ai_interaction_logs (was missing — edge function log calls failed)
---   11. FIX all RLS policies (deprecated current_setting→auth.uid(), add missing policies)
---   12. FIX CRM policies (open USING(true) → service_role only)
---   13. Storage bucket configurations
---   14. Performance indexes
---   15. Utility views, triggers, grants
--- ═══════════════════════════════════════════════════════════════════════════════
+*
+================================================================
+BIRD Strategic Planning - Comprehensive Database Schema
+================================================================
+Purpose:
+Comprehensive database schema for the BIRD AI-powered strategic 
+planning PWA. Supports user authentication, strategic plans, 
+SWOT analysis, strategy matrix, balanced scorecard, PAPs management, 
+team collaboration, activity logging, plan templates, notifications, 
+and admin functionality.
 
--- ─── 0. Extensions ─────────────────────────────────────────────────────────────
-CREATE EXTENSION IF NOT EXISTS "pgcrypto";
-CREATE EXTENSION IF NOT EXISTS "pg_trgm";
+Security Enhancements Applied:
+1. Immutable search_path set on all functions to prevent search_path hijacking.
+2. SECURITY DEFINER converted to SECURITY INVOKER for trigger functions 
+   (handle_new_user, log_activity) to run with caller's privileges.
+3. EXECUTE privileges revoked from PUBLIC, anon, and authenticated roles 
+   on all internal/trigger functions to prevent unauthorized RPC calls.
+================================================================
+*/
 
--- ─── 1. strategic_plans — add missing columns ──────────────────────────────────
-ALTER TABLE strategic_plans
-  ADD COLUMN IF NOT EXISTS is_archived       boolean     NOT NULL DEFAULT false,
-  ADD COLUMN IF NOT EXISTS archived_at       timestamptz,
-  ADD COLUMN IF NOT EXISTS data              jsonb,
-  ADD COLUMN IF NOT EXISTS swot_items        jsonb       DEFAULT '[]'::jsonb,
-  ADD COLUMN IF NOT EXISTS strategic_options jsonb       DEFAULT '[]'::jsonb,
-  ADD COLUMN IF NOT EXISTS objectives        jsonb       DEFAULT '[]'::jsonb,
-  ADD COLUMN IF NOT EXISTS paps              jsonb       DEFAULT '[]'::jsonb,
-  ADD COLUMN IF NOT EXISTS cld_nodes         jsonb       DEFAULT '[]'::jsonb,
-  ADD COLUMN IF NOT EXISTS cld_links         jsonb       DEFAULT '[]'::jsonb,
-  ADD COLUMN IF NOT EXISTS is_public         boolean     NOT NULL DEFAULT false,
-  ADD COLUMN IF NOT EXISTS public_access     text        NOT NULL DEFAULT 'none',
-  ADD COLUMN IF NOT EXISTS version           integer     NOT NULL DEFAULT 1,
-  ADD COLUMN IF NOT EXISTS created_by        uuid,
-  ADD COLUMN IF NOT EXISTS organization_id   uuid;
+-- ============================================================
+-- 1. TABLE DEFINITIONS
+-- ============================================================
 
-ALTER TABLE strategic_plans
-  DROP CONSTRAINT IF EXISTS strategic_plans_public_access_check;
-ALTER TABLE strategic_plans
-  ADD CONSTRAINT strategic_plans_public_access_check
-    CHECK (public_access IN ('none','view','comment'));
+-- Users table extending auth.users
+CREATE TABLE IF NOT EXISTS users (
+    id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    email text NOT NULL,
+    full_name text,
+    avatar_url text,
+    organization text,
+    job_title text,
+    phone text,
+    role text NOT NULL DEFAULT 'user' CHECK (role IN ('user', 'admin', 'super_admin')),
+    assigned_regions text[] DEFAULT '{}',
+    notification_preferences jsonb DEFAULT '{"email": true, "kpi_alerts": true, "weekly_digest": true, "plan_reminders": true, "team_updates": true}'::jsonb,
+    is_active boolean NOT NULL DEFAULT true,
+    last_seen_at timestamptz DEFAULT now(),
+    created_at timestamptz DEFAULT now(),
+    updated_at timestamptz DEFAULT now()
+);
 
-UPDATE strategic_plans SET created_by = user_id WHERE created_by IS NULL;
+-- Organizations table
+CREATE TABLE IF NOT EXISTS organizations (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    name text NOT NULL,
+    slug text UNIQUE NOT NULL,
+    description text,
+    logo_url text,
+    industry text,
+    region text,
+    created_by uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    created_at timestamptz DEFAULT now(),
+    updated_at timestamptz DEFAULT now()
+);
 
--- ─── 2. swot_items — BIRD-specific columns ─────────────────────────────────────
-ALTER TABLE swot_items
-  ADD COLUMN IF NOT EXISTS leverage_point    text,
-  ADD COLUMN IF NOT EXISTS beie_cluster      text,
-  ADD COLUMN IF NOT EXISTS created_by        uuid,
-  ADD COLUMN IF NOT EXISTS created_by_name   text,
-  ADD COLUMN IF NOT EXISTS modified_by       uuid,
-  ADD COLUMN IF NOT EXISTS modified_by_name  text,
-  ADD COLUMN IF NOT EXISTS modified_at       timestamptz,
-  ADD COLUMN IF NOT EXISTS updated_at        timestamptz DEFAULT now();
+-- Organization members
+CREATE TABLE IF NOT EXISTS organization_members (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    organization_id uuid NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+    user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    role text NOT NULL DEFAULT 'member' CHECK (role IN ('member', 'editor', 'admin')),
+    joined_at timestamptz DEFAULT now(),
+    UNIQUE (organization_id, user_id)
+);
 
-ALTER TABLE swot_items
-  DROP CONSTRAINT IF EXISTS swot_items_leverage_point_check,
-  DROP CONSTRAINT IF EXISTS swot_items_beie_cluster_check;
-ALTER TABLE swot_items
-  ADD CONSTRAINT swot_items_leverage_point_check
-    CHECK (leverage_point IS NULL OR leverage_point IN ('LP1','LP2','LP3','LP4','LP5')),
-  ADD CONSTRAINT swot_items_beie_cluster_check
-    CHECK (beie_cluster IS NULL OR beie_cluster IN ('foundations','transformers','enablers','connectors','financiers','cross-cutting'));
+-- Strategic plans
+CREATE TABLE IF NOT EXISTS strategic_plans (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id uuid NOT NULL DEFAULT auth.uid() REFERENCES auth.users(id) ON DELETE CASCADE,
+    organization_id uuid REFERENCES organizations(id) ON DELETE SET NULL,
+    title text NOT NULL DEFAULT 'Untitled Strategic Plan',
+    subtitle text,
+    description text,
+    industry text DEFAULT 'Investment',
+    region text DEFAULT 'BARMM',
+    start_year int DEFAULT 2026,
+    end_year int DEFAULT 2035,
+    status text DEFAULT 'draft' CHECK (status IN ('draft', 'active', 'archived', 'completed')),
+    budget_total numeric(15,2) DEFAULT 0,
+    budget_allocated numeric(15,2) DEFAULT 0,
+    progress_pct int DEFAULT 0,
+    last_synced_at timestamptz DEFAULT now(),
+    sync_status text DEFAULT 'synced' CHECK (sync_status IN ('synced', 'pending', 'syncing', 'error', 'offline')),
+    version int DEFAULT 1,
+    is_template boolean DEFAULT false,
+    template_id uuid REFERENCES strategic_plans(id) ON DELETE SET NULL,
+    local_id text,
+    created_at timestamptz DEFAULT now(),
+    updated_at timestamptz DEFAULT now()
+);
 
--- ─── 3. bsc_objectives — FIX 'customer'→'stakeholder' + add columns ───────────
-ALTER TABLE bsc_objectives
-  DROP CONSTRAINT IF EXISTS bsc_objectives_perspective_check;
+-- Plan templates
+CREATE TABLE IF NOT EXISTS plan_templates (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    name text NOT NULL,
+    description text,
+    industry text NOT NULL,
+    region text DEFAULT 'BARMM',
+    template_data jsonb NOT NULL DEFAULT '{}',
+    is_public boolean DEFAULT false,
+    created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
+    organization_id uuid REFERENCES organizations(id) ON DELETE SET NULL,
+    created_at timestamptz DEFAULT now()
+);
 
-UPDATE bsc_objectives SET perspective = 'stakeholder' WHERE perspective = 'customer';
+-- Plan shares
+CREATE TABLE IF NOT EXISTS plan_shares (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    plan_id uuid NOT NULL REFERENCES strategic_plans(id) ON DELETE CASCADE,
+    shared_with_user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE,
+    shared_with_org_id uuid REFERENCES organizations(id) ON DELETE CASCADE,
+    permission_level text NOT NULL DEFAULT 'viewer' CHECK (permission_level IN ('viewer', 'editor', 'admin')),
+    shared_by uuid NOT NULL DEFAULT auth.uid() REFERENCES auth.users(id) ON DELETE CASCADE,
+    shared_at timestamptz DEFAULT now(),
+    expires_at timestamptz,
+    accepted boolean DEFAULT false,
+    CHECK (shared_with_user_id IS NOT NULL OR shared_with_org_id IS NOT NULL)
+);
 
-ALTER TABLE bsc_objectives
-  ADD CONSTRAINT bsc_objectives_perspective_check
-    CHECK (perspective IN ('financial','stakeholder','internal_process','learning_growth'));
+-- SWOT items
+CREATE TABLE IF NOT EXISTS swot_items (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    plan_id uuid NOT NULL REFERENCES strategic_plans(id) ON DELETE CASCADE,
+    category text NOT NULL CHECK (category IN ('strength', 'weakness', 'opportunity', 'threat')),
+    title text NOT NULL,
+    description text,
+    impact int DEFAULT 3 CHECK (impact BETWEEN 1 AND 5),
+    likelihood int DEFAULT 3 CHECK (likelihood BETWEEN 1 AND 5),
+    resilience_index numeric(4,2) DEFAULT 0,
+    priority text DEFAULT 'medium' CHECK (priority IN ('low', 'medium', 'high', 'critical')),
+    ai_generated boolean DEFAULT false,
+    ai_recommendation text,
+    beie_cluster text DEFAULT 'foundations',
+    assigned_to uuid REFERENCES auth.users(id) ON DELETE SET NULL,
+    status text DEFAULT 'active' CHECK (status IN ('active', 'resolved', 'archived')),
+    created_at timestamptz DEFAULT now(),
+    updated_at timestamptz DEFAULT now()
+);
 
-ALTER TABLE bsc_objectives
-  ADD COLUMN IF NOT EXISTS leverage_point    text,
-  ADD COLUMN IF NOT EXISTS beie_cluster      text,
-  ADD COLUMN IF NOT EXISTS bird_phase        text,
-  ADD COLUMN IF NOT EXISTS bsc_code          text,
-  ADD COLUMN IF NOT EXISTS champion          uuid,
-  ADD COLUMN IF NOT EXISTS champion_name     text,
-  ADD COLUMN IF NOT EXISTS updated_at        timestamptz DEFAULT now();
+-- Strategy matrix (TOWS)
+CREATE TABLE IF NOT EXISTS strategy_matrix (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    plan_id uuid NOT NULL REFERENCES strategic_plans(id) ON DELETE CASCADE,
+    quadrant text NOT NULL CHECK (quadrant IN ('SO', 'ST', 'WO', 'WT')),
+    strategy text NOT NULL,
+    description text,
+    priority text DEFAULT 'medium' CHECK (priority IN ('low', 'medium', 'high', 'critical')),
+    status text DEFAULT 'pending' CHECK (status IN ('pending', 'in_progress', 'completed', 'cancelled')),
+    ai_generated boolean DEFAULT false,
+    linked_swot_items uuid[] DEFAULT '{}',
+    beie_cluster text DEFAULT 'foundations',
+    assigned_to uuid REFERENCES auth.users(id) ON DELETE SET NULL,
+    due_date date,
+    created_at timestamptz DEFAULT now(),
+    updated_at timestamptz DEFAULT now()
+);
 
-ALTER TABLE bsc_objectives
-  DROP CONSTRAINT IF EXISTS bsc_objectives_leverage_point_check,
-  DROP CONSTRAINT IF EXISTS bsc_objectives_bird_phase_check;
-ALTER TABLE bsc_objectives
-  ADD CONSTRAINT bsc_objectives_leverage_point_check
-    CHECK (leverage_point IS NULL OR leverage_point IN ('LP1','LP2','LP3','LP4','LP5')),
-  ADD CONSTRAINT bsc_objectives_bird_phase_check
-    CHECK (bird_phase IS NULL OR bird_phase IN ('1','2','3'));
+-- Balanced scorecards
+CREATE TABLE IF NOT EXISTS balanced_scorecards (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    plan_id uuid NOT NULL REFERENCES strategic_plans(id) ON DELETE CASCADE,
+    perspective text NOT NULL CHECK (perspective IN ('financial', 'customer', 'internal_process', 'learning_growth')),
+    description text,
+    weight_pct int DEFAULT 25,
+    created_at timestamptz DEFAULT now()
+);
 
--- ─── 4. kpis — add BIRD columns ────────────────────────────────────────────────
-ALTER TABLE kpis
-  ADD COLUMN IF NOT EXISTS target_2030       numeric,
-  ADD COLUMN IF NOT EXISTS leverage_point    text,
-  ADD COLUMN IF NOT EXISTS benchmark_source  text,
-  ADD COLUMN IF NOT EXISTS owner_id          uuid,
-  ADD COLUMN IF NOT EXISTS owner_name        text,
-  ADD COLUMN IF NOT EXISTS updated_at        timestamptz DEFAULT now();
+-- Scorecard objectives
+CREATE TABLE IF NOT EXISTS scorecard_objectives (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    scorecard_id uuid NOT NULL REFERENCES balanced_scorecards(id) ON DELETE CASCADE,
+    plan_id uuid NOT NULL REFERENCES strategic_plans(id) ON DELETE CASCADE,
+    title text NOT NULL,
+    description text,
+    target_value text,
+    current_value text,
+    progress_pct int DEFAULT 0,
+    priority text DEFAULT 'medium',
+    ai_suggested boolean DEFAULT false,
+    beie_cluster text DEFAULT 'foundations',
+    status text DEFAULT 'active',
+    created_at timestamptz DEFAULT now(),
+    updated_at timestamptz DEFAULT now()
+);
 
-ALTER TABLE kpis
-  DROP CONSTRAINT IF EXISTS kpis_leverage_point_check;
-ALTER TABLE kpis
-  ADD CONSTRAINT kpis_leverage_point_check
-    CHECK (leverage_point IS NULL OR leverage_point IN ('LP1','LP2','LP3','LP4','LP5'));
+-- Scorecard KPIs
+CREATE TABLE IF NOT EXISTS scorecard_kpis (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    objective_id uuid NOT NULL REFERENCES scorecard_objectives(id) ON DELETE CASCADE,
+    plan_id uuid NOT NULL REFERENCES strategic_plans(id) ON DELETE CASCADE,
+    name text NOT NULL,
+    description text,
+    target_value numeric(15,2) DEFAULT 0,
+    current_value numeric(15,2) DEFAULT 0,
+    unit text DEFAULT 'count',
+    frequency text DEFAULT 'monthly' CHECK (frequency IN ('daily', 'weekly', 'monthly', 'quarterly', 'annual')),
+    formula text,
+    data_source text,
+    status text DEFAULT 'on_track' CHECK (status IN ('on_track', 'at_risk', 'off_track', 'achieved')),
+    ai_suggested boolean DEFAULT false,
+    alert_threshold numeric(5,2) DEFAULT 80,
+    baseline_value numeric(15,2) DEFAULT 0,
+    target_year int DEFAULT 2026,
+    assigned_to uuid REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at timestamptz DEFAULT now(),
+    updated_at timestamptz DEFAULT now()
+);
 
--- ─── 5. strategic_options — add BIRD columns ───────────────────────────────────
-ALTER TABLE strategic_options
-  ADD COLUMN IF NOT EXISTS leverage_point        text,
-  ADD COLUMN IF NOT EXISTS leverage_level        integer,
-  ADD COLUMN IF NOT EXISTS beie_cluster          text,
-  ADD COLUMN IF NOT EXISTS bird_phase            text,
-  ADD COLUMN IF NOT EXISTS swot_pairs            text,
-  ADD COLUMN IF NOT EXISTS resource_requirement  text,
-  ADD COLUMN IF NOT EXISTS approved_by           uuid,
-  ADD COLUMN IF NOT EXISTS approved_at           timestamptz,
-  ADD COLUMN IF NOT EXISTS updated_at            timestamptz DEFAULT now();
+-- PAPs (Programs, Activities, Projects)
+CREATE TABLE IF NOT EXISTS paps (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    plan_id uuid NOT NULL REFERENCES strategic_plans(id) ON DELETE CASCADE,
+    type text NOT NULL CHECK (type IN ('program', 'activity', 'project')),
+    code text,
+    title text NOT NULL,
+    description text,
+    objective_id uuid REFERENCES scorecard_objectives(id) ON DELETE SET NULL,
+    beie_cluster text DEFAULT 'foundations',
+    priority text DEFAULT 'medium' CHECK (priority IN ('low', 'medium', 'high', 'critical')),
+    status text DEFAULT 'planned' CHECK (status IN ('planned', 'in_progress', 'completed', 'delayed', 'cancelled')),
+    budget_allocated numeric(15,2) DEFAULT 0,
+    budget_spent numeric(15,2) DEFAULT 0,
+    progress_pct int DEFAULT 0,
+    start_date date,
+    end_date date,
+    due_quarter text DEFAULT 'Q1',
+    lead_agency text,
+    dependencies uuid[] DEFAULT '{}',
+    ai_generated boolean DEFAULT false,
+    assigned_to uuid REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at timestamptz DEFAULT now(),
+    updated_at timestamptz DEFAULT now()
+);
 
-ALTER TABLE strategic_options
-  DROP CONSTRAINT IF EXISTS so_leverage_point_check,
-  DROP CONSTRAINT IF EXISTS so_leverage_level_check,
-  DROP CONSTRAINT IF EXISTS so_resource_check,
-  DROP CONSTRAINT IF EXISTS so_bird_phase_check;
-ALTER TABLE strategic_options
-  ADD CONSTRAINT so_leverage_point_check
-    CHECK (leverage_point IS NULL OR leverage_point IN ('LP1','LP2','LP3','LP4','LP5')),
-  ADD CONSTRAINT so_leverage_level_check
-    CHECK (leverage_level IS NULL OR leverage_level BETWEEN 1 AND 12),
-  ADD CONSTRAINT so_resource_check
-    CHECK (resource_requirement IS NULL OR resource_requirement IN ('low','medium','high')),
-  ADD CONSTRAINT so_bird_phase_check
-    CHECK (bird_phase IS NULL OR bird_phase IN ('1','2','3'));
+-- Activity logs
+CREATE TABLE IF NOT EXISTS activity_logs (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    plan_id uuid NOT NULL REFERENCES strategic_plans(id) ON DELETE CASCADE,
+    user_id uuid NOT NULL DEFAULT auth.uid() REFERENCES auth.users(id) ON DELETE CASCADE,
+    action_type text NOT NULL CHECK (action_type IN (
+        'plan_created', 'plan_updated', 'plan_exported', 'plan_shared',
+        'swot_added', 'swot_updated', 'swot_deleted',
+        'strategy_added', 'strategy_updated', 'strategy_deleted',
+        'objective_added', 'objective_updated', 'objective_deleted',
+        'kpi_added', 'kpi_updated', 'kpi_deleted', 'kpi_value_updated',
+        'pap_added', 'pap_updated', 'pap_deleted', 'pap_status_changed',
+        'comment_added', 'comment_updated', 'comment_deleted',
+        'member_joined', 'member_left', 'member_role_changed',
+        'template_used', 'ai_suggestion_accepted', 'ai_suggestion_rejected',
+        'sync_completed', 'sync_failed', 'sync_conflict_resolved'
+    )),
+    entity_type text NOT NULL CHECK (entity_type IN ('plan', 'swot', 'strategy', 'objective', 'kpi', 'pap', 'comment', 'member', 'template', 'sync')),
+    entity_id uuid,
+    details jsonb DEFAULT '{}',
+    ip_address text,
+    user_agent text,
+    created_at timestamptz DEFAULT now()
+);
 
--- ─── 6. paps — add BIRD columns ────────────────────────────────────────────────
-ALTER TABLE paps
-  ADD COLUMN IF NOT EXISTS beie_cluster          text,
-  ADD COLUMN IF NOT EXISTS bird_phase            text,
-  ADD COLUMN IF NOT EXISTS leverage_point        text,
-  ADD COLUMN IF NOT EXISTS lead_agency           text,
-  ADD COLUMN IF NOT EXISTS support_agencies      text[]      DEFAULT '{}',
-  ADD COLUMN IF NOT EXISTS sdg_alignment         text,
-  ADD COLUMN IF NOT EXISTS owner_id              uuid,
-  ADD COLUMN IF NOT EXISTS owner_email           text,
-  ADD COLUMN IF NOT EXISTS owner_name            text,
-  ADD COLUMN IF NOT EXISTS created_by            uuid,
-  ADD COLUMN IF NOT EXISTS created_by_name       text;
+-- Comments
+CREATE TABLE IF NOT EXISTS comments (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    plan_id uuid NOT NULL REFERENCES strategic_plans(id) ON DELETE CASCADE,
+    user_id uuid NOT NULL DEFAULT auth.uid() REFERENCES auth.users(id) ON DELETE CASCADE,
+    entity_type text NOT NULL CHECK (entity_type IN ('swot', 'strategy', 'objective', 'kpi', 'pap', 'plan')),
+    entity_id uuid NOT NULL,
+    parent_id uuid REFERENCES comments(id) ON DELETE CASCADE,
+    content text NOT NULL,
+    resolved boolean DEFAULT false,
+    created_at timestamptz DEFAULT now(),
+    updated_at timestamptz DEFAULT now()
+);
 
-ALTER TABLE paps
-  DROP CONSTRAINT IF EXISTS paps_beie_cluster_check,
-  DROP CONSTRAINT IF EXISTS paps_bird_phase_check,
-  DROP CONSTRAINT IF EXISTS paps_leverage_point_check;
-ALTER TABLE paps
-  ADD CONSTRAINT paps_beie_cluster_check
-    CHECK (beie_cluster IS NULL OR beie_cluster IN ('foundations','transformers','enablers','connectors','financiers','cross-cutting')),
-  ADD CONSTRAINT paps_bird_phase_check
-    CHECK (bird_phase IS NULL OR bird_phase IN ('1','2','3')),
-  ADD CONSTRAINT paps_leverage_point_check
-    CHECK (leverage_point IS NULL OR leverage_point IN ('LP1','LP2','LP3','LP4','LP5'));
+-- Plan collaboration presence
+CREATE TABLE IF NOT EXISTS plan_collaboration (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    plan_id uuid NOT NULL REFERENCES strategic_plans(id) ON DELETE CASCADE,
+    user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    user_name text,
+    user_avatar text,
+    section text NOT NULL CHECK (section IN ('overview', 'swot', 'strategy', 'scorecard', 'paps', 'systems', 'export')),
+    action text DEFAULT 'viewing' CHECK (action IN ('viewing', 'editing')),
+    cursor_position jsonb,
+    last_seen_at timestamptz DEFAULT now(),
+    UNIQUE (plan_id, user_id, section)
+);
 
--- ─── 7. user_profiles — add missing columns ────────────────────────────────────
-ALTER TABLE user_profiles
-  ADD COLUMN IF NOT EXISTS notification_preferences jsonb DEFAULT '{
-    "welcome_email": true,
-    "kpi_alerts": true,
-    "weekly_digest": true,
-    "stale_plan_reminders": true,
-    "team_mentions": true,
-    "product_updates": false
-  }'::jsonb,
-  ADD COLUMN IF NOT EXISTS role         text NOT NULL DEFAULT 'viewer',
-  ADD COLUMN IF NOT EXISTS is_active    boolean NOT NULL DEFAULT true,
-  ADD COLUMN IF NOT EXISTS last_seen_at timestamptz;
+-- User notifications
+CREATE TABLE IF NOT EXISTS user_notifications (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    type text NOT NULL CHECK (type IN (
+        'welcome', 'kpi_alert', 'weekly_digest', 'plan_reminder',
+        'team_invite', 'team_update', 'comment_reply', 'sync_conflict',
+        'system', 'ai_suggestion'
+    )),
+    title text NOT NULL,
+    message text NOT NULL,
+    link text,
+    is_read boolean DEFAULT false,
+    is_email_sent boolean DEFAULT false,
+    data jsonb DEFAULT '{}',
+    created_at timestamptz DEFAULT now()
+);
 
-ALTER TABLE user_profiles
-  DROP CONSTRAINT IF EXISTS user_profiles_role_check;
-ALTER TABLE user_profiles
-  ADD CONSTRAINT user_profiles_role_check
-    CHECK (role IN ('owner','admin','editor','viewer'));
+-- Plan comparison snapshots
+CREATE TABLE IF NOT EXISTS plan_snapshots (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    plan_id uuid NOT NULL REFERENCES strategic_plans(id) ON DELETE CASCADE,
+    version int NOT NULL,
+    snapshot_data jsonb NOT NULL,
+    created_by uuid NOT NULL DEFAULT auth.uid() REFERENCES auth.users(id) ON DELETE CASCADE,
+    created_at timestamptz DEFAULT now()
+);
 
--- ─── 8. user_settings — fix AI model default ───────────────────────────────────
-UPDATE user_settings
-SET ai_config = jsonb_set(ai_config, '{model}', '"gpt-4o"')
-WHERE ai_config->>'model' IN ('google/gemini-3-flash','gemini-3-flash','gemini-pro');
+-- Causal loop diagrams
+CREATE TABLE IF NOT EXISTS causal_loops (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    plan_id uuid NOT NULL REFERENCES strategic_plans(id) ON DELETE CASCADE,
+    name text NOT NULL,
+    description text,
+    loop_type text NOT NULL CHECK (loop_type IN ('reinforcing', 'balancing')),
+    variables jsonb NOT NULL DEFAULT '[]',
+    connections jsonb NOT NULL DEFAULT '[]',
+    leverage_points jsonb DEFAULT '[]',
+    created_at timestamptz DEFAULT now()
+);
 
-ALTER TABLE user_settings
-  ALTER COLUMN ai_config SET DEFAULT '{
-    "model": "gpt-4o",
-    "verbose": false,
-    "temperature": 0.65,
-    "auto_suggest": true,
-    "max_tokens": 1600
-  }'::jsonb;
+-- Systems archetypes
+CREATE TABLE IF NOT EXISTS systems_archetypes (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    plan_id uuid NOT NULL REFERENCES strategic_plans(id) ON DELETE CASCADE,
+    name text NOT NULL,
+    description text,
+    archetype_type text NOT NULL CHECK (archetype_type IN (
+        'limits_to_growth', 'shifting_the_burden', 'tragedy_of_commons',
+        'success_to_the_successful', 'fixes_that_fail', 'erosion_of_goals',
+        'escalation', 'growth_and_underinvestment'
+    )),
+    symptoms text,
+    structural_causes text,
+    interventions text,
+    created_at timestamptz DEFAULT now()
+);
 
--- ─── 9. handle_new_user trigger — updated ──────────────────────────────────────
-CREATE OR REPLACE FUNCTION handle_new_user()
-RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER AS $$
+-- ============================================================
+-- 2. ROW LEVEL SECURITY (RLS) POLICIES
+-- ============================================================
+
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE organizations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE organization_members ENABLE ROW LEVEL SECURITY;
+ALTER TABLE strategic_plans ENABLE ROW LEVEL SECURITY;
+ALTER TABLE plan_templates ENABLE ROW LEVEL SECURITY;
+ALTER TABLE plan_shares ENABLE ROW LEVEL SECURITY;
+ALTER TABLE swot_items ENABLE ROW LEVEL SECURITY;
+ALTER TABLE strategy_matrix ENABLE ROW LEVEL SECURITY;
+ALTER TABLE balanced_scorecards ENABLE ROW LEVEL SECURITY;
+ALTER TABLE scorecard_objectives ENABLE ROW LEVEL SECURITY;
+ALTER TABLE scorecard_kpis ENABLE ROW LEVEL SECURITY;
+ALTER TABLE paps ENABLE ROW LEVEL SECURITY;
+ALTER TABLE activity_logs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE comments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE plan_collaboration ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_notifications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE plan_snapshots ENABLE ROW LEVEL SECURITY;
+ALTER TABLE causal_loops ENABLE ROW LEVEL SECURITY;
+ALTER TABLE systems_archetypes ENABLE ROW LEVEL SECURITY;
+
+-- Users Policies
+DROP POLICY IF EXISTS "users_select_own" ON users;
+CREATE POLICY "users_select_own" ON users FOR SELECT TO authenticated USING (auth.uid() = id);
+DROP POLICY IF EXISTS "users_select_admin" ON users;
+CREATE POLICY "users_select_admin" ON users FOR SELECT TO authenticated USING (EXISTS (SELECT 1 FROM users u WHERE u.id = auth.uid() AND u.role IN ('admin', 'super_admin')));
+DROP POLICY IF EXISTS "users_update_own" ON users;
+CREATE POLICY "users_update_own" ON users FOR UPDATE TO authenticated USING (auth.uid() = id) WITH CHECK (auth.uid() = id);
+DROP POLICY IF EXISTS "users_update_admin" ON users;
+CREATE POLICY "users_update_admin" ON users FOR UPDATE TO authenticated USING (EXISTS (SELECT 1 FROM users u WHERE u.id = auth.uid() AND u.role IN ('admin', 'super_admin')));
+DROP POLICY IF EXISTS "users_insert_self" ON users;
+CREATE POLICY "users_insert_self" ON users FOR INSERT TO authenticated WITH CHECK (auth.uid() = id);
+
+-- Organizations Policies
+DROP POLICY IF EXISTS "org_select_member" ON organizations;
+CREATE POLICY "org_select_member" ON organizations FOR SELECT TO authenticated USING (created_by = auth.uid() OR EXISTS (SELECT 1 FROM organization_members om WHERE om.organization_id = organizations.id AND om.user_id = auth.uid()));
+DROP POLICY IF EXISTS "org_insert_creator" ON organizations;
+CREATE POLICY "org_insert_creator" ON organizations FOR INSERT TO authenticated WITH CHECK (created_by = auth.uid());
+DROP POLICY IF EXISTS "org_update_creator" ON organizations;
+CREATE POLICY "org_update_creator" ON organizations FOR UPDATE TO authenticated USING (created_by = auth.uid()) WITH CHECK (created_by = auth.uid());
+
+-- Organization Members Policies
+DROP POLICY IF EXISTS "org_members_select_member" ON organization_members;
+CREATE POLICY "org_members_select_member" ON organization_members FOR SELECT TO authenticated USING (user_id = auth.uid() OR EXISTS (SELECT 1 FROM organization_members om WHERE om.organization_id = organization_members.organization_id AND om.user_id = auth.uid()));
+DROP POLICY IF EXISTS "org_members_insert_admin" ON organization_members;
+CREATE POLICY "org_members_insert_admin" ON organization_members FOR INSERT TO authenticated WITH CHECK (EXISTS (SELECT 1 FROM organization_members om WHERE om.organization_id = organization_members.organization_id AND om.user_id = auth.uid() AND om.role = 'admin'));
+DROP POLICY IF EXISTS "org_members_update_admin" ON organization_members;
+CREATE POLICY "org_members_update_admin" ON organization_members FOR UPDATE TO authenticated USING (EXISTS (SELECT 1 FROM organization_members om WHERE om.organization_id = organization_members.organization_id AND om.user_id = auth.uid() AND om.role = 'admin'));
+DROP POLICY IF EXISTS "org_members_delete_admin" ON organization_members;
+CREATE POLICY "org_members_delete_admin" ON organization_members FOR DELETE TO authenticated USING (user_id = auth.uid() OR EXISTS (SELECT 1 FROM organization_members om WHERE om.organization_id = organization_members.organization_id AND om.user_id = auth.uid() AND om.role = 'admin'));
+
+-- Strategic Plans Policies
+DROP POLICY IF EXISTS "plans_select_owner_or_shared" ON strategic_plans;
+CREATE POLICY "plans_select_owner_or_shared" ON strategic_plans FOR SELECT TO authenticated USING (user_id = auth.uid() OR organization_id IN (SELECT organization_id FROM organization_members WHERE user_id = auth.uid()) OR id IN (SELECT plan_id FROM plan_shares WHERE (shared_with_user_id = auth.uid() OR shared_with_org_id IN (SELECT organization_id FROM organization_members WHERE user_id = auth.uid())) AND accepted = true));
+DROP POLICY IF EXISTS "plans_insert_owner" ON strategic_plans;
+CREATE POLICY "plans_insert_owner" ON strategic_plans FOR INSERT TO authenticated WITH CHECK (user_id = auth.uid());
+DROP POLICY IF EXISTS "plans_update_owner_or_editor" ON strategic_plans;
+CREATE POLICY "plans_update_owner_or_editor" ON strategic_plans FOR UPDATE TO authenticated USING (user_id = auth.uid() OR id IN (SELECT plan_id FROM plan_shares WHERE shared_with_user_id = auth.uid() AND permission_level IN ('editor', 'admin')) OR organization_id IN (SELECT organization_id FROM organization_members WHERE user_id = auth.uid() AND role IN ('admin', 'editor')));
+DROP POLICY IF EXISTS "plans_delete_owner" ON strategic_plans;
+CREATE POLICY "plans_delete_owner" ON strategic_plans FOR DELETE TO authenticated USING (user_id = auth.uid());
+
+-- SWOT Items Policies
+DROP POLICY IF EXISTS "swot_select_plan_access" ON swot_items;
+CREATE POLICY "swot_select_plan_access" ON swot_items FOR SELECT TO authenticated USING (EXISTS (SELECT 1 FROM strategic_plans sp WHERE sp.id = swot_items.plan_id AND (sp.user_id = auth.uid() OR sp.id IN (SELECT plan_id FROM plan_shares WHERE shared_with_user_id = auth.uid() AND accepted = true))));
+DROP POLICY IF EXISTS "swot_insert_plan_access" ON swot_items;
+CREATE POLICY "swot_insert_plan_access" ON swot_items FOR INSERT TO authenticated WITH CHECK (EXISTS (SELECT 1 FROM strategic_plans sp WHERE sp.id = swot_items.plan_id AND (sp.user_id = auth.uid() OR sp.id IN (SELECT plan_id FROM plan_shares WHERE shared_with_user_id = auth.uid() AND permission_level IN ('editor', 'admin')))));
+DROP POLICY IF EXISTS "swot_update_plan_access" ON swot_items;
+CREATE POLICY "swot_update_plan_access" ON swot_items FOR UPDATE TO authenticated USING (EXISTS (SELECT 1 FROM strategic_plans sp WHERE sp.id = swot_items.plan_id AND (sp.user_id = auth.uid() OR sp.id IN (SELECT plan_id FROM plan_shares WHERE shared_with_user_id = auth.uid() AND permission_level IN ('editor', 'admin')))));
+DROP POLICY IF EXISTS "swot_delete_plan_access" ON swot_items;
+CREATE POLICY "swot_delete_plan_access" ON swot_items FOR DELETE TO authenticated USING (EXISTS (SELECT 1 FROM strategic_plans sp WHERE sp.id = swot_items.plan_id AND (sp.user_id = auth.uid() OR sp.id IN (SELECT plan_id FROM plan_shares WHERE shared_with_user_id = auth.uid() AND permission_level = 'admin'))));
+
+-- Strategy Matrix Policies
+DROP POLICY IF EXISTS "strategy_select_plan_access" ON strategy_matrix;
+CREATE POLICY "strategy_select_plan_access" ON strategy_matrix FOR SELECT TO authenticated USING (EXISTS (SELECT 1 FROM strategic_plans sp WHERE sp.id = strategy_matrix.plan_id AND (sp.user_id = auth.uid() OR sp.id IN (SELECT plan_id FROM plan_shares WHERE shared_with_user_id = auth.uid() AND accepted = true))));
+DROP POLICY IF EXISTS "strategy_insert_plan_access" ON strategy_matrix;
+CREATE POLICY "strategy_insert_plan_access" ON strategy_matrix FOR INSERT TO authenticated WITH CHECK (EXISTS (SELECT 1 FROM strategic_plans sp WHERE sp.id = strategy_matrix.plan_id AND (sp.user_id = auth.uid() OR sp.id IN (SELECT plan_id FROM plan_shares WHERE shared_with_user_id = auth.uid() AND permission_level IN ('editor', 'admin')))));
+DROP POLICY IF EXISTS "strategy_update_plan_access" ON strategy_matrix;
+CREATE POLICY "strategy_update_plan_access" ON strategy_matrix FOR UPDATE TO authenticated USING (EXISTS (SELECT 1 FROM strategic_plans sp WHERE sp.id = strategy_matrix.plan_id AND (sp.user_id = auth.uid() OR sp.id IN (SELECT plan_id FROM plan_shares WHERE shared_with_user_id = auth.uid() AND permission_level IN ('editor', 'admin')))));
+DROP POLICY IF EXISTS "strategy_delete_plan_access" ON strategy_matrix;
+CREATE POLICY "strategy_delete_plan_access" ON strategy_matrix FOR DELETE TO authenticated USING (EXISTS (SELECT 1 FROM strategic_plans sp WHERE sp.id = strategy_matrix.plan_id AND (sp.user_id = auth.uid() OR sp.id IN (SELECT plan_id FROM plan_shares WHERE shared_with_user_id = auth.uid() AND permission_level = 'admin'))));
+
+-- Balanced Scorecards Policies
+DROP POLICY IF EXISTS "bsc_select_plan_access" ON balanced_scorecards;
+CREATE POLICY "bsc_select_plan_access" ON balanced_scorecards FOR SELECT TO authenticated USING (EXISTS (SELECT 1 FROM strategic_plans sp WHERE sp.id = balanced_scorecards.plan_id AND (sp.user_id = auth.uid() OR sp.id IN (SELECT plan_id FROM plan_shares WHERE shared_with_user_id = auth.uid() AND accepted = true))));
+DROP POLICY IF EXISTS "bsc_insert_plan_access" ON balanced_scorecards;
+CREATE POLICY "bsc_insert_plan_access" ON balanced_scorecards FOR INSERT TO authenticated WITH CHECK (EXISTS (SELECT 1 FROM strategic_plans sp WHERE sp.id = balanced_scorecards.plan_id AND (sp.user_id = auth.uid() OR sp.id IN (SELECT plan_id FROM plan_shares WHERE shared_with_user_id = auth.uid() AND permission_level IN ('editor', 'admin')))));
+DROP POLICY IF EXISTS "bsc_update_plan_access" ON balanced_scorecards;
+CREATE POLICY "bsc_update_plan_access" ON balanced_scorecards FOR UPDATE TO authenticated USING (EXISTS (SELECT 1 FROM strategic_plans sp WHERE sp.id = balanced_scorecards.plan_id AND (sp.user_id = auth.uid() OR sp.id IN (SELECT plan_id FROM plan_shares WHERE shared_with_user_id = auth.uid() AND permission_level IN ('editor', 'admin')))));
+DROP POLICY IF EXISTS "bsc_delete_plan_access" ON balanced_scorecards;
+CREATE POLICY "bsc_delete_plan_access" ON balanced_scorecards FOR DELETE TO authenticated USING (EXISTS (SELECT 1 FROM strategic_plans sp WHERE sp.id = balanced_scorecards.plan_id AND (sp.user_id = auth.uid() OR sp.id IN (SELECT plan_id FROM plan_shares WHERE shared_with_user_id = auth.uid() AND permission_level = 'admin'))));
+
+-- Scorecard Objectives Policies
+DROP POLICY IF EXISTS "obj_select_plan_access" ON scorecard_objectives;
+CREATE POLICY "obj_select_plan_access" ON scorecard_objectives FOR SELECT TO authenticated USING (EXISTS (SELECT 1 FROM strategic_plans sp WHERE sp.id = scorecard_objectives.plan_id AND (sp.user_id = auth.uid() OR sp.id IN (SELECT plan_id FROM plan_shares WHERE shared_with_user_id = auth.uid() AND accepted = true))));
+DROP POLICY IF EXISTS "obj_insert_plan_access" ON scorecard_objectives;
+CREATE POLICY "obj_insert_plan_access" ON scorecard_objectives FOR INSERT TO authenticated WITH CHECK (EXISTS (SELECT 1 FROM strategic_plans sp WHERE sp.id = scorecard_objectives.plan_id AND (sp.user_id = auth.uid() OR sp.id IN (SELECT plan_id FROM plan_shares WHERE shared_with_user_id = auth.uid() AND permission_level IN ('editor', 'admin')))));
+DROP POLICY IF EXISTS "obj_update_plan_access" ON scorecard_objectives;
+CREATE POLICY "obj_update_plan_access" ON scorecard_objectives FOR UPDATE TO authenticated USING (EXISTS (SELECT 1 FROM strategic_plans sp WHERE sp.id = scorecard_objectives.plan_id AND (sp.user_id = auth.uid() OR sp.id IN (SELECT plan_id FROM plan_shares WHERE shared_with_user_id = auth.uid() AND permission_level IN ('editor', 'admin')))));
+DROP POLICY IF EXISTS "obj_delete_plan_access" ON scorecard_objectives;
+CREATE POLICY "obj_delete_plan_access" ON scorecard_objectives FOR DELETE TO authenticated USING (EXISTS (SELECT 1 FROM strategic_plans sp WHERE sp.id = scorecard_objectives.plan_id AND (sp.user_id = auth.uid() OR sp.id IN (SELECT plan_id FROM plan_shares WHERE shared_with_user_id = auth.uid() AND permission_level = 'admin'))));
+
+-- Scorecard KPIs Policies
+DROP POLICY IF EXISTS "kpi_select_plan_access" ON scorecard_kpis;
+CREATE POLICY "kpi_select_plan_access" ON scorecard_kpis FOR SELECT TO authenticated USING (EXISTS (SELECT 1 FROM strategic_plans sp WHERE sp.id = scorecard_kpis.plan_id AND (sp.user_id = auth.uid() OR sp.id IN (SELECT plan_id FROM plan_shares WHERE shared_with_user_id = auth.uid() AND accepted = true))));
+DROP POLICY IF EXISTS "kpi_insert_plan_access" ON scorecard_kpis;
+CREATE POLICY "kpi_insert_plan_access" ON scorecard_kpis FOR INSERT TO authenticated WITH CHECK (EXISTS (SELECT 1 FROM strategic_plans sp WHERE sp.id = scorecard_kpis.plan_id AND (sp.user_id = auth.uid() OR sp.id IN (SELECT plan_id FROM plan_shares WHERE shared_with_user_id = auth.uid() AND permission_level IN ('editor', 'admin')))));
+DROP POLICY IF EXISTS "kpi_update_plan_access" ON scorecard_kpis;
+CREATE POLICY "kpi_update_plan_access" ON scorecard_kpis FOR UPDATE TO authenticated USING (EXISTS (SELECT 1 FROM strategic_plans sp WHERE sp.id = scorecard_kpis.plan_id AND (sp.user_id = auth.uid() OR sp.id IN (SELECT plan_id FROM plan_shares WHERE shared_with_user_id = auth.uid() AND permission_level IN ('editor', 'admin')))));
+DROP POLICY IF EXISTS "kpi_delete_plan_access" ON scorecard_kpis;
+CREATE POLICY "kpi_delete_plan_access" ON scorecard_kpis FOR DELETE TO authenticated USING (EXISTS (SELECT 1 FROM strategic_plans sp WHERE sp.id = scorecard_kpis.plan_id AND (sp.user_id = auth.uid() OR sp.id IN (SELECT plan_id FROM plan_shares WHERE shared_with_user_id = auth.uid() AND permission_level = 'admin'))));
+
+-- PAPs Policies
+DROP POLICY IF EXISTS "paps_select_plan_access" ON paps;
+CREATE POLICY "paps_select_plan_access" ON paps FOR SELECT TO authenticated USING (EXISTS (SELECT 1 FROM strategic_plans sp WHERE sp.id = paps.plan_id AND (sp.user_id = auth.uid() OR sp.id IN (SELECT plan_id FROM plan_shares WHERE shared_with_user_id = auth.uid() AND accepted = true))));
+DROP POLICY IF EXISTS "paps_insert_plan_access" ON paps;
+CREATE POLICY "paps_insert_plan_access" ON paps FOR INSERT TO authenticated WITH CHECK (EXISTS (SELECT 1 FROM strategic_plans sp WHERE sp.id = paps.plan_id AND (sp.user_id = auth.uid() OR sp.id IN (SELECT plan_id FROM plan_shares WHERE shared_with_user_id = auth.uid() AND permission_level IN ('editor', 'admin')))));
+DROP POLICY IF EXISTS "paps_update_plan_access" ON paps;
+CREATE POLICY "paps_update_plan_access" ON paps FOR UPDATE TO authenticated USING (EXISTS (SELECT 1 FROM strategic_plans sp WHERE sp.id = paps.plan_id AND (sp.user_id = auth.uid() OR sp.id IN (SELECT plan_id FROM plan_shares WHERE shared_with_user_id = auth.uid() AND permission_level IN ('editor', 'admin')))));
+DROP POLICY IF EXISTS "paps_delete_plan_access" ON paps;
+CREATE POLICY "paps_delete_plan_access" ON paps FOR DELETE TO authenticated USING (EXISTS (SELECT 1 FROM strategic_plans sp WHERE sp.id = paps.plan_id AND (sp.user_id = auth.uid() OR sp.id IN (SELECT plan_id FROM plan_shares WHERE shared_with_user_id = auth.uid() AND permission_level = 'admin'))));
+
+-- Activity Logs Policies
+DROP POLICY IF EXISTS "activity_select_plan_access" ON activity_logs;
+CREATE POLICY "activity_select_plan_access" ON activity_logs FOR SELECT TO authenticated USING (EXISTS (SELECT 1 FROM strategic_plans sp WHERE sp.id = activity_logs.plan_id AND (sp.user_id = auth.uid() OR sp.id IN (SELECT plan_id FROM plan_shares WHERE shared_with_user_id = auth.uid() AND accepted = true))));
+DROP POLICY IF EXISTS "activity_insert_plan_access" ON activity_logs;
+CREATE POLICY "activity_insert_plan_access" ON activity_logs FOR INSERT TO authenticated WITH CHECK (EXISTS (SELECT 1 FROM strategic_plans sp WHERE sp.id = activity_logs.plan_id AND (sp.user_id = auth.uid() OR sp.id IN (SELECT plan_id FROM plan_shares WHERE shared_with_user_id = auth.uid() AND accepted = true))));
+
+-- Comments Policies
+DROP POLICY IF EXISTS "comments_select_plan_access" ON comments;
+CREATE POLICY "comments_select_plan_access" ON comments FOR SELECT TO authenticated USING (EXISTS (SELECT 1 FROM strategic_plans sp WHERE sp.id = comments.plan_id AND (sp.user_id = auth.uid() OR sp.id IN (SELECT plan_id FROM plan_shares WHERE shared_with_user_id = auth.uid() AND accepted = true))));
+DROP POLICY IF EXISTS "comments_insert_plan_access" ON comments;
+CREATE POLICY "comments_insert_plan_access" ON comments FOR INSERT TO authenticated WITH CHECK (EXISTS (SELECT 1 FROM strategic_plans sp WHERE sp.id = comments.plan_id AND (sp.user_id = auth.uid() OR sp.id IN (SELECT plan_id FROM plan_shares WHERE shared_with_user_id = auth.uid() AND accepted = true))));
+DROP POLICY IF EXISTS "comments_update_own" ON comments;
+CREATE POLICY "comments_update_own" ON comments FOR UPDATE TO authenticated USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
+DROP POLICY IF EXISTS "comments_delete_own" ON comments;
+CREATE POLICY "comments_delete_own" ON comments FOR DELETE TO authenticated USING (user_id = auth.uid());
+
+-- Plan Collaboration Policies
+DROP POLICY IF EXISTS "collab_select_plan_access" ON plan_collaboration;
+CREATE POLICY "collab_select_plan_access" ON plan_collaboration FOR SELECT TO authenticated USING (EXISTS (SELECT 1 FROM strategic_plans sp WHERE sp.id = plan_collaboration.plan_id AND (sp.user_id = auth.uid() OR sp.id IN (SELECT plan_id FROM plan_shares WHERE shared_with_user_id = auth.uid() AND accepted = true))));
+DROP POLICY IF EXISTS "collab_insert_plan_access" ON plan_collaboration;
+CREATE POLICY "collab_insert_plan_access" ON plan_collaboration FOR INSERT TO authenticated WITH CHECK (EXISTS (SELECT 1 FROM strategic_plans sp WHERE sp.id = plan_collaboration.plan_id AND (sp.user_id = auth.uid() OR sp.id IN (SELECT plan_id FROM plan_shares WHERE shared_with_user_id = auth.uid() AND accepted = true))));
+DROP POLICY IF EXISTS "collab_update_own" ON plan_collaboration;
+CREATE POLICY "collab_update_own" ON plan_collaboration FOR UPDATE TO authenticated USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
+DROP POLICY IF EXISTS "collab_delete_own" ON plan_collaboration;
+CREATE POLICY "collab_delete_own" ON plan_collaboration FOR DELETE TO authenticated USING (user_id = auth.uid());
+
+-- User Notifications Policies
+DROP POLICY IF EXISTS "notifications_select_own" ON user_notifications;
+CREATE POLICY "notifications_select_own" ON user_notifications FOR SELECT TO authenticated USING (user_id = auth.uid());
+DROP POLICY IF EXISTS "notifications_update_own" ON user_notifications;
+CREATE POLICY "notifications_update_own" ON user_notifications FOR UPDATE TO authenticated USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
+DROP POLICY IF EXISTS "notifications_delete_own" ON user_notifications;
+CREATE POLICY "notifications_delete_own" ON user_notifications FOR DELETE TO authenticated USING (user_id = auth.uid());
+
+-- Plan Snapshots Policies
+DROP POLICY IF EXISTS "snapshots_select_plan_access" ON plan_snapshots;
+CREATE POLICY "snapshots_select_plan_access" ON plan_snapshots FOR SELECT TO authenticated USING (EXISTS (SELECT 1 FROM strategic_plans sp WHERE sp.id = plan_snapshots.plan_id AND (sp.user_id = auth.uid() OR sp.id IN (SELECT plan_id FROM plan_shares WHERE shared_with_user_id = auth.uid() AND accepted = true))));
+DROP POLICY IF EXISTS "snapshots_insert_plan_access" ON plan_snapshots;
+CREATE POLICY "snapshots_insert_plan_access" ON plan_snapshots FOR INSERT TO authenticated WITH CHECK (EXISTS (SELECT 1 FROM strategic_plans sp WHERE sp.id = plan_snapshots.plan_id AND (sp.user_id = auth.uid() OR sp.id IN (SELECT plan_id FROM plan_shares WHERE shared_with_user_id = auth.uid() AND permission_level IN ('editor', 'admin')))));
+
+-- Plan Templates Policies
+DROP POLICY IF EXISTS "templates_select_public" ON plan_templates;
+CREATE POLICY "templates_select_public" ON plan_templates FOR SELECT TO authenticated USING (is_public = true OR created_by = auth.uid() OR organization_id IN (SELECT organization_id FROM organization_members WHERE user_id = auth.uid()));
+DROP POLICY IF EXISTS "templates_insert_owner" ON plan_templates;
+CREATE POLICY "templates_insert_owner" ON plan_templates FOR INSERT TO authenticated WITH CHECK (created_by = auth.uid());
+DROP POLICY IF EXISTS "templates_update_owner" ON plan_templates;
+CREATE POLICY "templates_update_owner" ON plan_templates FOR UPDATE TO authenticated USING (created_by = auth.uid()) WITH CHECK (created_by = auth.uid());
+DROP POLICY IF EXISTS "templates_delete_owner" ON plan_templates;
+CREATE POLICY "templates_delete_owner" ON plan_templates FOR DELETE TO authenticated USING (created_by = auth.uid());
+
+-- Plan Shares Policies
+DROP POLICY IF EXISTS "shares_select_plan_owner" ON plan_shares;
+CREATE POLICY "shares_select_plan_owner" ON plan_shares FOR SELECT TO authenticated USING (shared_by = auth.uid() OR shared_with_user_id = auth.uid() OR EXISTS (SELECT 1 FROM strategic_plans sp WHERE sp.id = plan_shares.plan_id AND sp.user_id = auth.uid()));
+DROP POLICY IF EXISTS "shares_insert_plan_owner" ON plan_shares;
+CREATE POLICY "shares_insert_plan_owner" ON plan_shares FOR INSERT TO authenticated WITH CHECK (EXISTS (SELECT 1 FROM strategic_plans sp WHERE sp.id = plan_shares.plan_id AND sp.user_id = auth.uid()));
+DROP POLICY IF EXISTS "shares_update_plan_owner" ON plan_shares;
+CREATE POLICY "shares_update_plan_owner" ON plan_shares FOR UPDATE TO authenticated USING (EXISTS (SELECT 1 FROM strategic_plans sp WHERE sp.id = plan_shares.plan_id AND sp.user_id = auth.uid()));
+DROP POLICY IF EXISTS "shares_delete_plan_owner" ON plan_shares;
+CREATE POLICY "shares_delete_plan_owner" ON plan_shares FOR DELETE TO authenticated USING (EXISTS (SELECT 1 FROM strategic_plans sp WHERE sp.id = plan_shares.plan_id AND sp.user_id = auth.uid()));
+
+-- Causal Loops Policies
+DROP POLICY IF EXISTS "cld_select_plan_access" ON causal_loops;
+CREATE POLICY "cld_select_plan_access" ON causal_loops FOR SELECT TO authenticated USING (EXISTS (SELECT 1 FROM strategic_plans sp WHERE sp.id = causal_loops.plan_id AND (sp.user_id = auth.uid() OR sp.id IN (SELECT plan_id FROM plan_shares WHERE shared_with_user_id = auth.uid() AND accepted = true))));
+DROP POLICY IF EXISTS "cld_insert_plan_access" ON causal_loops;
+CREATE POLICY "cld_insert_plan_access" ON causal_loops FOR INSERT TO authenticated WITH CHECK (EXISTS (SELECT 1 FROM strategic_plans sp WHERE sp.id = causal_loops.plan_id AND (sp.user_id = auth.uid() OR sp.id IN (SELECT plan_id FROM plan_shares WHERE shared_with_user_id = auth.uid() AND permission_level IN ('editor', 'admin')))));
+DROP POLICY IF EXISTS "cld_update_plan_access" ON causal_loops;
+CREATE POLICY "cld_update_plan_access" ON causal_loops FOR UPDATE TO authenticated USING (EXISTS (SELECT 1 FROM strategic_plans sp WHERE sp.id = causal_loops.plan_id AND (sp.user_id = auth.uid() OR sp.id IN (SELECT plan_id FROM plan_shares WHERE shared_with_user_id = auth.uid() AND permission_level IN ('editor', 'admin')))));
+DROP POLICY IF EXISTS "cld_delete_plan_access" ON causal_loops;
+CREATE POLICY "cld_delete_plan_access" ON causal_loops FOR DELETE TO authenticated USING (EXISTS (SELECT 1 FROM strategic_plans sp WHERE sp.id = causal_loops.plan_id AND (sp.user_id = auth.uid() OR sp.id IN (SELECT plan_id FROM plan_shares WHERE shared_with_user_id = auth.uid() AND permission_level = 'admin'))));
+
+-- Systems Archetypes Policies
+DROP POLICY IF EXISTS "archetype_select_plan_access" ON systems_archetypes;
+CREATE POLICY "archetype_select_plan_access" ON systems_archetypes FOR SELECT TO authenticated USING (EXISTS (SELECT 1 FROM strategic_plans sp WHERE sp.id = systems_archetypes.plan_id AND (sp.user_id = auth.uid() OR sp.id IN (SELECT plan_id FROM plan_shares WHERE shared_with_user_id = auth.uid() AND accepted = true))));
+DROP POLICY IF EXISTS "archetype_insert_plan_access" ON systems_archetypes;
+CREATE POLICY "archetype_insert_plan_access" ON systems_archetypes FOR INSERT TO authenticated WITH CHECK (EXISTS (SELECT 1 FROM strategic_plans sp WHERE sp.id = systems_archetypes.plan_id AND (sp.user_id = auth.uid() OR sp.id IN (SELECT plan_id FROM plan_shares WHERE shared_with_user_id = auth.uid() AND permission_level IN ('editor', 'admin')))));
+DROP POLICY IF EXISTS "archetype_update_plan_access" ON systems_archetypes;
+CREATE POLICY "archetype_update_plan_access" ON systems_archetypes FOR UPDATE TO authenticated USING (EXISTS (SELECT 1 FROM strategic_plans sp WHERE sp.id = systems_archetypes.plan_id AND (sp.user_id = auth.uid() OR sp.id IN (SELECT plan_id FROM plan_shares WHERE shared_with_user_id = auth.uid() AND permission_level IN ('editor', 'admin')))));
+DROP POLICY IF EXISTS "archetype_delete_plan_access" ON systems_archetypes;
+CREATE POLICY "archetype_delete_plan_access" ON systems_archetypes FOR DELETE TO authenticated USING (EXISTS (SELECT 1 FROM strategic_plans sp WHERE sp.id = systems_archetypes.plan_id AND (sp.user_id = auth.uid() OR sp.id IN (SELECT plan_id FROM plan_shares WHERE shared_with_user_id = auth.uid() AND permission_level = 'admin'))));
+
+-- ============================================================
+-- 3. INDEXES
+-- ============================================================
+
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
+CREATE INDEX IF NOT EXISTS idx_users_org ON users(organization);
+CREATE INDEX IF NOT EXISTS idx_orgs_slug ON organizations(slug);
+CREATE INDEX IF NOT EXISTS idx_org_members_org ON organization_members(organization_id);
+CREATE INDEX IF NOT EXISTS idx_org_members_user ON organization_members(user_id);
+CREATE INDEX IF NOT EXISTS idx_strategic_plans_user ON strategic_plans(user_id);
+CREATE INDEX IF NOT EXISTS idx_strategic_plans_org ON strategic_plans(organization_id);
+CREATE INDEX IF NOT EXISTS idx_strategic_plans_status ON strategic_plans(status);
+CREATE INDEX IF NOT EXISTS idx_swot_plan ON swot_items(plan_id);
+CREATE INDEX IF NOT EXISTS idx_swot_category ON swot_items(category);
+CREATE INDEX IF NOT EXISTS idx_strategy_plan ON strategy_matrix(plan_id);
+CREATE INDEX IF NOT EXISTS idx_strategy_quadrant ON strategy_matrix(quadrant);
+CREATE INDEX IF NOT EXISTS idx_bsc_plan ON balanced_scorecards(plan_id);
+CREATE INDEX IF NOT EXISTS idx_obj_scorecard ON scorecard_objectives(scorecard_id);
+CREATE INDEX IF NOT EXISTS idx_kpi_objective ON scorecard_kpis(objective_id);
+CREATE INDEX IF NOT EXISTS idx_paps_plan ON paps(plan_id);
+CREATE INDEX IF NOT EXISTS idx_paps_type ON paps(type);
+CREATE INDEX IF NOT EXISTS idx_paps_status ON paps(status);
+CREATE INDEX IF NOT EXISTS idx_activity_plan ON activity_logs(plan_id);
+CREATE INDEX IF NOT EXISTS idx_activity_user ON activity_logs(user_id);
+CREATE INDEX IF NOT EXISTS idx_activity_type ON activity_logs(action_type);
+CREATE INDEX IF NOT EXISTS idx_activity_created ON activity_logs(created_at);
+CREATE INDEX IF NOT EXISTS idx_comments_plan ON comments(plan_id);
+CREATE INDEX IF NOT EXISTS idx_comments_entity ON comments(entity_id);
+CREATE INDEX IF NOT EXISTS idx_collab_plan ON plan_collaboration(plan_id);
+CREATE INDEX IF NOT EXISTS idx_collab_user ON plan_collaboration(user_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_user ON user_notifications(user_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_unread ON user_notifications(user_id, is_read);
+CREATE INDEX IF NOT EXISTS idx_shares_plan ON plan_shares(plan_id);
+CREATE INDEX IF NOT EXISTS idx_shares_user ON plan_shares(shared_with_user_id);
+CREATE INDEX IF NOT EXISTS idx_cld_plan ON causal_loops(plan_id);
+CREATE INDEX IF NOT EXISTS idx_archetype_plan ON systems_archetypes(plan_id);
+
+-- ============================================================
+-- 4. FUNCTIONS & TRIGGERS
+-- ============================================================
+
+-- Updated at trigger
+CREATE OR REPLACE FUNCTION update_updated_at()
+RETURNS TRIGGER 
+SET search_path = '' 
+AS $$
 BEGIN
-  INSERT INTO user_profiles (
-    id, email, full_name,
-    notification_preferences,
-    role, is_active, created_at, updated_at
-  ) VALUES (
-    NEW.id, NEW.email,
-    COALESCE(NEW.raw_user_meta_data->>'full_name', ''),
-    '{"welcome_email":true,"kpi_alerts":true,"weekly_digest":true,
-      "stale_plan_reminders":true,"team_mentions":true,"product_updates":false}'::jsonb,
-    'viewer', true, now(), now()
-  )
-  ON CONFLICT (id) DO NOTHING;
-  RETURN NEW;
+    NEW.updated_at = now();
+    RETURN NEW;
 END;
-$$;
+$$ LANGUAGE plpgsql;
 
--- ─── 10. CREATE strategic_planner_state ────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS strategic_planner_state (
-  id         uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id    uuid        NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  state      jsonb       NOT NULL DEFAULT '{}'::jsonb,
-  checksum   text,
-  version    integer     NOT NULL DEFAULT 1,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  UNIQUE (user_id)
-);
-COMMENT ON TABLE strategic_planner_state IS
-  'Per-user full planner state snapshot (all plans + currentPlanId). '
-  'Primary target for strategic-planner-sync edge function.';
+-- Auto-update triggers
+DROP TRIGGER IF EXISTS tr_users_updated_at ON users;
+CREATE TRIGGER tr_users_updated_at BEFORE UPDATE ON users FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+DROP TRIGGER IF EXISTS tr_orgs_updated_at ON organizations;
+CREATE TRIGGER tr_orgs_updated_at BEFORE UPDATE ON organizations FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+DROP TRIGGER IF EXISTS tr_plans_updated_at ON strategic_plans;
+CREATE TRIGGER tr_plans_updated_at BEFORE UPDATE ON strategic_plans FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+DROP TRIGGER IF EXISTS tr_swot_updated_at ON swot_items;
+CREATE TRIGGER tr_swot_updated_at BEFORE UPDATE ON swot_items FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+DROP TRIGGER IF EXISTS tr_strategy_updated_at ON strategy_matrix;
+CREATE TRIGGER tr_strategy_updated_at BEFORE UPDATE ON strategy_matrix FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+DROP TRIGGER IF EXISTS tr_obj_updated_at ON scorecard_objectives;
+CREATE TRIGGER tr_obj_updated_at BEFORE UPDATE ON scorecard_objectives FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+DROP TRIGGER IF EXISTS tr_kpi_updated_at ON scorecard_kpis;
+CREATE TRIGGER tr_kpi_updated_at BEFORE UPDATE ON scorecard_kpis FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+DROP TRIGGER IF EXISTS tr_paps_updated_at ON paps;
+CREATE TRIGGER tr_paps_updated_at BEFORE UPDATE ON paps FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+DROP TRIGGER IF EXISTS tr_comments_updated_at ON comments;
+CREATE TRIGGER tr_comments_updated_at BEFORE UPDATE ON comments FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
--- ─── 11. CREATE ai_interaction_logs ────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS ai_interaction_logs (
-  id          uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
-  plan_id     uuid        REFERENCES strategic_plans(id) ON DELETE SET NULL,
-  user_id     uuid        REFERENCES auth.users(id) ON DELETE SET NULL,
-  action      text        NOT NULL,
-  active_view text,
-  input_data  jsonb,
-  output_data jsonb,
-  model       text        DEFAULT 'gpt-4o',
-  tokens_used integer,
-  duration_ms integer,
-  status      text        NOT NULL DEFAULT 'success',
-  error_msg   text,
-  created_at  timestamptz NOT NULL DEFAULT now()
-);
-ALTER TABLE ai_interaction_logs
-  DROP CONSTRAINT IF EXISTS ai_logs_status_check;
-ALTER TABLE ai_interaction_logs
-  ADD CONSTRAINT ai_logs_status_check
-    CHECK (status IN ('success','error','timeout'));
-COMMENT ON TABLE ai_interaction_logs IS
-  'Audit trail of all BIRD AI assistant interactions for MEL and compliance reporting.';
-
--- ─── 12. updated_at auto-trigger ───────────────────────────────────────────────
-CREATE OR REPLACE FUNCTION set_updated_at()
-RETURNS trigger LANGUAGE plpgsql AS $$
-BEGIN NEW.updated_at = now(); RETURN NEW; END;
-$$;
-
-DO $$
-DECLARE tbl text;
+-- SWOT resilience index calculation
+CREATE OR REPLACE FUNCTION calculate_swot_resilience()
+RETURNS TRIGGER 
+SET search_path = '' 
+AS $$
 BEGIN
-  FOREACH tbl IN ARRAY ARRAY[
-    'strategic_plans','swot_items','bsc_objectives','kpis',
-    'paps','strategic_options','user_profiles','user_settings',
-    'strategic_planner_state'
-  ] LOOP
-    EXECUTE format(
-      'DROP TRIGGER IF EXISTS trg_%1$s_updated_at ON %1$I;
-       CREATE TRIGGER trg_%1$s_updated_at
-         BEFORE UPDATE ON %1$I
-         FOR EACH ROW EXECUTE FUNCTION set_updated_at()',
-      tbl
-    );
-  END LOOP;
-END $$;
+    IF NEW.category IN ('strength', 'opportunity') THEN
+        NEW.resilience_index = ROUND(SQRT(NEW.impact * NEW.likelihood)::numeric, 2);
+    ELSE
+        NEW.resilience_index = ROUND((NEW.impact * NEW.likelihood)::numeric, 2);
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
 
--- ─── 13. PERFORMANCE INDEXES ───────────────────────────────────────────────────
-CREATE INDEX IF NOT EXISTS idx_strategic_plans_user_id    ON strategic_plans(user_id);
-CREATE INDEX IF NOT EXISTS idx_strategic_plans_archived    ON strategic_plans(is_archived) WHERE NOT is_archived;
-CREATE INDEX IF NOT EXISTS idx_strategic_plans_updated     ON strategic_plans(updated_at DESC);
-CREATE INDEX IF NOT EXISTS idx_swot_items_plan_id          ON swot_items(plan_id);
-CREATE INDEX IF NOT EXISTS idx_swot_items_category         ON swot_items(category);
-CREATE INDEX IF NOT EXISTS idx_bsc_objectives_plan_id      ON bsc_objectives(plan_id);
-CREATE INDEX IF NOT EXISTS idx_bsc_objectives_perspective  ON bsc_objectives(perspective);
-CREATE INDEX IF NOT EXISTS idx_kpis_objective_id           ON kpis(objective_id);
-CREATE INDEX IF NOT EXISTS idx_paps_plan_id                ON paps(plan_id);
-CREATE INDEX IF NOT EXISTS idx_paps_status                 ON paps(status);
-CREATE INDEX IF NOT EXISTS idx_mel_logs_plan_id            ON mel_logs(plan_id);
-CREATE INDEX IF NOT EXISTS idx_mel_logs_created            ON mel_logs(created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_sps_user_id                 ON strategic_planner_state(user_id);
-CREATE INDEX IF NOT EXISTS idx_ai_logs_user_id             ON ai_interaction_logs(user_id);
-CREATE INDEX IF NOT EXISTS idx_ai_logs_plan_id             ON ai_interaction_logs(plan_id);
-CREATE INDEX IF NOT EXISTS idx_ai_logs_created             ON ai_interaction_logs(created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_visit_logs_user_id          ON visit_logs(user_id);
-CREATE INDEX IF NOT EXISTS idx_visit_logs_created          ON visit_logs(created_at DESC);
+DROP TRIGGER IF EXISTS tr_swot_resilience ON swot_items;
+CREATE TRIGGER tr_swot_resilience BEFORE INSERT OR UPDATE ON swot_items FOR EACH ROW EXECUTE FUNCTION calculate_swot_resilience();
 
--- GIN for JSONB fast-containment queries
-CREATE INDEX IF NOT EXISTS idx_sps_state_gin               ON strategic_planner_state USING gin(state);
-CREATE INDEX IF NOT EXISTS idx_plans_data_gin               ON strategic_plans USING gin(data);
-
--- ─── 14. FIX RLS POLICIES ──────────────────────────────────────────────────────
--- Enable RLS on tables missing it
-ALTER TABLE strategic_planner_state ENABLE ROW LEVEL SECURITY;
-ALTER TABLE ai_interaction_logs     ENABLE ROW LEVEL SECURITY;
-ALTER TABLE activity_log            ENABLE ROW LEVEL SECURITY;
-ALTER TABLE share_links             ENABLE ROW LEVEL SECURITY;
-ALTER TABLE plan_comments           ENABLE ROW LEVEL SECURITY;
-ALTER TABLE admins                  ENABLE ROW LEVEL SECURITY;
-ALTER TABLE visit_logs              ENABLE ROW LEVEL SECURITY;
-ALTER TABLE mel_logs                ENABLE ROW LEVEL SECURITY;
-ALTER TABLE organization_members    ENABLE ROW LEVEL SECURITY;
-
--- strategic_plans: replace deprecated current_setting() with auth.uid()
-DROP POLICY IF EXISTS "Users can view their own plans"    ON strategic_plans;
-DROP POLICY IF EXISTS "Users can insert their own plans"  ON strategic_plans;
-DROP POLICY IF EXISTS "Users can update their own plans"  ON strategic_plans;
-DROP POLICY IF EXISTS "Users can delete their own plans"  ON strategic_plans;
-DROP POLICY IF EXISTS "sp_select" ON strategic_plans;
-DROP POLICY IF EXISTS "sp_insert" ON strategic_plans;
-DROP POLICY IF EXISTS "sp_update" ON strategic_plans;
-DROP POLICY IF EXISTS "sp_delete" ON strategic_plans;
-
-CREATE POLICY "sp_select" ON strategic_plans FOR SELECT
-  USING (auth.uid() = user_id OR is_public = true);
-CREATE POLICY "sp_insert" ON strategic_plans FOR INSERT
-  WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "sp_update" ON strategic_plans FOR UPDATE
-  USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "sp_delete" ON strategic_plans FOR DELETE
-  USING (auth.uid() = user_id);
-
--- user_profiles: replace deprecated pattern
-DROP POLICY IF EXISTS "Users can view their own profile"   ON user_profiles;
-DROP POLICY IF EXISTS "Users can update their own profile" ON user_profiles;
-DROP POLICY IF EXISTS "Users can insert their own profile" ON user_profiles;
-DROP POLICY IF EXISTS "up_select" ON user_profiles;
-DROP POLICY IF EXISTS "up_insert" ON user_profiles;
-DROP POLICY IF EXISTS "up_update" ON user_profiles;
-
-CREATE POLICY "up_select" ON user_profiles FOR SELECT USING (auth.uid() = id);
-CREATE POLICY "up_insert" ON user_profiles FOR INSERT WITH CHECK (auth.uid() = id);
-CREATE POLICY "up_update" ON user_profiles FOR UPDATE
-  USING (auth.uid() = id) WITH CHECK (auth.uid() = id);
-
--- plan_templates: replace deprecated pattern
-DROP POLICY IF EXISTS "Users can read own templates"   ON plan_templates;
-DROP POLICY IF EXISTS "Users can insert own templates" ON plan_templates;
-DROP POLICY IF EXISTS "Users can update own templates" ON plan_templates;
-DROP POLICY IF EXISTS "Users can delete own templates" ON plan_templates;
-DROP POLICY IF EXISTS "Anyone can read builtin templates" ON plan_templates;
-
-CREATE POLICY "pt_public"  ON plan_templates FOR SELECT
-  USING (category = 'builtin' OR is_public = true);
-CREATE POLICY "pt_own"     ON plan_templates FOR SELECT
-  USING (auth.uid() = created_by);
-CREATE POLICY "pt_insert"  ON plan_templates FOR INSERT
-  WITH CHECK (auth.uid() = created_by);
-CREATE POLICY "pt_update"  ON plan_templates FOR UPDATE
-  USING (auth.uid() = created_by);
-CREATE POLICY "pt_delete"  ON plan_templates FOR DELETE
-  USING (auth.uid() = created_by);
-
--- strategic_planner_state
-DROP POLICY IF EXISTS "sps_select" ON strategic_planner_state;
-DROP POLICY IF EXISTS "sps_insert" ON strategic_planner_state;
-DROP POLICY IF EXISTS "sps_update" ON strategic_planner_state;
-DROP POLICY IF EXISTS "sps_delete" ON strategic_planner_state;
-
-CREATE POLICY "sps_select" ON strategic_planner_state FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY "sps_insert" ON strategic_planner_state FOR INSERT WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "sps_update" ON strategic_planner_state FOR UPDATE
-  USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "sps_delete" ON strategic_planner_state FOR DELETE USING (auth.uid() = user_id);
-
--- ai_interaction_logs
-CREATE POLICY "ail_select" ON ai_interaction_logs FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY "ail_insert" ON ai_interaction_logs FOR INSERT
-  WITH CHECK (user_id IS NULL OR auth.uid() = user_id);
-
--- admins: only existing admins can read; service role can write
-CREATE POLICY "admins_select" ON admins FOR SELECT
-  USING (
-    auth.jwt()->>'email' IN (SELECT email FROM admins)
-    OR auth.role() = 'service_role'
-  );
-
--- activity_log
-CREATE POLICY "al_select" ON activity_log FOR SELECT
-  USING (
-    auth.uid() = user_id OR
-    EXISTS (SELECT 1 FROM strategic_plans sp WHERE sp.id = plan_id AND sp.user_id = auth.uid())
-  );
-CREATE POLICY "al_insert" ON activity_log FOR INSERT WITH CHECK (auth.uid() = user_id);
-
--- share_links
-CREATE POLICY "sl_select" ON share_links FOR SELECT
-  USING (revoked = false OR auth.uid() = owner_id);
-CREATE POLICY "sl_insert" ON share_links FOR INSERT WITH CHECK (auth.uid() = owner_id);
-CREATE POLICY "sl_update" ON share_links FOR UPDATE USING (auth.uid() = owner_id);
-CREATE POLICY "sl_delete" ON share_links FOR DELETE USING (auth.uid() = owner_id);
-
--- plan_comments
-CREATE POLICY "pc_select" ON plan_comments FOR SELECT
-  USING (EXISTS (
-    SELECT 1 FROM strategic_plans sp
-    WHERE sp.id = plan_id AND (sp.user_id = auth.uid() OR sp.is_public = true)
-  ));
-CREATE POLICY "pc_insert" ON plan_comments FOR INSERT
-  WITH CHECK (auth.uid() IS NOT NULL);
-CREATE POLICY "pc_update" ON plan_comments FOR UPDATE USING (auth.uid() = user_id);
-CREATE POLICY "pc_delete" ON plan_comments FOR DELETE USING (auth.uid() = user_id);
-
--- visit_logs: insert-only from anyone, read own
-CREATE POLICY "vl_select" ON visit_logs FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY "vl_insert" ON visit_logs FOR INSERT WITH CHECK (true);
-
--- mel_logs: plan owner only
-CREATE POLICY "ml_select" ON mel_logs FOR SELECT
-  USING (EXISTS (SELECT 1 FROM strategic_plans sp WHERE sp.id = plan_id AND sp.user_id = auth.uid()));
-CREATE POLICY "ml_insert" ON mel_logs FOR INSERT
-  WITH CHECK (EXISTS (SELECT 1 FROM strategic_plans sp WHERE sp.id = plan_id AND sp.user_id = auth.uid()));
-
--- organization_members
-CREATE POLICY "om_select" ON organization_members FOR SELECT
-  USING (
-    auth.uid() = user_id OR
-    EXISTS (SELECT 1 FROM organization_members om2
-      WHERE om2.organization_id = organization_id AND om2.user_id = auth.uid())
-  );
-
--- CRM tables: restrict to service_role (edge functions only)
-DO $$
-DECLARE tbl text;
+-- Activity log trigger (SECURITY INVOKER applied)
+CREATE OR REPLACE FUNCTION log_activity()
+RETURNS TRIGGER 
+SECURITY INVOKER 
+SET search_path = '' 
+AS $$
+DECLARE
+    action_type_val text;
+    entity_type_val text;
+    plan_id_val uuid;
+    details_val jsonb;
 BEGIN
-  FOREACH tbl IN ARRAY ARRAY[
-    'crm_campaigns','crm_flow_step_queue','crm_goal_work','crm_sends',
-    'crm_appointments','crm_availability','crm_calendar_members','crm_calendars',
-    'crm_contact_lists','crm_contacts','crm_events','crm_flow_logs',
-    'crm_flow_steps','crm_flows','crm_goal_actions','crm_goal_contacts',
-    'crm_goal_runs','crm_goals','crm_lists'
-  ] LOOP
-    EXECUTE format('ALTER TABLE %I ENABLE ROW LEVEL SECURITY', tbl);
-    EXECUTE format(
-      'DROP POLICY IF EXISTS "crm_service_%1$s" ON %1$I;
-       CREATE POLICY "crm_service_%1$s" ON %1$I
-         USING (auth.role() = ''service_role'')
-         WITH CHECK (auth.role() = ''service_role'')',
-      tbl
-    );
-  END LOOP;
-END $$;
+    IF TG_TABLE_NAME = 'swot_items' THEN
+        action_type_val := CASE WHEN TG_OP = 'INSERT' THEN 'swot_added' WHEN TG_OP = 'UPDATE' THEN 'swot_updated' ELSE 'swot_deleted' END;
+        entity_type_val := 'swot';
+        plan_id_val := NEW.plan_id;
+        details_val := jsonb_build_object('id', NEW.id, 'title', NEW.title, 'category', NEW.category);
+    ELSIF TG_TABLE_NAME = 'strategy_matrix' THEN
+        action_type_val := CASE WHEN TG_OP = 'INSERT' THEN 'strategy_added' WHEN TG_OP = 'UPDATE' THEN 'strategy_updated' ELSE 'strategy_deleted' END;
+        entity_type_val := 'strategy';
+        plan_id_val := NEW.plan_id;
+        details_val := jsonb_build_object('id', NEW.id, 'strategy', NEW.strategy, 'quadrant', NEW.quadrant);
+    ELSIF TG_TABLE_NAME = 'scorecard_objectives' THEN
+        action_type_val := CASE WHEN TG_OP = 'INSERT' THEN 'objective_added' WHEN TG_OP = 'UPDATE' THEN 'objective_updated' ELSE 'objective_deleted' END;
+        entity_type_val := 'objective';
+        plan_id_val := NEW.plan_id;
+        details_val := jsonb_build_object('id', NEW.id, 'title', NEW.title);
+    ELSIF TG_TABLE_NAME = 'scorecard_kpis' THEN
+        action_type_val := CASE WHEN TG_OP = 'INSERT' THEN 'kpi_added' WHEN TG_OP = 'UPDATE' THEN 'kpi_updated' ELSE 'kpi_deleted' END;
+        entity_type_val := 'kpi';
+        plan_id_val := NEW.plan_id;
+        details_val := jsonb_build_object('id', NEW.id, 'name', NEW.name, 'value', NEW.current_value);
+    ELSIF TG_TABLE_NAME = 'paps' THEN
+        action_type_val := CASE WHEN TG_OP = 'INSERT' THEN 'pap_added' WHEN TG_OP = 'UPDATE' THEN 'pap_updated' ELSE 'pap_deleted' END;
+        entity_type_val := 'pap';
+        plan_id_val := NEW.plan_id;
+        details_val := jsonb_build_object('id', NEW.id, 'title', NEW.title, 'type', NEW.type);
+    ELSE
+        RETURN NULL;
+    END IF;
 
--- ─── 15. STORAGE BUCKET SETUP ──────────────────────────────────────────────────
-INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-VALUES
-  ('bird-images',                        'bird-images',                        true,  5242880,   ARRAY['image/webp','image/png','image/jpeg','image/gif']),
-  ('bird-files',                         'bird-files',                         false, 52428800,  ARRAY['application/pdf']),
-  ('systems-archetypes',                 'systems-archetypes',                 true,  10485760,  ARRAY['image/png','image/jpeg','image/webp']),
-  ('images-context-beie-framewoek',      'images-context-beie-framewoek',      true,  10485760,  ARRAY['image/png','image/jpeg']),
-  ('images-strategic-options-roadmap',   'images-strategic-options-roadmap',   true,  10485760,  ARRAY['image/png','image/jpeg']),
-  ('images-swot-systems-maps',           'images-swot-systems-maps',           true,  10485760,  ARRAY['image/png','image/jpeg']),
-  ('pending-tasks',                      'pending-tasks',                      true,  10485760,  ARRAY['image/png','image/jpeg','image/webp'])
-ON CONFLICT (id) DO UPDATE SET
-  public             = EXCLUDED.public,
-  file_size_limit    = EXCLUDED.file_size_limit,
-  allowed_mime_types = EXCLUDED.allowed_mime_types;
+    INSERT INTO activity_logs (plan_id, user_id, action_type, entity_type, entity_id, details, created_at)
+    VALUES (plan_id_val, COALESCE(auth.uid(), '00000000-0000-0000-0000-000000000000'::uuid), action_type_val, entity_type_val, NEW.id, details_val, now());
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
 
--- Storage object policies
-DO $$
-DECLARE pol text;
+DROP TRIGGER IF EXISTS tr_swot_activity ON swot_items;
+CREATE TRIGGER tr_swot_activity AFTER INSERT OR UPDATE OR DELETE ON swot_items FOR EACH ROW EXECUTE FUNCTION log_activity();
+DROP TRIGGER IF EXISTS tr_strategy_activity ON strategy_matrix;
+CREATE TRIGGER tr_strategy_activity AFTER INSERT OR UPDATE OR DELETE ON strategy_matrix FOR EACH ROW EXECUTE FUNCTION log_activity();
+DROP TRIGGER IF EXISTS tr_obj_activity ON scorecard_objectives;
+CREATE TRIGGER tr_obj_activity AFTER INSERT OR UPDATE OR DELETE ON scorecard_objectives FOR EACH ROW EXECUTE FUNCTION log_activity();
+DROP TRIGGER IF EXISTS tr_kpi_activity ON scorecard_kpis;
+CREATE TRIGGER tr_kpi_activity AFTER INSERT OR UPDATE OR DELETE ON scorecard_kpis FOR EACH ROW EXECUTE FUNCTION log_activity();
+DROP TRIGGER IF EXISTS tr_paps_activity ON paps;
+CREATE TRIGGER tr_paps_activity AFTER INSERT OR UPDATE OR DELETE ON paps FOR EACH ROW EXECUTE FUNCTION log_activity();
+
+-- Plan progress update function
+CREATE OR REPLACE FUNCTION update_plan_progress()
+RETURNS TRIGGER 
+SET search_path = '' 
+AS $$
+DECLARE
+    total_kpis int;
+    on_track_kpis int;
+    avg_progress numeric;
 BEGIN
-  FOREACH pol IN ARRAY ARRAY[
-    'public_read_bird_images','auth_upload_bird_images',
-    'public_read_archetypes','auth_read_bird_files',
-    'public_read_beie_images','public_read_pending_tasks'
-  ] LOOP
-    EXECUTE format('DROP POLICY IF EXISTS %I ON storage.objects', pol);
-  END LOOP;
-END $$;
+    SELECT COUNT(*), COUNT(*) FILTER (WHERE status IN ('on_track', 'achieved'))
+    INTO total_kpis, on_track_kpis
+    FROM scorecard_kpis WHERE plan_id = NEW.plan_id;
+    
+    SELECT COALESCE(AVG(progress_pct), 0)
+    INTO avg_progress
+    FROM paps WHERE plan_id = NEW.plan_id;
+    
+    UPDATE strategic_plans SET
+        progress_pct = LEAST(GREATEST(ROUND((COALESCE(on_track_kpis::numeric / NULLIF(total_kpis, 0), 0) * 50 + COALESCE(avg_progress, 0) * 0.5))::int, 0), 100),
+        updated_at = now()
+    WHERE id = NEW.plan_id;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
 
-CREATE POLICY "public_read_bird_images"
-  ON storage.objects FOR SELECT USING (bucket_id = 'bird-images');
-CREATE POLICY "auth_upload_bird_images"
-  ON storage.objects FOR INSERT
-  WITH CHECK (bucket_id = 'bird-images' AND auth.uid() IS NOT NULL);
-CREATE POLICY "public_read_archetypes"
-  ON storage.objects FOR SELECT USING (bucket_id = 'systems-archetypes');
-CREATE POLICY "auth_read_bird_files"
-  ON storage.objects FOR SELECT
-  USING (bucket_id = 'bird-files' AND auth.uid() IS NOT NULL);
-CREATE POLICY "public_read_beie_images"
-  ON storage.objects FOR SELECT
-  USING (bucket_id IN (
-    'images-context-beie-framewoek',
-    'images-strategic-options-roadmap',
-    'images-swot-systems-maps',
-    'pending-tasks'
-  ));
+DROP TRIGGER IF EXISTS tr_plan_progress_kpi ON scorecard_kpis;
+CREATE TRIGGER tr_plan_progress_kpi AFTER INSERT OR UPDATE ON scorecard_kpis FOR EACH ROW EXECUTE FUNCTION update_plan_progress();
+DROP TRIGGER IF EXISTS tr_plan_progress_paps ON paps;
+CREATE TRIGGER tr_plan_progress_paps AFTER INSERT OR UPDATE ON paps FOR EACH ROW EXECUTE FUNCTION update_plan_progress();
 
--- ─── 16. HELPER VIEWS ──────────────────────────────────────────────────────────
-CREATE OR REPLACE VIEW plan_kpi_summary AS
-SELECT
-  p.id    AS plan_id,
-  p.name  AS plan_name,
-  p.user_id,
-  COUNT(k.id)                                              AS total_kpis,
-  COUNT(k.id) FILTER (WHERE k.status = 'on-track')        AS on_track,
-  COUNT(k.id) FILTER (WHERE k.status = 'at-risk')         AS at_risk,
-  COUNT(k.id) FILTER (WHERE k.status = 'delayed')         AS delayed,
-  COUNT(k.id) FILTER (WHERE k.status = 'completed')       AS completed,
-  ROUND(AVG(
-    CASE WHEN NULLIF(k.target_value,0) IS NULL THEN NULL
-    ELSE LEAST(100.0,(k.current_value/NULLIF(k.target_value,0))*100)
-    END
-  ),1)                                                     AS avg_progress_pct
-FROM strategic_plans p
-LEFT JOIN bsc_objectives o ON o.plan_id = p.id
-LEFT JOIN kpis k ON k.objective_id = o.id
-WHERE NOT COALESCE(p.is_archived,false)
-GROUP BY p.id, p.name, p.user_id;
+-- Handle new user signups (SECURITY INVOKER applied)
+CREATE OR REPLACE FUNCTION handle_new_user()
+RETURNS TRIGGER 
+SECURITY INVOKER 
+SET search_path = '' 
+AS $$
+BEGIN
+    INSERT INTO users (id, email, full_name, created_at)
+    VALUES (NEW.id, NEW.email, COALESCE(NEW.raw_user_meta_data->>'full_name', ''), now());
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE VIEW plan_pap_budget AS
-SELECT
-  plan_id,
-  SUM(budget)   AS total_budget_php,
-  SUM(spent)    AS total_spent_php,
-  CASE WHEN SUM(budget)>0
-    THEN ROUND((SUM(spent)/SUM(budget))*100,1) ELSE 0
-  END           AS utilization_pct,
-  COUNT(*)      AS total_paps,
-  COUNT(*) FILTER (WHERE status='in-progress')  AS in_progress,
-  COUNT(*) FILTER (WHERE status='completed')    AS completed,
-  COUNT(*) FILTER (WHERE status='delayed')      AS delayed,
-  ROUND(AVG(progress),1) AS avg_progress_pct
-FROM paps
-GROUP BY plan_id;
+DROP TRIGGER IF EXISTS tr_auth_users_insert ON auth.users;
+CREATE TRIGGER tr_auth_users_insert AFTER INSERT ON auth.users FOR EACH ROW EXECUTE FUNCTION handle_new_user();
 
--- AI usage analytics view (admin)
-CREATE OR REPLACE VIEW ai_usage_summary AS
-SELECT
-  DATE_TRUNC('day', created_at) AS day,
-  action,
-  COUNT(*)                       AS calls,
-  SUM(tokens_used)               AS total_tokens,
-  AVG(duration_ms)               AS avg_duration_ms,
-  COUNT(*) FILTER (WHERE status='error') AS errors
-FROM ai_interaction_logs
-GROUP BY 1, 2
-ORDER BY 1 DESC, 3 DESC;
+-- ============================================================
+-- 5. SECURITY HARDENING (Privilege Revocations)
+-- ============================================================
+-- Revoke execute permissions on internal/trigger functions from PUBLIC, anon, and authenticated 
+-- to prevent unauthorized direct RPC calls.
 
--- ─── 17. GRANTS ────────────────────────────────────────────────────────────────
-GRANT SELECT ON plan_kpi_summary  TO authenticated;
-GRANT SELECT ON plan_pap_budget   TO authenticated;
--- ai_usage_summary intentionally not granted to authenticated — admin only
+REVOKE EXECUTE ON FUNCTION public.update_updated_at() FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.calculate_swot_resilience() FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.log_activity() FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.update_plan_progress() FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.handle_new_user() FROM PUBLIC, anon, authenticated;
