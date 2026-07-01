@@ -18,7 +18,7 @@ const SettingsPage     = lazy(() => import('./settings/SettingsPage'));
 // ─── HERO loads immediately (it's the first thing users see)
 const HeroSection = lazy(() => import('./strategic/HeroSection'));
 
-const ValidationSurvey = lazy(() => import('./strategic/ValidationSurvey')); // We will create this wrapper next
+const ValidationSurvey = lazy(() => import('./strategic/ValidationSurvey')); 
 // ─── Content views — each chunk is a separate JS bundle loaded on demand
 const MELDashboard     = lazy(() => import('./strategic/MELDashboard'));
 const SWOTAnalysis     = lazy(() => import('./strategic/SWOTAnalysis'));
@@ -233,28 +233,48 @@ const AppLayout: React.FC = () => {
   const renderContent = useCallback(() => {
     const common = { plan: currentPlan, onNavigate: navigateToView };
     switch (activeView) {
-      case 'validation': return <ValidationSurvey />; // <--- ADD THIS LINE
-      default:           return <MELDashboard {...common} />;
-    }
+      case 'validation': 
+        return <ValidationSurvey />;
+      
       // ✅ FIXED: Added onAddItem and onRemoveItem props for full CRUD support
-      case 'swot':       return (
-        <SWOTAnalysis 
-          {...common} 
-          onAddItem={addSWOTItem}
-          onUpdateItem={updateSWOTItem} 
-          onRemoveItem={removeSWOTItem}
-          onBulkAdd={bulkAddSWOTItems} 
-        />
-      );
-      case 'systems':    return <SystemsThinking {...common} onUpdateItem={updateSWOTItem} />;
-      case 'strategy':   return <StrategyMatrix {...common} onUpdateOption={updateStrategicOption} onRemoveOption={removeStrategicOption} onBulkAdd={bulkAddStrategicOptions} />;
-      case 'scorecard':  return <BalancedScorecard {...common} onUpdateObjective={updateObjective} onAddKPI={addKPI} onUpdateKPI={updateKPI} onRemoveKPI={removeKPI} />;
-      case 'paps':       return <PAPsManagement {...common} onUpdatePAP={updatePAP} removePAP={removePAP} />;
-      case 'templates':  return <TemplatesLibrary currentPlan={currentPlan} onCreateFromTemplate={handleCreateFromTemplate} userId={user?.id} userEmail={user?.email} userName={userDisplayInfo.name} userOrganization={profile?.organization || ''} isAuthenticated={isAuthenticated} />;
-      case 'team':       return <TeamCollaboration {...common} userId={user?.id} userEmail={user?.email} userName={userDisplayInfo.name} />;
-      case 'settings':   return <SettingsPage />;
-      case 'export':     return <PlanExport {...common} />;
-      default:           return <MELDashboard {...common} />;
+      case 'swot':       
+        return (
+          <SWOTAnalysis 
+            {...common} 
+            onAddItem={addSWOTItem}
+            onUpdateItem={updateSWOTItem} 
+            onRemoveItem={removeSWOTItem}
+            onBulkAdd={bulkAddSWOTItems} 
+          />
+        );
+      
+      case 'systems':    
+        return <SystemsThinking {...common} onUpdateItem={updateSWOTItem} />;
+      
+      case 'strategy':   
+        return <StrategyMatrix {...common} onUpdateOption={updateStrategicOption} onRemoveOption={removeStrategicOption} onBulkAdd={bulkAddStrategicOptions} />;
+      
+      case 'scorecard':  
+        return <BalancedScorecard {...common} onUpdateObjective={updateObjective} onAddKPI={addKPI} onUpdateKPI={updateKPI} onRemoveKPI={removeKPI} />;
+      
+      case 'paps':       
+        return <PAPsManagement {...common} onUpdatePAP={updatePAP} removePAP={removePAP} />;
+      
+      case 'templates':  
+        return <TemplatesLibrary currentPlan={currentPlan} onCreateFromTemplate={handleCreateFromTemplate} userId={user?.id} userEmail={user?.email} userName={userDisplayInfo.name} userOrganization={profile?.organization || ''} isAuthenticated={isAuthenticated} />;
+      
+      case 'team':       
+        return <TeamCollaboration {...common} userId={user?.id} userEmail={user?.email} userName={userDisplayInfo.name} />;
+      
+      case 'settings':   
+        return <SettingsPage />;
+      
+      case 'export':     
+        return <PlanExport {...common} />;
+      
+      case 'dashboard':
+      default:           
+        return <MELDashboard {...common} />;
     }
   }, [activeView, currentPlan, user, profile, isAuthenticated, userDisplayInfo.name,
     addSWOTItem, updateSWOTItem, removeSWOTItem, bulkAddSWOTItems,
