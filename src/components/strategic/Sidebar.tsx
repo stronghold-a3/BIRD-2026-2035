@@ -67,7 +67,14 @@ const Sidebar: React.FC<SidebarProps> = ({
   const NavItem = ({ item, isSubItem = false }: { item: any, isSubItem?: boolean }) => {
     const Icon = item.icon;
     const isActive = activeView === item.id;
-    
+    // Find the navigation items array and add:
+    {
+    id: 'validation',
+    label: 'Validation Survey',
+    icon: ClipboardCheck, // or FileText, CheckSquare
+    path: '/validation-survey',
+    badge: 'NEW', // Optional badge to highlight
+    }
     return (
       <button
         onClick={() => {
