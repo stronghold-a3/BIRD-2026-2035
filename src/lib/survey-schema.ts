@@ -110,6 +110,27 @@ export const surveySchema = z.object({
   // --- SECTION 13: Policy ---
   q13_1: checkboxArray, // Priority legislation
 
+  // --- SECTION 11: Provincial Equity ---
+  q11_1: scale1to5, // Affirmative investment policies
+  q11_2: checkboxArray, // Mechanisms to reduce disparity
+
+  // --- SECTION 12: Climate Resilience ---
+  q12_1: scale1to5, // Green economy prioritization
+  q12_2: checkboxArray, // Climate adaptation mechanisms
+
+  // --- SECTION 13: Policy & Governance ---
+  q13_1: checkboxArray.min(1).max(2, "Please select no more than 2 priorities."), // Priority laws
+  q13_2: scale1to5, // BICC effectiveness
+
+  // --- SECTION 14: Demographics ---
+  demo_category: z.string().min(1, "Please select your stakeholder category."),
+  demo_province: z.string().min(1, "Please select your province."),
+  demo_expertise: checkboxArray,
+
+  // --- SECTION 15: Submission ---
+  consent_final: z.literal(true, {
+    errorMap: () => ({ message: "You must consent to submit the survey." }),
+  }),
   // --- DEMOGRAPHICS (Section 14) ---
   name: z.string().min(1, "Full name is required."),
   email: z.string().email("Please enter a valid email address."),
