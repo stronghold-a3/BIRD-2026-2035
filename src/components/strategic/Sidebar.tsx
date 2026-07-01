@@ -18,9 +18,10 @@ import {
   User,
   Cpu,
   HelpCircle,
-  ChevronDown
+  ChevronDown,
+  ClipboardCheck // Added for Validation Survey
 } from 'lucide-react';
-import { cn } from '@/lib/utils'; // Assuming you have a utility for tailwind classes
+import { cn } from '@/lib/utils';
 
 interface SidebarProps {
   activeView: string;
@@ -30,7 +31,6 @@ interface SidebarProps {
   isOnline: boolean;
   lastSynced: string | null;
   planName?: string;
-  // New props for integration
   isMobileMenuOpen: boolean;
   onCloseMobileMenu: () => void;
   onShowTutorial: () => void;
@@ -47,6 +47,8 @@ const mainMenuItems = [
   { id: 'templates', label: 'Templates Library', icon: Layers, description: 'Reusable Plan Templates' },
   { id: 'team', label: 'Team Collaboration', icon: Users, description: 'Share & Collaborate' },
   { id: 'export', label: 'Plan Generator', icon: FileText, description: 'Export Reports' },
+  // Added Validation Survey
+  { id: 'validation', label: 'Validation Survey', icon: ClipboardCheck, description: 'BIRD 2026-2035 Feedback' },
 ];
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -67,14 +69,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   const NavItem = ({ item, isSubItem = false }: { item: any, isSubItem?: boolean }) => {
     const Icon = item.icon;
     const isActive = activeView === item.id;
-    // Find the navigation items array and add:
-    {
-    id: 'validation',
-    label: 'Validation Survey',
-    icon: ClipboardCheck, // or FileText, CheckSquare
-    path: '/validation-survey',
-    badge: 'NEW', // Optional badge to highlight
-    }
+    
     return (
       <button
         onClick={() => {
@@ -171,7 +166,6 @@ const Sidebar: React.FC<SidebarProps> = ({
 
           <div className="my-4 border-t border-slate-800/50 pt-4">
             <NavItem item={{ id: 'settings', label: 'Settings', icon: Settings, description: 'Profile, AI, Integrations' }} />
-
 
             {/* Tutorial Button Integration */}
             <button 
