@@ -1,0 +1,10 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# This redirect is required for React Router (client-side routing) 
+# so that refreshing the page on a sub-route doesn't result in a 404 error.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
