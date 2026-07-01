@@ -1,10 +1,12 @@
 [build]
-  command = "npm run build"
-  publish = "dist"
+  # Publish the static HTML files from the public folder
+  publish = "public"
+  # Tell Netlify where the serverless functions live
+  functions = "netlify/functions"
 
-# This redirect is required for React Router (client-side routing) 
-# so that refreshing the page on a sub-route doesn't result in a 404 error.
+# This routes frontend calls from "/api/submit" to the Netlify function
 [[redirects]]
-  from = "/*"
-  to = "/index.html"
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
   status = 200
+  force = true
