@@ -1,6 +1,7 @@
 // src/components/strategic/SurveyWizard.tsx
 "use client";
 
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -10,10 +11,8 @@ import { Progress } from "@/components/ui/progress";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowRight, ArrowLeft, Send, CheckCircle2 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
-
 import { surveySchema, SurveySchemaType } from "@/lib/survey-schema";
 import { submitSurvey } from "@/lib/api";
-
 // Import all 15 sections
 import { Section1_BEIE } from "./Section1_BEIE";
 import { Section2_MoralGov } from "./Section2_MoralGov";
@@ -30,6 +29,38 @@ import { Section12_Climate } from "./Section12_Climate";
 import { Section13_Policy } from "./Section13_Policy";
 import { Section14_Demographics } from "./Section14_Demographics";
 import { Section15_Submission } from "./Section15_Submission";
+
+export function SurveyWizard() {
+  // ✅ The useForm hook belongs HERE, inside the React component
+  const form = useForm<SurveySchemaType>({
+    resolver: zodResolver(surveySchema),
+    defaultValues: {
+      q1_1: "", q1_2: "",
+      q2_1: "", q2_2: "",
+      q3_1: [], q3_2: "",
+      q4_1: "", q4_2: "",
+      q5_1: "", q5_2: [], q5_3: "",
+      q6_1: "", q6_2: [], q6_3: "",
+      q7_1: "", q7_2: [], q7_3: "",
+      q8_1: "", q8_2: "",
+      q9_1: "",
+      q10_1: "",
+      q10_matrix: {
+        heds: { economic_impact: 0, feasibility: 0, identity_alignment: 0, systems_leverage: 0, risk_return: 0, inclusivity: 0, sustainability: 0 },
+        gems: { economic_impact: 0, feasibility: 0, identity_alignment: 0, systems_leverage: 0, risk_return: 0, inclusivity: 0, sustainability: 0 },
+        ifes: { economic_impact: 0, feasibility: 0, identity_alignment: 0, systems_leverage: 0, risk_return: 0, inclusivity: 0, sustainability: 0 },
+        ieds: { economic_impact: 0, feasibility: 0, identity_alignment: 0, systems_leverage: 0, risk_return: 0, inclusivity: 0, sustainability: 0 },
+      },
+      q11_1: "", q11_2: [],
+      q12_1: "", q12_2: [],
+      q13_1: [], q13_2: "",
+      demo_category: "", demo_province: "", demo_expertise: [],
+      consent_final: false,
+    },
+    mode: "onTouched",
+  });
+
+}
 
 const TOTAL_STEPS = 15;
 
