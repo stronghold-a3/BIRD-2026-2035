@@ -1,24 +1,11 @@
 import React from 'react';
-import {
-  LayoutDashboard,
-  Target,
-  Sparkles,
-  Network,
-  BarChart3,
-  FolderKanban,
-  FileText,
-  Wifi,
-  ArrowRight,
-  Play,
-  LogIn,
-  User,
-  ClipboardCheck,
-} from 'lucide-react';
+import { LayoutDashboard, Target, Sparkles, Network, ChartBar as BarChart3, FolderKanban, FileText, Wifi, ArrowRight, Play, LogIn, User, ClipboardCheck } from 'lucide-react';
 
 interface HeroSectionProps {
   onStartPlanning: () => void;
   onViewDemo: () => void;
   onSignIn?: () => void;
+  onOpenValidationSurvey?: () => void;
   isAuthenticated?: boolean;
   userName?: string;
 }
@@ -74,12 +61,13 @@ const features = [
   },
 ];
 
-const HeroSection: React.FC<HeroSectionProps> = ({ 
-  onStartPlanning, 
-  onViewDemo, 
-  onSignIn, 
+const HeroSection: React.FC<HeroSectionProps> = ({
+  onStartPlanning,
+  onViewDemo,
+  onSignIn,
+  onOpenValidationSurvey,
   isAuthenticated,
-  userName 
+  userName
 }) => {
   return (
     <div className="min-h-screen bg-slate-900 selection:bg-cyan-500/30">
@@ -172,14 +160,14 @@ const HeroSection: React.FC<HeroSectionProps> = ({
 
           {/* Validation Survey CTA */}
           <div className="mb-20">
-            <a
-              href="/survey-wizard"
+            <button
+              onClick={onOpenValidationSurvey || onStartPlanning}
               className="inline-flex w-full sm:w-auto px-10 py-5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-bold text-lg hover:shadow-2xl hover:shadow-emerald-500/40 transition-all hover:-translate-y-1 items-center justify-center gap-3"
             >
               <ClipboardCheck className="w-6 h-6" />
               Take BIRD Validation Survey
               <ArrowRight className="w-5 h-5" />
-            </a>
+            </button>
             <p className="text-sm text-slate-500 mt-3">
               Help shape the future of BARMM investment planning
             </p>

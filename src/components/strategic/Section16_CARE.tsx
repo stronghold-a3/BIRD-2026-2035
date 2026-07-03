@@ -3,7 +3,7 @@ import { useFormContext } from "react-hook-form";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { CheckCircle2, Target, RefreshCw, BarChart3 } from "lucide-react";
+import { CircleCheck as CheckCircle2, Target, RefreshCw, ChartBar as BarChart3 } from "lucide-react";
 
 export function Section16_CARE() {
   const form = useFormContext();
@@ -117,7 +117,7 @@ export function Section16_CARE() {
         {/* Overall Alignment */}
         <FormField
           control={form.control}
-          name="care_overall_alignment"
+          name="care_overall"
           render={({ field }) => (
             <FormItem className="space-y-3 pt-4 border-t border-border/50">
               <FormLabel className="text-base font-bold text-foreground">

@@ -35,7 +35,7 @@ const NavigationTutorial = lazy(() => import('./strategic/NavigationTutorial'));
 const FloatingAIAssistant = lazy(() => import('./strategic/FloatingAIAssistant'));
 
 import { PlanTemplate } from '@/lib/templateData';
-import { Loader2 } from 'lucide-react';
+import { Loader as Loader2 } from 'lucide-react';
 
 // ─── LOADERS ──────────────────────────────────────────────────────────────────
 
@@ -297,6 +297,10 @@ const AppLayout: React.FC = () => {
           onStartPlanning={handleStartPlanning}
           onViewDemo={() => updateUiState({ showLanding: false })}
           onSignIn={() => updateUiState({ showAuthModal: true })}
+          onOpenValidationSurvey={() => {
+            updateUiState({ showLanding: false });
+            goToView('validation');
+          }}
           isAuthenticated={isAuthenticated}
           userName={userDisplayInfo.name}
         />
