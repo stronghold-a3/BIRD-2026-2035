@@ -9,6 +9,15 @@ import {
 } from 'lucide-react';
 import { StrategicPlan } from '@/lib/strategicPlanStore';
 
+// ─── Import HeroSection from external file ────────────────────────────────────
+import HeroSection from './HeroSection';
+
+// ─── Asset constants (env-var backed) ────────────────────────────────────────
+const BIRD_BANNER_URL =
+  'https://rgvteytgkugdqdodedxq.databasepad.com/storage/v1/object/public/bird-images/public/BIRD%20Banner.png';
+const AI_AVATAR_URL = BRAND_ASSETS.AI_AVATAR_URL;
+const AI_ENDPOINT   = EDGE_FUNCTIONS.AI_STRATEGY_ASSISTANT;
+
 // ─── BIRD 2026-2035 Data ──────────────────────────────────────────────────────
 import { PARETO_KPIS }                                     from '@/data/bird/kpis';
 import { BSC_LEVERAGE_POINTS as BSC_POINTS }               from '@/data/bird/kpis';
@@ -16,9 +25,6 @@ import { ACTION_PLAN_2026 as PRIORITY_ACTIONS }            from '@/data/bird/act
 import { CAUSAL_LOOPS as FEEDBACK_LOOPS }                  from '@/data/bird/clds';
 import { PHASES, TOTAL_BUDGET }                            from '@/data/bird/phases';
 import { EDGE_FUNCTIONS, BRAND_ASSETS }                    from '@/lib/supabase';
-
-// ─── Import HeroSection from external file ────────────────────────────────────
-import HeroSection from './HeroSection';
 
 // ─── Asset constants (env-var backed) ────────────────────────────────────────
 const BIRD_BANNER_URL =
@@ -37,6 +43,224 @@ interface ChatMessage {
   content: string;
   timestamp: Date;
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// HERO SECTION COMPONENT
+// ═══════════════════════════════════════════════════════════════════════════════
+const HeroSection: React.FC<{ onNavigate?: (view: string) => void }> = ({ onNavigate }) => {
+  const [bannerLoaded, setBannerLoaded] = useState(false);
+  const [bannerError, setBannerError] = useState(false);
+
+  const features = [
+    {
+      icon: Target,
+      title: 'Strategic MEL Dashboard',
+      desc: 'Monitor 6 Pareto KPIs driving 80% of strategic impact',
+      color: '#C9A84C',
+      view: 'dashboard',
+    },
+    {
+      icon: GitBranch,
+      title: 'Systems Thinking',
+      desc: 'Visualize causal loops and feedback dynamics',
+      color: '#10b981',
+      view: 'systems',
+    },
+    {
+      icon: FolderKanban,
+      title: 'Priority Action Board',
+      desc: 'Track 10 critical actions for Phase 1 (2026-2028)',
+      color: '#3b82f6',
+      view: 'dashboard',
+    },
+    {
+      icon: Layers,
+      title: 'Implementation Roadmap',
+      desc: '3-phase ₱120-160B investment pathway to 2035',
+      color: '#8b5cf6',
+      view: 'dashboard',
+    },
+  ];
+
+  return (
+    <div className="relative w-full overflow-hidden">
+      {/* ════════════════════════════════════════════════════════════════════════
+          HERO BANNER — Full-width immersive section
+          ════════════════════════════════════════════════════════════════════════ */}
+      <div className="relative w-full" style={{ minHeight: 600 }}>
+        {/* Background gradient base */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[#011a12] via-[#022c22] to-[#0a1628]" />
+
+        {/* Banner image with overlay */}
+        {!bannerError ? (
+          <div className="absolute inset-0">
+            <img
+              src={BIRD_BANNER_URL}
+              alt="BIRD 2026–2035 — Bangsamoro Investment Roadmap Development"
+              className={`w-full h-full object-cover object-center transition-opacity duration-700 ${bannerLoaded ? 'opacity-40' : 'opacity-0'}`}
+              onLoad={() => setBannerLoaded(true)}
+              onError={() => setBannerError(true)}
+              loading="eager"
+              decoding="async"
+            />
+            {/* Gradient overlay for text readability */}
+            <div className="absolute inset-0 bg-gradient-to-b from-[#011a12]/60 via-[#022c22]/70 to-[#022c22]" />
+          </div>
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-[#022c22] via-[#064e3b] to-[#0a1628]" />
+        )}
+
+        {/* Loading state */}
+        {!bannerLoaded && !bannerError && (
+          <div className="absolute inset-0 bg-gradient-to-br from-[#022c22] via-[#064e3b] to-[#0a1628] animate-pulse" />
+        )}
+
+        {/* Gold accent line at top */}
+        <div className="absolute top-0 left-0 right-0 h-1 z-20 bg-gradient-to-r from-transparent via-[#C9A84C] to-transparent" />
+
+        {/* Content container */}
+        <div className="relative z-10 max-w-[1400px] mx-auto px-4 pt-16 pb-20">
+          {/* Eyebrow badge */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="inline-flex items-center gap-2 bg-[rgba(201,168,76,0.12)] border border-[rgba(201,168,76,0.55)] text-[#C9A84C] px-5 py-2 rounded-full text-xs font-bold tracking-widest uppercase mb-6 backdrop-blur-sm"
+          >
+            <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />
+            Bangsamoro Investment Roadmap 2026–2035
+          </motion.div>
+
+          {/* Main headline */}
+          <motion.h1
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.1 }}
+            className="text-5xl md:text-7xl font-black leading-[1.05] mb-6"
+            style={{ fontFamily: "'Cinzel', serif" }}
+          >
+            <span className="bg-gradient-to-r from-[#7a5c1e] via-[#E8C560] to-[#7a5c1e] bg-clip-text text-transparent">
+              The Emerging
+            </span>
+            <br />
+            <span className="text-white">Bangsamoro</span>
+          </motion.h1>
+
+          {/* Subtitle */}
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="text-xl md:text-2xl text-[#ecfdf5]/70 max-w-3xl leading-relaxed mb-10"
+            style={{ fontFamily: "'DM Sans', sans-serif" }}
+          >
+            A Hub for Resilient and Ethical Growth — Transforming post-conflict recovery into
+            Southeast Asia's premier halal, agro-industrial, and sustainable investment destination.
+          </motion.p>
+
+          {/* Key metrics row */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="flex flex-wrap gap-4 mb-12"
+          >
+            {[
+              { icon: DollarSign, label: 'Total Roadmap', value: TOTAL_BUDGET.label, color: '#C9A84C' },
+              { icon: Clock, label: 'Current Phase', value: 'Phase 1: Foundation', color: '#10b981' },
+              { icon: Target, label: '2035 GRDP Target', value: '₱550B+', color: '#3b82f6' },
+              { icon: Users, label: 'Jobs Target', value: '20,000+', color: '#8b5cf6' },
+            ].map(({ icon: Icon, label, value, color }, i) => (
+              <div
+                key={label}
+                className="bg-[rgba(2,44,34,0.6)] backdrop-blur-sm border border-[rgba(201,168,76,0.32)] rounded-xl px-5 py-4 flex items-center gap-3 hover:border-[rgba(201,168,76,0.55)] transition-all"
+              >
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: `${color}20` }}>
+                  <Icon className="w-5 h-5" style={{ color }} aria-hidden="true" />
+                </div>
+                <div>
+                  <div className="text-[0.65rem] text-[#ecfdf5]/50 uppercase tracking-wider font-bold">{label}</div>
+                  <div className="text-sm font-bold text-white" style={{ fontFamily: "'Cinzel', serif" }}>{value}</div>
+                </div>
+              </div>
+            ))}
+          </motion.div>
+
+          {/* CTA Buttons */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="flex flex-wrap gap-4 mb-16"
+          >
+            <button
+              onClick={() => onNavigate?.('dashboard')}
+              className="group px-8 py-4 bg-gradient-to-r from-[#7a5c1e] via-[#c9a84c] to-[#7a5c1e] text-[#022c22] rounded-xl font-bold text-base hover:shadow-2xl hover:shadow-[#C9A84C]/40 transition-all flex items-center gap-3"
+              style={{ fontFamily: "'Cinzel', serif" }}
+            >
+              <Target className="w-5 h-5" aria-hidden="true" />
+              Open MEL Dashboard
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" aria-hidden="true" />
+            </button>
+            <button
+              onClick={() => onNavigate?.('systems')}
+              className="px-8 py-4 bg-[rgba(6,78,59,0.6)] backdrop-blur-sm border-2 border-[rgba(201,168,76,0.55)] text-[#C9A84C] rounded-xl font-bold text-base hover:bg-[rgba(201,168,76,0.15)] transition-all flex items-center gap-3"
+              style={{ fontFamily: "'Cinzel', serif" }}
+            >
+              <Play className="w-5 h-5" aria-hidden="true" />
+              Explore Systems Thinking
+            </button>
+          </motion.div>
+
+          {/* Feature cards grid */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.5 }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5"
+          >
+            {features.map(({ icon: Icon, title, desc, color, view }, i) => (
+              <motion.button
+                key={title}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.6 + i * 0.1 }}
+                onClick={() => onNavigate?.(view)}
+                className="group bg-[rgba(2,44,34,0.5)] backdrop-blur-sm border border-[rgba(201,168,76,0.32)] rounded-xl p-6 text-left hover:-translate-y-1 hover:border-[rgba(201,168,76,0.55)] transition-all relative overflow-hidden"
+              >
+                {/* Top accent line */}
+                <div className="absolute top-0 left-0 right-0 h-0.5" style={{ background: color }} aria-hidden="true" />
+
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform" style={{ background: `${color}20` }}>
+                  <Icon className="w-6 h-6" style={{ color }} aria-hidden="true" />
+                </div>
+                <h3 className="text-base font-bold text-white mb-2" style={{ fontFamily: "'Cinzel', serif" }}>{title}</h3>
+                <p className="text-sm text-[#ecfdf5]/60 leading-relaxed">{desc}</p>
+                <div className="flex items-center gap-2 mt-4 text-xs font-bold" style={{ color }}>
+                  <span>Explore</span>
+                  <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" aria-hidden="true" />
+                </div>
+              </motion.button>
+            ))}
+          </motion.div>
+        </div>
+
+        {/* Scroll indicator */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.2 }}
+          className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10"
+        >
+          <div className="flex flex-col items-center gap-2 text-[#ecfdf5]/40">
+            <span className="text-[0.65rem] uppercase tracking-widest font-bold">Scroll to explore</span>
+            <ChevronDown className="w-5 h-5 animate-bounce" aria-hidden="true" />
+          </div>
+        </motion.div>
+      </div>
+    </div>
+  );
+};
 
 // ─── Tooltip ──────────────────────────────────────────────────────────────────
 const Tooltip: React.FC<{ children: React.ReactNode; content: string }> = ({ children, content }) => {
@@ -339,4 +563,491 @@ const MELDashboard: React.FC<MELDashboardProps> = ({ onNavigate }) => {
     high:     PRIORITY_ACTIONS.filter(a => a.priority === 'high').length,
     q2:       PRIORITY_ACTIONS.filter(a => a.due.includes('Q2')).length,
     inProg:   PRIORITY_ACTIONS.filter(a => a.status === 'In Progress').length,
- 
+  }), []);
+
+  const reinforcing = FEEDBACK_LOOPS.filter(l => l.type === 'reinforcing').length;
+  const balancing   = FEEDBACK_LOOPS.filter(l => l.type === 'balancing').length;
+
+  return (
+    <div
+      className="min-h-screen bg-gradient-to-br from-[#011a12] via-[#022c22] to-[#0a1628] text-[#ecfdf5]"
+      style={{ fontFamily: "'DM Sans', sans-serif" }}
+    >
+
+      {/* ════════════════════════════════════════════════════════════════════════
+          HERO SECTION — Full-width immersive landing
+          ════════════════════════════════════════════════════════════════════════ */}
+      <HeroSection onNavigate={onNavigate} />
+
+      {/* ════════════════════════════════════════════════════════════════════════
+          DASHBOARD HEADER
+          ════════════════════════════════════════════════════════════════════════ */}
+      <header className="max-w-[1400px] mx-auto px-4 pt-8 pb-6 relative">
+        <div className="inline-block bg-[rgba(201,168,76,0.10)] border border-[rgba(201,168,76,0.55)] text-[#C9A84C] px-4 py-1 rounded-full text-[0.68rem] font-bold tracking-widest uppercase mb-4">
+          Strategic MEL Dashboard · Phase 1: Foundation Building
+        </div>
+        <h1
+          className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-[#7a5c1e] via-[#E8C560] to-[#7a5c1e] bg-clip-text text-transparent leading-tight mb-2"
+          style={{ fontFamily: "'Cinzel', serif" }}
+        >
+          Monitoring, Evaluation &amp; Learning
+        </h1>
+        <p className="text-[#ecfdf5]/60 max-w-2xl leading-relaxed text-sm md:text-base">
+          2026 Priority Actions &amp; 2035 Investment Targets.
+          Applying the <strong className="text-[#C9A84C]">Pareto Principle</strong> to surface the vital few metrics
+          that drive 80% of strategic impact, aligned with the BIRD 2026–2035 Roadmap.
+        </p>
+
+        <div className="flex flex-wrap items-center gap-4 mt-6">
+          <div className="text-xs text-[#ecfdf5]/45 flex items-center gap-1.5">
+            <Clock className="w-3.5 h-3.5" aria-hidden="true" />
+            <time dateTime={new Date().toISOString().split('T')[0]}>
+              Live MEL · {new Date().toLocaleDateString('en-PH', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}
+            </time>
+          </div>
+          <div className="text-xs bg-[rgba(201,168,76,0.08)] border border-[rgba(201,168,76,0.32)] rounded px-3 py-1.5 text-[#C9A84C] flex items-center gap-1.5">
+            <Target className="w-3 h-3" aria-hidden="true" />
+            Pareto Focus: 6 Critical KPIs · 10 Priority Actions · {TOTAL_BUDGET.label} Total Roadmap Budget
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-[1400px] mx-auto px-4 pb-24 flex flex-col gap-10">
+
+        {/* MEL Legend */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+          className="flex flex-wrap gap-4 p-4 bg-[rgba(2,44,34,0.4)] border border-[rgba(201,168,76,0.32)] rounded-lg"
+          role="note" aria-label="MEL status legend"
+        >
+          {[
+            { color: '#10b981', label: 'On Track' },
+            { color: '#C9A84C', label: 'Building / In Progress' },
+            { color: '#3b82f6', label: 'Watch / Early Stage' },
+            { color: '#f59e0b', label: 'At Risk' },
+            { color: '#ef4444', label: 'Critical / Behind' },
+          ].map(({ color, label }) => (
+            <div key={label} className="flex items-center gap-2 text-xs text-[#d1fae5]/70">
+              <div className="w-2.5 h-2.5 rounded-full" style={{ background: color }} aria-hidden="true" />
+              {label}
+            </div>
+          ))}
+          <div className="ml-auto text-[0.7rem] text-[#ecfdf5]/35">
+            Baselines: 2024 PSA / BBOI / MTIT. Targets: BIRD 2026-2035.
+          </div>
+        </motion.div>
+
+        {/* ── PANEL A: Pareto Vital Few KPIs ─────────────────────────────────── */}
+        <motion.section
+          initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}
+          className="bg-[rgba(6,78,59,0.15)] border border-[rgba(201,168,76,0.32)] rounded-2xl p-6 md:p-8 relative overflow-hidden"
+          aria-labelledby="panel-a-title"
+        >
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#7a5c1e] via-[#E8C560] to-[#7a5c1e]" aria-hidden="true" />
+          <div className="flex flex-wrap justify-between items-start gap-4 mb-6">
+            <div>
+              <span className="text-[0.68rem] font-bold tracking-widest uppercase text-[#C9A84C] block mb-1">Panel A · Pareto Vital Few</span>
+              <h2 id="panel-a-title" className="text-xl md:text-2xl font-bold text-white" style={{ fontFamily: "'Cinzel', serif" }}>
+                Key Investment Targets — 2035 Vision
+              </h2>
+              <div className="w-10 h-1 bg-gradient-to-r from-[#7a5c1e] via-[#E8C560] to-[#7a5c1e] rounded-full mt-2" aria-hidden="true" />
+            </div>
+            <span className="text-xs text-[#a7f3d0]/70 bg-[rgba(6,78,59,0.4)] border border-[rgba(201,168,76,0.32)] rounded-full px-3 py-1">
+              6 headline KPIs · Phase 1 progress
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
+            {PARETO_KPIS.map((kpi, i) => (
+              <motion.article
+                key={kpi.id}
+                initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}
+                className="bg-[rgba(2,44,34,0.6)] border border-[rgba(201,168,76,0.32)] rounded-xl p-5 text-center hover:-translate-y-1 hover:border-[rgba(201,168,76,0.55)] transition-all duration-300 relative overflow-hidden"
+                aria-label={`${kpi.label}: ${kpi.current}, target ${kpi.target}`}
+              >
+                <div className={`absolute top-0 left-0 right-0 h-0.5 ${kpi.status === 'on-track' ? 'bg-gradient-to-r from-[#10b981] to-[#6ee7b7]' : 'bg-gradient-to-r from-[#3b82f6] to-[#93c5fd]'}`} aria-hidden="true" />
+                <CircularProgress progress={kpi.progress} color={kpi.ringColor} />
+                <div className="text-xs font-bold text-white mb-1 leading-tight" style={{ fontFamily: "'Cinzel', serif" }}>{kpi.label}</div>
+                <div className="text-xs text-[#6ee7b7] font-semibold mb-0.5">
+                  {kpi.current} <span className="text-[0.65rem] opacity-60">{kpi.currentSub}</span>
+                </div>
+                <div className="text-[0.68rem] text-[#ecfdf5]/40 leading-tight">Target: {kpi.target}</div>
+                <span className={`inline-flex items-center gap-1 text-[0.65rem] font-bold px-2 py-0.5 rounded-full mt-2 ${kpi.delta.includes('▲') ? 'bg-[rgba(16,185,129,0.15)] text-[#10b981]' : 'bg-[rgba(245,158,11,0.15)] text-[#f59e0b]'}`}>
+                  {kpi.delta}
+                </span>
+                <div className="text-[0.6rem] text-[#ecfdf5]/28 mt-2">{kpi.source}</div>
+              </motion.article>
+            ))}
+          </div>
+        </motion.section>
+
+        {/* ── PANEL B: BSC Leverage Points ────────────────────────────────────── */}
+        <motion.section
+          initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}
+          className="bg-[rgba(6,78,59,0.15)] border border-[rgba(201,168,76,0.32)] rounded-2xl p-6 md:p-8 relative overflow-hidden"
+          aria-labelledby="panel-b-title"
+        >
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#7a5c1e] via-[#E8C560] to-[#7a5c1e]" aria-hidden="true" />
+          <div className="flex flex-wrap justify-between items-start gap-4 mb-6">
+            <div>
+              <span className="text-[0.68rem] font-bold tracking-widest uppercase text-[#C9A84C] block mb-1">Panel B · Balanced Scorecard</span>
+              <h2 id="panel-b-title" className="text-xl md:text-2xl font-bold text-white" style={{ fontFamily: "'Cinzel', serif" }}>
+                Critical Leverage Points — 4 BSC Perspectives
+              </h2>
+              <div className="w-10 h-1 bg-gradient-to-r from-[#7a5c1e] via-[#E8C560] to-[#7a5c1e] rounded-full mt-2" aria-hidden="true" />
+            </div>
+            <span className="text-xs text-[#a7f3d0]/70 bg-[rgba(6,78,59,0.4)] border border-[rgba(201,168,76,0.32)] rounded-full px-3 py-1">
+              LP1–LP5 · Financial · Stakeholder · Internal Process · L&amp;G
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {BSC_POINTS.slice(0, 8).map((pt, i) => (
+              <motion.article
+                key={i}
+                initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}
+                className="bg-[rgba(2,44,34,0.55)] border border-[rgba(201,168,76,0.32)] rounded-xl p-5 relative overflow-hidden flex flex-col gap-3 hover:-translate-y-1 hover:border-[rgba(201,168,76,0.55)] transition-all"
+              >
+                <div className={`absolute top-0 bottom-0 left-0 w-1 ${
+                  pt.color === 'gold'  ? 'bg-gradient-to-b from-[#C9A84C] to-[#7a5c1e]'   :
+                  pt.color === 'blue'  ? 'bg-gradient-to-b from-[#3b82f6] to-[#1e3a8a]'   :
+                  pt.color === 'teal'  ? 'bg-gradient-to-b from-[#0d9488] to-[#134e4a]'   :
+                                         'bg-gradient-to-b from-[#10b981] to-[#065f46]'
+                }`} aria-hidden="true" />
+                <span className="bg-gradient-to-r from-[#7a5c1e] via-[#c9a84c] to-[#7a5c1e] text-[#022c22] text-[0.62rem] font-black tracking-wider uppercase px-2 py-0.5 rounded-full w-fit">
+                  {pt.lp}
+                </span>
+                <span className="text-[0.66rem] font-bold uppercase tracking-wider text-[#ecfdf5]/40">{pt.perspective}</span>
+                <div className="text-sm font-bold text-white leading-tight flex-1" style={{ fontFamily: "'Cinzel', serif" }}>{pt.action}</div>
+                <div className="text-xs text-[#6ee7b7] italic leading-tight">{pt.kpi}</div>
+                <div className="mt-auto">
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-[0.7rem] text-[#ecfdf5]/55">{pt.current}</span>
+                    <span className="text-[0.7rem] font-bold text-[#C9A84C]">{pt.target}</span>
+                  </div>
+                  <div className="h-1 bg-[rgba(255,255,255,0.08)] rounded-sm overflow-hidden" role="progressbar" aria-valuenow={pt.progress} aria-valuemin={0} aria-valuemax={100} aria-label={`${pt.kpi}: ${pt.progress}%`}>
+                    <motion.div
+                      className={`h-full rounded-sm ${
+                        pt.color === 'gold'  ? 'bg-gradient-to-r from-[#C9A84C] to-[#E8C560]'  :
+                        pt.color === 'blue'  ? 'bg-gradient-to-r from-[#3b82f6] to-[#93c5fd]'  :
+                        pt.color === 'teal'  ? 'bg-gradient-to-r from-[#0d9488] to-[#6ee7b7]'  :
+                                               'bg-gradient-to-r from-[#10b981] to-[#6ee7b7]'
+                      }`}
+                      initial={{ width: 0 }} whileInView={{ width: `${pt.progress}%` }} viewport={{ once: true }}
+                      transition={{ duration: 1.6, ease: [0.4, 0, 0.2, 1] }}
+                    />
+                  </div>
+                  <div className="flex justify-between items-center mt-1.5">
+                    <StatusBadge status={pt.status} />
+                    {pt.statusSub && <span className="text-[0.68rem] text-[#ecfdf5]/35 truncate ml-2">{pt.statusSub}</span>}
+                  </div>
+                </div>
+              </motion.article>
+            ))}
+          </div>
+        </motion.section>
+
+        {/* ── PANEL C: Priority Action Board ──────────────────────────────────── */}
+        <motion.section
+          initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}
+          className="bg-[rgba(6,78,59,0.15)] border border-[rgba(201,168,76,0.32)] rounded-2xl p-6 md:p-8 relative overflow-hidden"
+          aria-labelledby="panel-c-title"
+        >
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#7a5c1e] via-[#E8C560] to-[#7a5c1e]" aria-hidden="true" />
+          <div className="flex flex-wrap justify-between items-start gap-4 mb-6">
+            <div>
+              <span className="text-[0.68rem] font-bold tracking-widest uppercase text-[#C9A84C] block mb-1">Panel C · Priority Action Plan 2026</span>
+              <h2 id="panel-c-title" className="text-xl md:text-2xl font-bold text-white" style={{ fontFamily: "'Cinzel', serif" }}>
+                Urgent &amp; Priority Actions — Foundation Phase
+              </h2>
+              <div className="w-10 h-1 bg-gradient-to-r from-[#7a5c1e] via-[#E8C560] to-[#7a5c1e] rounded-full mt-2" aria-hidden="true" />
+            </div>
+            <span className="text-xs text-[#a7f3d0]/70 bg-[rgba(6,78,59,0.4)] border border-[rgba(201,168,76,0.32)] rounded-full px-3 py-1">
+              {counts.critical} Critical · {counts.high} High · 10 total actions
+            </span>
+          </div>
+
+          {/* Summary Cards */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+            {[
+              { color: '#ef4444', val: counts.critical, lbl: 'Critical Actions' },
+              { color: '#f59e0b', val: counts.high,     lbl: 'High Priority'    },
+              { color: '#10b981', val: counts.q2,       lbl: 'Due Q2 2026'     },
+              { color: '#C9A84C', val: counts.inProg,   lbl: 'In Progress'     },
+            ].map(({ color, val, lbl }) => (
+              <div key={lbl} className="bg-[rgba(2,44,34,0.5)] border border-[rgba(201,168,76,0.32)] rounded-lg p-4 text-center relative overflow-hidden">
+                <div className="absolute top-0 left-0 right-0 h-0.5" style={{ background: color }} aria-hidden="true" />
+                <div className="text-2xl font-bold" style={{ color, fontFamily: "'Cinzel', serif" }}>{val}</div>
+                <div className="text-[0.7rem] text-[#a7f3d0]/70 uppercase tracking-wider">{lbl}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Filter Bar */}
+          <div className="flex flex-wrap gap-2 mb-5" role="group" aria-label="Filter actions">
+            {[
+              { key: 'all',      label: 'All Actions' },
+              { key: 'critical', label: '🔴 Critical'  },
+              { key: 'high',     label: '🟡 High'      },
+              { key: 'q2',       label: '📅 Due Q2'    },
+              { key: 'q3',       label: '📅 Due Q3'    },
+              { key: 'q4',       label: '📅 Due Q4'    },
+            ].map(({ key, label }) => (
+              <button
+                key={key}
+                onClick={() => setActionFilter(key)}
+                aria-pressed={actionFilter === key}
+                className={`px-4 py-2 rounded-full text-xs font-semibold border transition-all ${
+                  actionFilter === key
+                    ? 'bg-gradient-to-r from-[#7a5c1e] via-[#c9a84c] to-[#7a5c1e] text-[#022c22] border-[#C9A84C] font-bold'
+                    : 'bg-[rgba(2,44,34,0.6)] border-[rgba(201,168,76,0.32)] text-[#a7f3d0]/80 hover:border-[rgba(201,168,76,0.55)] hover:text-[#C9A84C]'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          {/* Table */}
+          <div className="overflow-x-auto rounded-lg border border-[rgba(201,168,76,0.32)]">
+            <table className="w-full text-sm min-w-[800px]" aria-label="Priority Action Plan 2026">
+              <thead>
+                <tr className="bg-[rgba(201,168,76,0.1)] border-b-2 border-[rgba(201,168,76,0.32)]">
+                  {['Strategic Objective','Programme / Action','Priority','Due','MEL Status','Budget','Lead Unit'].map(h => (
+                    <th key={h} className="p-3 text-left text-[#C9A84C] font-bold text-xs tracking-wider" style={{ fontFamily: "'Cinzel', serif" }} scope="col">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                <AnimatePresence>
+                  {filteredActions.map(action => (
+                    <motion.tr
+                      key={action.id}
+                      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                      className="border-b border-[rgba(201,168,76,0.08)] hover:bg-[rgba(201,168,76,0.05)] transition-colors"
+                    >
+                      <td className="p-4 align-top">
+                        <span className="inline-block bg-[rgba(201,168,76,0.12)] border border-[rgba(201,168,76,0.32)] rounded px-1.5 py-0.5 text-[0.65rem] text-[#C9A84C] font-bold">{action.lp}</span>
+                        <div className="font-semibold text-white mt-1">{action.objective}</div>
+                        <div className="text-xs text-[#d1fae5]/65 mt-1 max-w-xs">{action.desc}</div>
+                      </td>
+                      <td className="p-4 align-top max-w-xs">
+                        <div className="font-bold text-white">{action.action}</div>
+                        <div className="text-xs text-[#d1fae5]/65 mt-1 line-clamp-3">{action.actionDesc}</div>
+                      </td>
+                      <td className="p-4 align-top text-center"><PriorityBadge priority={action.priority} /></td>
+                      <td className="p-4 align-top text-center text-xs text-[#6ee7b7] font-semibold whitespace-nowrap">{action.due}</td>
+                      <td className="p-4 align-top"><StatusBadge status={action.status} /></td>
+                      <td className="p-4 align-top text-right font-bold text-[#C9A84C] whitespace-nowrap" style={{ fontFamily: "'Cinzel', serif" }}>{action.budget}</td>
+                      <td className="p-4 align-top">
+                        <div className="text-xs font-bold text-white">{action.lead}</div>
+                        <div className="text-xs text-[#a7f3d0]/80">{action.support}</div>
+                      </td>
+                    </motion.tr>
+                  ))}
+                </AnimatePresence>
+                {filteredActions.length === 0 && (
+                  <tr>
+                    <td colSpan={7} className="text-center py-8 text-[#ecfdf5]/40 text-sm">No actions match this filter.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </motion.section>
+
+        {/* ── PANEL D: Feedback Loop Health Monitor ───────────────────────────── */}
+        <motion.section
+          initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}
+          className="bg-[rgba(6,78,59,0.15)] border border-[rgba(201,168,76,0.32)] rounded-2xl p-6 md:p-8 relative overflow-hidden"
+          aria-labelledby="panel-d-title"
+        >
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#7a5c1e] via-[#E8C560] to-[#7a5c1e]" aria-hidden="true" />
+          <div className="flex flex-wrap justify-between items-start gap-4 mb-6">
+            <div>
+              <span className="text-[0.68rem] font-bold tracking-widest uppercase text-[#C9A84C] block mb-1">Panel D · Systems Thinking MEL</span>
+              <h2 id="panel-d-title" className="text-xl md:text-2xl font-bold text-white" style={{ fontFamily: "'Cinzel', serif" }}>
+                Feedback Loop Health Monitor
+              </h2>
+              <div className="w-10 h-1 bg-gradient-to-r from-[#7a5c1e] via-[#E8C560] to-[#7a5c1e] rounded-full mt-2" aria-hidden="true" />
+            </div>
+            <span className="text-xs text-[#a7f3d0]/70 bg-[rgba(6,78,59,0.4)] border border-[rgba(201,168,76,0.32)] rounded-full px-3 py-1">
+              {reinforcing} reinforcing · {balancing} balancing
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {FEEDBACK_LOOPS.map((loop, i) => (
+              <motion.article
+                key={loop.id}
+                initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}
+                className="bg-[rgba(2,44,34,0.55)] border border-[rgba(201,168,76,0.32)] rounded-xl p-5 relative overflow-hidden hover:-translate-y-1 transition-all"
+              >
+                <div
+                  className={`text-3xl font-black leading-none mb-1 ${loop.type === 'reinforcing' ? 'text-[#10b981]' : 'text-[#C9A84C]'}`}
+                  style={{ fontFamily: "'Cinzel', serif" }}
+                  aria-label={`Loop ${loop.id}: ${loop.type}`}
+                >
+                  {loop.id}
+                </div>
+                <span className={`text-[0.6rem] font-bold uppercase tracking-wider px-2 py-0.5 rounded inline-block mb-2 ${
+                  loop.type === 'reinforcing'
+                    ? 'bg-[rgba(16,185,129,0.15)] text-[#10b981] border border-[rgba(16,185,129,0.3)]'
+                    : 'bg-[rgba(201,168,76,0.15)] text-[#C9A84C] border border-[rgba(201,168,76,0.32)]'
+                }`}>{loop.type}</span>
+                <div className="text-xs font-bold text-white mb-2 leading-tight">{loop.name}</div>
+                <div
+                  className="h-1 bg-[rgba(255,255,255,0.06)] rounded-sm overflow-hidden my-2"
+                  role="progressbar" aria-valuenow={loop.progress} aria-valuemin={0} aria-valuemax={100}
+                  aria-label={`${loop.name}: ${loop.progress}% activation`}
+                >
+                  <motion.div
+                    className={`h-full rounded-sm ${
+                      loop.color === 'green' ? 'bg-gradient-to-r from-[#10b981] to-[#6ee7b7]' :
+                      loop.color === 'gold'  ? 'bg-gradient-to-r from-[#7a5c1e] via-[#c9a84c] to-[#7a5c1e]' :
+                      'bg-gradient-to-r from-[#3b82f6] to-[#93c5fd]'
+                    }`}
+                    initial={{ width: 0 }} whileInView={{ width: `${loop.progress}%` }} viewport={{ once: true }}
+                    transition={{ duration: 1.6, ease: [0.4, 0, 0.2, 1] }}
+                  />
+                </div>
+                <div className="text-xs text-[#d1fae5]/60 leading-relaxed mt-2">{loop.desc}</div>
+                <div className="flex items-center justify-between mt-3">
+                  <span className="text-xs text-[#ecfdf5]/55">{loop.activation}</span>
+                  <span className={`text-xs font-bold px-2 py-0.5 rounded border ${
+                    loop.status === 'active'
+                      ? 'bg-[rgba(16,185,129,0.12)] text-[#10b981] border-[rgba(16,185,129,0.25)]'
+                      : loop.status === 'building'
+                      ? 'bg-[rgba(245,158,11,0.12)] text-[#f59e0b] border-[rgba(245,158,11,0.25)]'
+                      : 'bg-[rgba(59,130,246,0.12)] text-[#93c5fd] border-[rgba(59,130,246,0.25)]'
+                  }`}>{loop.health}</span>
+                </div>
+              </motion.article>
+            ))}
+          </div>
+        </motion.section>
+
+        {/* ── PANEL E: Phase Progress Tracker ─────────────────────────────────── */}
+        <motion.section
+          initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}
+          className="bg-[rgba(6,78,59,0.15)] border border-[rgba(201,168,76,0.32)] rounded-2xl p-6 md:p-8 relative overflow-hidden"
+          aria-labelledby="panel-e-title"
+        >
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#7a5c1e] via-[#E8C560] to-[#7a5c1e]" aria-hidden="true" />
+          <div className="flex flex-wrap justify-between items-start gap-4 mb-6">
+            <div>
+              <span className="text-[0.68rem] font-bold tracking-widest uppercase text-[#C9A84C] block mb-1">Panel E · Implementation Roadmap</span>
+              <h2 id="panel-e-title" className="text-xl md:text-2xl font-bold text-white" style={{ fontFamily: "'Cinzel', serif" }}>
+                Phase Progress Tracker — 2026–2035
+              </h2>
+              <div className="w-10 h-1 bg-gradient-to-r from-[#7a5c1e] via-[#E8C560] to-[#7a5c1e] rounded-full mt-2" aria-hidden="true" />
+            </div>
+            <span className="text-xs text-[#a7f3d0]/70 bg-[rgba(6,78,59,0.4)] border border-[rgba(201,168,76,0.32)] rounded-full px-3 py-1">
+              {TOTAL_BUDGET.label} total · 3 phases
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {PHASES.map((phase, i) => (
+              <motion.article
+                key={phase.num}
+                initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.12 }}
+                className="bg-[rgba(2,44,34,0.55)] border border-[rgba(201,168,76,0.32)] rounded-xl p-5 relative overflow-hidden"
+              >
+                <div
+                  className="text-4xl font-black text-[#C9A84C] opacity-20 absolute top-4 right-5 select-none"
+                  style={{ fontFamily: "'Cinzel', serif" }} aria-hidden="true"
+                >
+                  {phase.num}
+                </div>
+                <div className="text-sm font-bold text-white mb-0.5" style={{ fontFamily: "'Cinzel', serif" }}>{phase.title}</div>
+                <div className="text-xs text-[#6ee7b7] font-medium mb-3">{phase.years}</div>
+                <div className="text-lg font-bold text-[#C9A84C] mb-1" style={{ fontFamily: "'Cinzel', serif" }}>{phase.budget}</div>
+                <div className="text-[0.65rem] text-[#ecfdf5]/35 mb-3">{phase.focus}</div>
+                <StatusBadge status={phase.statusClass === 'in-progress' ? 'In Progress' : phase.statusClass === 'upcoming' ? 'Planned' : 'Pre-Dev'} />
+
+                <div
+                  className="h-1.5 bg-[rgba(255,255,255,0.06)] rounded-full overflow-hidden my-3"
+                  role="progressbar" aria-valuenow={phase.progress} aria-valuemin={0} aria-valuemax={100}
+                  aria-label={`Phase ${phase.num} progress: ${phase.progress}%`}
+                >
+                  <motion.div
+                    className={`h-full rounded-full ${
+                      phase.num === '01' ? 'bg-gradient-to-r from-[#10b981] to-[#6ee7b7]'  :
+                      phase.num === '02' ? 'bg-gradient-to-r from-[#3b82f6] to-[#93c5fd]'  :
+                                           'bg-gradient-to-r from-[#8b5cf6] to-[#c4b5fd]'
+                    }`}
+                    initial={{ width: 0 }} whileInView={{ width: `${phase.progress}%` }} viewport={{ once: true }}
+                    transition={{ duration: 1.6, ease: [0.4, 0, 0.2, 1] }}
+                  />
+                </div>
+                <div className="text-xs text-[#ecfdf5]/40 text-right mb-4">{phase.progress}% complete</div>
+
+                <ul className="flex flex-col gap-1.5">
+                  {phase.milestones.map((m, idx) => (
+                    <li key={idx} className="flex items-start gap-2 text-xs text-[#d1fae5]/75">
+                      <span
+                        className={`w-2 h-2 rounded-full flex-shrink-0 mt-0.5 ${
+                          m.status === 'active' ? 'bg-[#C9A84C] animate-pulse' :
+                          m.status === 'done'   ? 'bg-[#10b981]' : 'bg-[#ecfdf5]/20'
+                        }`}
+                        aria-hidden="true"
+                      />
+                      <span className={m.status === 'done' ? 'text-[#d1fae5]/40 line-through' : ''}>
+                        {m.text}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </motion.article>
+            ))}
+          </div>
+        </motion.section>
+
+      </main>
+
+      {/* Footer */}
+      <footer className="text-center py-8 border-t border-[rgba(201,168,76,0.32)] mt-8">
+        <p className="text-xs text-[#ecfdf5]/30">
+          © 2026 BARMM · Ministry of Trade, Investments and Tourism ·{' '}
+          <span className="text-[#C9A84C]">The Emerging Bangsamoro</span> · Investment Roadmap 2026–2035
+        </p>
+        <p className="text-[0.68rem] text-[#ecfdf5]/20 mt-1">
+          Data sources: PSA, BBOI, BEZA, MTIT, MENRE (2024 baselines). Targets per BIRD 2026–2035 &amp; BDP 2023–2028.
+        </p>
+      </footer>
+
+      {/* AI Chat slide-in */}
+      <AnimatePresence>
+        {showAIChat && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
+              onClick={() => setShowAIChat(false)}
+              aria-hidden="true"
+            />
+            <AIStrategistChat onClose={() => setShowAIChat(false)} />
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* AI FAB */}
+      <AnimatePresence>
+        {!showAIChat && (
+          <motion.button
+            initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }}
+            whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.95 }}
+            onClick={() => setShowAIChat(true)}
+            aria-label="Open BIRD AI Strategy Assistant"
+            className="fixed bottom-6 right-6 z-40 w-14 h-14 rounded-full bg-[#022c22]/90 backdrop-blur shadow-xl shadow-[#C9A84C]/40 flex items-center justify-center border-2 border-[#C9A84C]/50 hover:border-[#C9A84C] transition"
+          >
+            <AIAvatar size={48} />
+          </motion.button>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
+export default MELDashboard;
