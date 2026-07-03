@@ -19,7 +19,7 @@ import {
   Cpu,
   HelpCircle,
   ChevronDown,
-  ClipboardCheck // Added for Validation Survey
+  ClipboardCheck
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -47,8 +47,18 @@ const mainMenuItems = [
   { id: 'templates', label: 'Templates Library', icon: Layers, description: 'Reusable Plan Templates' },
   { id: 'team', label: 'Team Collaboration', icon: Users, description: 'Share & Collaborate' },
   { id: 'export', label: 'Plan Generator', icon: FileText, description: 'Export Reports' },
-  // Added Validation Survey
-  { id: 'validation', label: 'Validation Survey', icon: ClipboardCheck, description: 'BIRD 2026-2035 Feedback' },
+];
+
+// ✅ Special item for Validation Survey (highlighted)
+const specialItems = [
+  { 
+    id: 'validation', 
+    label: 'Validation Survey', 
+    icon: ClipboardCheck, 
+    description: 'BIRD 2026-2035 Feedback',
+    badge: 'NEW',
+    highlight: true
+  },
 ];
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -69,6 +79,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   const NavItem = ({ item, isSubItem = false }: { item: any, isSubItem?: boolean }) => {
     const Icon = item.icon;
     const isActive = activeView === item.id;
+    const isHighlighted = item.highlight;
     
     return (
       <button
@@ -79,21 +90,41 @@ const Sidebar: React.FC<SidebarProps> = ({
         className={cn(
           "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group relative",
           isActive 
-            ? "bg-cyan-600 text-white shadow-lg shadow-cyan-900/20" 
-            : "text-slate-400 hover:bg-slate-800 hover:text-slate-100",
+            ? isHighlighted
+              ? "bg-emerald-600 text-white shadow-lg shadow-emerald-900/20"
+              : "bg-cyan-600 text-white shadow-lg shadow-cyan-900/20"
+            : isHighlighted
+              ? "text-emerald-400 hover:bg-emerald-900/20 hover:text-emerald-300 border border-emerald-500/20"
+              : "text-slate-400 hover:bg-slate-800 hover:text-slate-100",
           isSubItem && !isCollapsed ? "pl-9 py-2" : ""
         )}
       >
         <Icon className={cn(
           "w-5 h-5 flex-shrink-0 transition-colors",
-          isActive ? "text-white" : "group-hover:text-cyan-400"
+          isActive 
+            ? "text-white" 
+            : isHighlighted
+              ? "group-hover:text-emerald-300"
+              : "group-hover:text-cyan-400"
         )} />
         
         {(!isCollapsed || isMobileMenuOpen) && (
-          <div className="text-left overflow-hidden">
-            <p className="text-sm font-semibold truncate leading-none mb-1">{item.label}</p>
+          <div className="text-left overflow-hidden flex-1">
+            <div className="flex items-center gap-2">
+              <p className="text-sm font-semibold truncate leading-none mb-1">{item.label}</p>
+              {item.badge && (
+                <span className="px-1.5 py-0.5 text-[9px] font-bold bg-emerald-500 text-white rounded-full uppercase tracking-wider">
+                  {item.badge}
+                </span>
+              )}
+            </div>
             {!isSubItem && (
-              <p className={cn("text-[10px] truncate", isActive ? "text-cyan-100" : "text-slate-500")}>
+              <p className={cn(
+                "text-[10px] truncate", 
+                isActive 
+                  ? isHighlighted ? "text-emerald-100" : "text-cyan-100"
+                  : isHighlighted ? "text-emerald-500/70" : "text-slate-500"
+              )}>
                 {item.description}
               </p>
             )}
@@ -102,7 +133,14 @@ const Sidebar: React.FC<SidebarProps> = ({
 
         {isCollapsed && !isMobileMenuOpen && (
           <div className="absolute left-full ml-4 px-3 py-2 bg-slate-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 border border-slate-700 shadow-xl">
-            <p className="font-semibold text-sm">{item.label}</p>
+            <div className="flex items-center gap-2">
+              <p className="font-semibold text-sm">{item.label}</p>
+              {item.badge && (
+                <span className="px-1.5 py-0.5 text-[9px] font-bold bg-emerald-500 text-white rounded-full uppercase tracking-wider">
+                  {item.badge}
+                </span>
+              )}
+            </div>
             <p className="text-slate-400 text-[10px] mt-0.5">{item.description}</p>
           </div>
         )}
@@ -132,7 +170,9 @@ const Sidebar: React.FC<SidebarProps> = ({
             <div className="w-9 h-9 rounded-full overflow-hidden ring-2 ring-cyan-400/40 flex-shrink-0 shadow-lg">
               <img
                 src="https://rgvteytgkugdqdodedxq.databasepad.com/storage/v1/object/public/bird-images/public/MTIT%20Logo.webp"
-                alt="BIRD 2026-2035" className="w-full h-full object-cover" />
+                alt="BIRD 2026-2035" 
+                className="w-full h-full object-cover" 
+              />
             </div>
             {(!isCollapsed || isMobileMenuOpen) && (
               <h1 className="font-bold text-sm tracking-tight text-white whitespace-nowrap">
@@ -160,10 +200,25 @@ const Sidebar: React.FC<SidebarProps> = ({
 
         {/* Navigation */}
         <nav className="flex-1 py-4 overflow-y-auto custom-scrollbar px-3 space-y-1">
+          {/* Main Menu Items */}
           {mainMenuItems.map((item) => (
             <NavItem key={item.id} item={item} />
           ))}
 
+          {/* ✅ Special Items Section (Validation Survey) */}
+          <div className="my-4 border-t border-slate-800/50 pt-4">
+            <p className={cn(
+              "text-[10px] uppercase tracking-widest font-bold mb-2 px-3",
+              !isCollapsed || isMobileMenuOpen ? "text-emerald-400" : "sr-only"
+            )}>
+              Special
+            </p>
+            {specialItems.map((item) => (
+              <NavItem key={item.id} item={item} />
+            ))}
+          </div>
+
+          {/* Settings & Tutorial */}
           <div className="my-4 border-t border-slate-800/50 pt-4">
             <NavItem item={{ id: 'settings', label: 'Settings', icon: Settings, description: 'Profile, AI, Integrations' }} />
 
