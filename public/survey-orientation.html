@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<meta name="theme-color" content="#022c22">
+<meta name="description" content="BIRD 2026-2035 Validation Survey — Staff Orientation Briefing for BOI-MTIT, BARMM">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<title>BIRD Validation Survey — Staff Orientation Briefing</title>
+<style>
+:root{
+  --primary-green:#064e3b;--dark-green:#022c22;--mid-green:#065f46;
+  --light-green:#6ee7b7;--cream:#ecfdf5;
+  --text-dark:#0f172a;--text-muted:#64748b;
+  --gold:#C9A84C;--gold-light:#E8C560;--gold-dark:#8B6C28;
+  --gold-border:rgba(201,168,76,0.32);--gold-border-strong:rgba(201,168,76,0.55);
+  --gold-glow:rgba(201,168,76,0.20);
+  --gold-grad:linear-gradient(135deg,#7a5c1e 0%,#c9a84c 35%,#e8c560 50%,#c9a84c 65%,#7a5c1e 100%);
+  --focus-ring:0 0 0 3px rgba(201,168,76,.5);
+  --touch-target:44px;
+  --status-critical:#ef4444;--status-high:#f59e0b;--status-on-track:#10b981;
+  --status-watch:#3b82f6;--status-purple:#8b5cf6;
+  --status-critical-bg:rgba(239,68,68,.12);--status-high-bg:rgba(245,158,11,.12);
+  --status-on-track-bg:rgba(16,185,129,.12);--status-watch-bg:rgba(59,130,246,.12);
+  --s1:.25rem;--s2:.5rem;--s3:.75rem;--s4:1rem;--s5:1.25rem;--s6:1.5rem;--s8:2rem;--s10:2.5rem;--s12:3rem;
+  --r-sm:.5rem;--r-md:.875rem;--r-lg:1.25rem;--r-xl:1.5rem;
+}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;}}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;font-size:16px;}
+body{
+  font-family:'DM Sans',sans-serif;
+  background:linear-gradient(160deg,#011a12 0%,#022c22 45%,#0a1628 100%);
+  min-height:100vh;color:var(--cream);
+  background-attachment:fixed;overflow-x:hidden;
+  line-height:1.5;-webkit-font-smoothing:antialiased;
+}
+.skip-link{position:absolute;top:-40px;left:0;background:var(--gold);color:var(--dark-green);padding:8px 16px;text-decoration:none;z-index:9999;font-weight:bold;border-radius:0 0 4px 4px;}
+.skip-link:focus{top:0;}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+
+.site-nav{background:rgba(2,44,34,.97);backdrop-filter:blur(18px);position:sticky;top:0;width:100%;z-index:200;border-bottom:2px solid var(--gold-border);transition:box-shadow .4s;}
+.site-nav.scrolled{box-shadow:0 4px 30px rgba(0,0,0,.5);}
+.nav-inner{max-width:1400px;margin:0 auto;padding:.65rem 1rem;display:flex;align-items:center;gap:var(--s3);min-height:var(--touch-target);}
+.nav-logo-wrap{display:flex;align-items:center;gap:var(--s3);text-decoration:none;flex-shrink:0;}
+.nav-logo-wrap img{height:40px;width:auto;object-fit:contain;}
+.nav-title{display:none;font-family:'Cinzel',serif;font-size:.72rem;color:var(--gold);font-weight:700;letter-spacing:.06em;line-height:1.3;}
+.nav-right{margin-left:auto;display:flex;align-items:center;gap:var(--s3);flex-wrap:wrap;}
+.nav-back{color:var(--light-green);text-decoration:none;font-size:.82rem;font-weight:500;display:flex;align-items:center;gap:.4rem;transition:color .2s;padding:.4rem .6rem;border-radius:var(--r-sm);border:1px solid var(--gold-border);}
+.nav-back:hover{color:var(--gold);border-color:var(--gold-border-strong);}
+.nav-back.active-nav{color:var(--gold);border-color:var(--gold-border-strong);background:rgba(201,168,76,.08);}
+.live-badge{display:flex;align-items:center;gap:.4rem;background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.3);border-radius:2rem;padding:.3rem .8rem;font-size:.72rem;font-weight:700;color:#10b981;letter-spacing:.04em;text-transform:uppercase;}
+.live-dot{width:7px;height:7px;background:#10b981;border-radius:50%;animation:livePulse 2s infinite;}
+@keyframes livePulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.5;transform:scale(1.3);}}
+@media(min-width:768px){.nav-title{display:block;}.nav-inner{padding:.55rem 2rem;}.nav-logo-wrap img{height:48px;}}
+
+.dash-header{max-width:1400px;margin:0 auto;padding:var(--s8) var(--s4) var(--s6);position:relative;}
+.dash-header::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:200px;height:3px;background:var(--gold-grad);border-radius:2px;}
+.dash-eyebrow{display:inline-block;background:rgba(201,168,76,.10);border:1px solid var(--gold-border-strong);color:var(--gold);padding:.3rem 1rem;border-radius:2rem;font-size:.68rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;margin-bottom:var(--s4);}
+.dash-title{font-family:'Cinzel',serif;font-size:clamp(1.4rem,4vw,2.4rem);font-weight:700;background:var(--gold-grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.2;margin-bottom:var(--s2);}
+.dash-subtitle{font-size:.92rem;color:rgba(255,255,255,.6);max-width:780px;line-height:1.6;}
+.dash-meta-row{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s4);margin-top:var(--s4);}
+.dash-timestamp{font-size:.78rem;color:rgba(255,255,255,.45);display:flex;align-items:center;gap:.4rem;}
+.pareto-note{font-size:.76rem;background:rgba(201,168,76,.08);border:1px solid var(--gold-border);border-radius:var(--r-sm);padding:.35rem .85rem;color:var(--gold);display:flex;align-items:center;gap:.4rem;}
+@media(min-width:768px){.dash-header{padding:var(--s10) var(--s8) var(--s8);}.dash-header::before{width:280px;height:4px;}}
+
+.dash-container{max-width:1400px;margin:0 auto;padding:0 var(--s4) var(--s12);display:flex;flex-direction:column;gap:var(--s8);}
+@media(min-width:768px){.dash-container{padding:0 var(--s8) var(--s12);}}
+
+.section-head{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:var(--s3);margin-bottom:var(--s5);}
+.section-label-wrap{}
+.section-kicker{font-size:.68rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);display:block;margin-bottom:.3rem;}
+.section-title{font-family:'Cinzel',serif;font-size:clamp(1rem,2.5vw,1.35rem);font-weight:700;color:white;line-height:1.2;}
+.section-rule{width:40px;height:3px;background:var(--gold-grad);border-radius:2px;margin-top:var(--s2);}
+.section-count{font-size:.72rem;color:rgba(167,243,208,.7);background:rgba(6,78,59,.4);border:1px solid var(--gold-border);border-radius:2rem;padding:.25rem .75rem;white-space:nowrap;align-self:flex-start;}
+
+.dash-section{background:rgba(6,78,59,.15);border:1px solid var(--gold-border);border-radius:var(--r-xl);padding:var(--s6);position:relative;overflow:hidden;}
+.dash-section::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--gold-grad);}
+.dash-section::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 80% 0%,rgba(201,168,76,.04) 0%,transparent 60%);pointer-events:none;}
+@media(min-width:768px){.dash-section{padding:var(--s8);}}
+
+.exec-grid{display:grid;grid-template-columns:1fr;gap:var(--s4);}
+@media(min-width:640px){.exec-grid{grid-template-columns:repeat(2,1fr);}}
+@media(min-width:1100px){.exec-grid{grid-template-columns:repeat(4,1fr);}}
+.exec-card{background:rgba(2,44,34,.6);border:1px solid var(--gold-border);border-radius:var(--r-lg);padding:var(--s5);position:relative;overflow:hidden;transition:transform .3s,border-color .3s;}
+.exec-card:hover{transform:translateY(-3px);border-color:var(--gold-border-strong);}
+.exec-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.exec-card.c1::before{background:linear-gradient(90deg,#10b981,#6ee7b7);}
+.exec-card.c2::before{background:linear-gradient(90deg,#3b82f6,#93c5fd);}
+.exec-card.c3::before{background:linear-gradient(90deg,#8b5cf6,#c4b5fd);}
+.exec-card.c4::before{background:var(--gold-grad);}
+.exec-num{font-family:'Cinzel',serif;font-size:2.2rem;font-weight:900;line-height:1;margin-bottom:.3rem;}
+.exec-card.c1 .exec-num{color:#10b981;}
+.exec-card.c2 .exec-num{color:#3b82f6;}
+.exec-card.c3 .exec-num{color:#8b5cf6;}
+.exec-card.c4 .exec-num{color:var(--gold);}
+.exec-lbl{font-size:.72rem;color:rgba(167,243,208,.7);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.4rem;}
+.exec-desc{font-size:.8rem;color:rgba(236,253,245,.85);line-height:1.5;}
+
+.care-grid{display:grid;grid-template-columns:1fr;gap:var(--s4);}
+@media(min-width:640px){.care-grid{grid-template-columns:repeat(2,1fr);}}
+@media(min-width:1100px){.care-grid{grid-template-columns:repeat(4,1fr);}}
+.care-card{background:rgba(2,44,34,.55);border:1px solid var(--gold-border);border-radius:var(--r-lg);padding:var(--s5);position:relative;overflow:hidden;transition:transform .3s,border-color .3s;display:flex;flex-direction:column;gap:var(--s3);}
+.care-card:hover{transform:translateY(-3px);border-color:var(--gold-border-strong);}
+.care-card::after{content:'';position:absolute;top:0;bottom:0;left:0;width:3px;}
+.care-card.c-context::after{background:linear-gradient(to bottom,#10b981,#065f46);}
+.care-card.c-action::after{background:linear-gradient(to bottom,#3b82f6,#1e3a8a);}
+.care-card.c-realtime::after{background:linear-gradient(to bottom,#8b5cf6,#5b21b6);}
+.care-card.c-evidence::after{background:linear-gradient(to bottom,var(--gold),var(--gold-dark));}
+.care-letter{font-family:'Cinzel',serif;font-size:2.5rem;font-weight:900;line-height:1;}
+.care-card.c-context .care-letter{color:#10b981;}
+.care-card.c-action .care-letter{color:#3b82f6;}
+.care-card.c-realtime .care-letter{color:#8b5cf6;}
+.care-card.c-evidence .care-letter{color:var(--gold);}
+.care-title{font-family:'Cinzel',serif;font-size:.95rem;font-weight:700;color:white;}
+.care-desc{font-size:.78rem;color:rgba(236,253,245,.75);line-height:1.5;}
+
+.tech-grid{display:grid;grid-template-columns:1fr;gap:var(--s5);}
+@media(min-width:768px){.tech-grid{grid-template-columns:repeat(2,1fr);}}
+.tech-card{background:rgba(2,44,34,.55);border:1px solid var(--gold-border);border-radius:var(--r-lg);padding:var(--s5);position:relative;overflow:hidden;}
+.tech-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--gold-grad);}
+.tech-title{font-family:'Cinzel',serif;font-size:1rem;font-weight:700;color:var(--gold);margin-bottom:var(--s3);display:flex;align-items:center;gap:.5rem;}
+.tech-icon{width:24px;height:24px;color:var(--gold-light);}
+.tech-list{list-style:none;display:flex;flex-direction:column;gap:.5rem;}
+.tech-list li{font-size:.82rem;color:rgba(236,253,245,.85);padding-left:1.2rem;position:relative;line-height:1.5;}
+.tech-list li::before{content:'▸';position:absolute;left:0;color:var(--gold);}
+.tech-list code{background:rgba(201,168,76,.12);border:1px solid var(--gold-border);padding:.05rem .4rem;border-radius:.2rem;font-size:.72rem;color:var(--gold-light);}
+
+.sections-timeline{display:flex;flex-direction:column;gap:var(--s3);}
+.section-item{background:rgba(2,44,34,.55);border:1px solid var(--gold-border);border-radius:var(--r-md);padding:var(--s4) var(--s5);display:grid;grid-template-columns:auto 1fr auto;gap:var(--s4);align-items:center;transition:background .2s,border-color .2s;}
+.section-item:hover{background:rgba(201,168,76,.05);border-color:var(--gold-border-strong);}
+.section-num{font-family:'Cinzel',serif;font-size:1.4rem;font-weight:900;color:var(--gold);min-width:40px;text-align:center;}
+.section-body{}
+.section-name{font-family:'Cinzel',serif;font-size:.92rem;font-weight:700;color:white;margin-bottom:.2rem;}
+.section-detail{font-size:.78rem;color:rgba(236,253,245,.7);line-height:1.5;}
+.section-badge{font-size:.68rem;font-weight:700;padding:.25rem .65rem;border-radius:2rem;white-space:nowrap;}
+.section-badge.survey{background:rgba(16,185,129,.15);color:#6ee7b7;border:1px solid rgba(16,185,129,.3);}
+.section-badge.data{background:rgba(59,130,246,.15);color:#93c5fd;border:1px solid rgba(59,130,246,.3);}
+.section-badge.logic{background:rgba(139,92,246,.15);color:#c4b5fd;border:1px solid rgba(139,92,246,.3);}
+.section-badge.consent{background:rgba(245,158,11,.15);color:#fcd34d;border:1px solid rgba(245,158,11,.3);}
+
+.mel-grid{display:grid;grid-template-columns:1fr;gap:var(--s4);}
+@media(min-width:640px){.mel-grid{grid-template-columns:repeat(2,1fr);}}
+@media(min-width:1000px){.mel-grid{grid-template-columns:repeat(3,1fr);}}
+.mel-card{background:rgba(2,44,34,.55);border:1px solid var(--gold-border);border-radius:var(--r-lg);padding:var(--s5);position:relative;overflow:hidden;transition:transform .3s;}
+.mel-card:hover{transform:translateY(-3px);}
+.mel-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--gold-grad);}
+.mel-icon{font-size:1.8rem;margin-bottom:.5rem;}
+.mel-title{font-family:'Cinzel',serif;font-size:.88rem;font-weight:700;color:white;margin-bottom:.3rem;}
+.mel-desc{font-size:.78rem;color:rgba(236,253,245,.75);line-height:1.5;}
+
+.timeline-phases{display:flex;flex-direction:column;gap:var(--s5);position:relative;}
+.timeline-phases::before{content:'';position:absolute;top:0;bottom:0;left:28px;width:2px;background:var(--gold-border);border-radius:2px;}
+.phase-row{display:grid;grid-template-columns:60px 1fr;gap:var(--s4);position:relative;}
+.phase-marker{width:60px;display:flex;flex-direction:column;align-items:center;gap:.3rem;position:relative;z-index:1;}
+.phase-dot{width:20px;height:20px;border-radius:50%;border:3px solid var(--dark-green);background:var(--gold);box-shadow:0 0 0 3px var(--gold-border-strong);}
+.phase-dot.active{background:#10b981;animation:livePulse 2s infinite;}
+.phase-dot.upcoming{background:rgba(255,255,255,.3);}
+.phase-time{font-size:.68rem;color:var(--gold);font-weight:700;text-align:center;}
+.phase-content{background:rgba(2,44,34,.55);border:1px solid var(--gold-border);border-radius:var(--r-lg);padding:var(--s5);}
+.phase-title{font-family:'Cinzel',serif;font-size:1rem;font-weight:700;color:white;margin-bottom:.3rem;}
+.phase-desc{font-size:.82rem;color:rgba(236,253,245,.8);line-height:1.6;}
+.phase-deliverables{margin-top:.6rem;display:flex;flex-wrap:wrap;gap:.3rem;}
+.phase-tag{font-size:.68rem;background:rgba(201,168,76,.12);border:1px solid var(--gold-border);color:var(--gold-light);padding:.15rem .5rem;border-radius:.2rem;}
+
+.roles-table-wrap{overflow-x:auto;border-radius:var(--r-md);border:1px solid var(--gold-border);}
+.roles-table{width:100%;border-collapse:collapse;font-size:.82rem;min-width:700px;}
+.roles-table thead th{padding:.85rem 1rem;text-align:left;color:var(--gold);font-family:'Cinzel',serif;font-weight:700;font-size:.72rem;letter-spacing:.06em;background:rgba(201,168,76,.1);border-bottom:2px solid var(--gold-border);white-space:nowrap;}
+.roles-table tbody tr{border-bottom:1px solid rgba(201,168,76,.08);transition:background .2s;}
+.roles-table tbody tr:hover{background:rgba(201,168,76,.05);}
+.roles-table tbody td{padding:.85rem 1rem;vertical-align:top;line-height:1.5;color:rgba(236,253,245,.85);}
+.roles-table tbody td:first-child{font-weight:600;color:white;white-space:nowrap;}
+.role-badge{display:inline-block;font-size:.68rem;font-weight:700;padding:.2rem .5rem;border-radius:.2rem;margin-right:.3rem;}
+.role-badge.lead{background:rgba(16,185,129,.15);color:#6ee7b7;border:1px solid rgba(16,185,129,.3);}
+.role-badge.support{background:rgba(59,130,246,.15);color:#93c5fd;border:1px solid rgba(59,130,246,.3);}
+.role-badge.monitor{background:rgba(245,158,11,.15);color:#fcd34d;border:1px solid rgba(245,158,11,.3);}
+
+.risk-grid{display:grid;grid-template-columns:1fr;gap:var(--s4);}
+@media(min-width:640px){.risk-grid{grid-template-columns:repeat(2,1fr);}}
+@media(min-width:1000px){.risk-grid{grid-template-columns:repeat(3,1fr);}}
+.risk-card{background:rgba(2,44,34,.55);border:1px solid var(--gold-border);border-radius:var(--r-lg);padding:var(--s5);position:relative;overflow:hidden;}
+.risk-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.risk-card.high::before{background:var(--status-critical);}
+.risk-card.medium::before{background:var(--status-high);}
+.risk-card.low::before{background:var(--status-on-track);}
+.risk-level{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;padding:.15rem .5rem;border-radius:.2rem;display:inline-block;margin-bottom:.5rem;}
+.risk-card.high .risk-level{background:var(--status-critical-bg);color:var(--status-critical);border:1px solid rgba(239,68,68,.3);}
+.risk-card.medium .risk-level{background:var(--status-high-bg);color:var(--status-high);border:1px solid rgba(245,158,11,.3);}
+.risk-card.low .risk-level{background:var(--status-on-track-bg);color:var(--status-on-track);border:1px solid rgba(16,185,129,.3);}
+.risk-title{font-family:'Cinzel',serif;font-size:.88rem;font-weight:700;color:white;margin-bottom:.3rem;}
+.risk-desc{font-size:.78rem;color:rgba(236,253,245,.75);line-height:1.5;margin-bottom:.5rem;}
+.risk-mitigation{font-size:.75rem;color:var(--gold-light);line-height:1.5;padding-top:.5rem;border-top:1px solid var(--gold-border);}
+.risk-mitigation strong{color:var(--gold);}
+
+.cta-section{background:linear-gradient(135deg,rgba(6,78,59,.4) 0%,rgba(2,44,34,.6) 100%);border:1px solid var(--gold-border-strong);border-radius:var(--r-xl);padding:var(--s8);text-align:center;position:relative;overflow:hidden;}
+.cta-section::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--gold-grad);}
+.cta-title{font-family:'Cinzel',serif;font-size:clamp(1.2rem,3vw,1.8rem);font-weight:700;background:var(--gold-grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:var(--s4);}
+.cta-desc{font-size:.92rem;color:rgba(236,253,245,.85);max-width:700px;margin:0 auto var(--s5);line-height:1.6;}
+.cta-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:var(--s3);}
+.cta-btn{background:var(--gold-grad);color:var(--dark-green);padding:.75rem 1.75rem;border-radius:2rem;text-decoration:none;font-weight:700;font-size:.85rem;transition:transform .3s,box-shadow .3s;display:inline-flex;align-items:center;gap:.5rem;}
+.cta-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(201,168,76,.4);}
+.cta-btn.outline{background:transparent;border:1px solid var(--gold-border-strong);color:var(--gold);}
+.cta-btn.outline:hover{background:rgba(201,168,76,.08);}
+
+.reveal{opacity:0;transform:translateY(18px);transition:opacity .65s ease,transform .65s ease;}
+.reveal.visible{opacity:1;transform:none;}
+.reveal.d1{transition-delay:.08s;}
+.reveal.d2{transition-delay:.16s;}
+.reveal.d3{transition-delay:.24s;}
+
+::-webkit-scrollbar{width:8px;height:8px;}
+::-webkit-scrollbar-track{background:rgba(2,44,34,.5);}
+::-webkit-scrollbar-thumb{background:var(--gold-dark);border-radius:4px;}
+::-webkit-scrollbar-thumb:hover{background:var(--gold);}
+
+@media print{.site-nav{display:none!important;}body{background:white;color:black;}.dash-title,.section-title,.cta-title{color:black!important;-webkit-text-fill-color:black!important;}}
+</style>
+</head>
+<body>
+
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<nav class="site-nav" id="siteNav" role="navigation" aria-label="Main navigation">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo-wrap" aria-label="BARMM MTIT — Home">
+      <img src="https://mtit.bangsamoro.gov.ph/wp-content/uploads/2024/04/MTIT-HEADER-2024.png"
+           alt="Ministry of Trade, Investments and Tourism – BARMM"
+           width="130" height="40" onerror="this.style.display='none'">
+      <span class="nav-title">BIRD 2026–2035<br>Staff Orientation</span>
+    </a>
+    <div class="nav-right">
+      <a href="dashboard.html" class="nav-back" aria-label="Dashboard">Dashboard</a>
+      <a href="roadmap.html" class="nav-back" aria-label="Roadmap">Roadmap</a>
+      <a href="validation-survey.html" class="nav-back" aria-label="Survey">Survey</a>
+      <div class="live-badge" role="status" aria-live="polite">
+        <span class="live-dot" aria-hidden="true"></span>
+        <span>Briefing</span>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<header class="dash-header" role="banner" id="main-content">
+  <div class="dash-eyebrow">Staff Orientation Briefing · BOI-MTIT, BARMM</div>
+  <h1 class="dash-title">BIRD 2026–2035 Validation Survey</h1>
+  <p class="dash-subtitle">A comprehensive briefing for Bureau of Investments staff on the design, methodology, technical architecture, and operational deployment of the strategic validation survey — grounded in the <strong>C.A.R.E.</strong> framework and <strong>Khalifa</strong> stewardship principles.</p>
+  <div class="dash-meta-row">
+    <div class="dash-timestamp">
+      <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6l4 2"/></svg>
+      <span id="liveTime">Loading…</span>
+    </div>
+    <div class="pareto-note">
+      <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+      16 Sections · 60+ Questions · 10-Year Roadmap Validation
+    </div>
+  </div>
+</header>
+
+<main class="dash-container" role="main">
+
+  <!-- PANEL A: EXECUTIVE SUMMARY -->
+  <section class="dash-section reveal" aria-labelledby="exec-title">
+    <div class="section-head">
+      <div class="section-label-wrap">
+        <span class="section-kicker">Panel A · Executive Summary</span>
+        <h2 class="section-title" id="exec-title">Strategic Purpose & Objectives</h2>
+        <div class="section-rule"></div>
+      </div>
+      <span class="section-count">4 Core Objectives</span>
+    </div>
+
+    <div class="exec-grid">
+      <div class="exec-card c1 reveal d1">
+        <div class="exec-num">01</div>
+        <div class="exec-lbl">Validate Strategic Assumptions</div>
+        <div class="exec-desc">Confirm the SWOT analysis, systems archetypes, and BEIE cluster dynamics with multi-stakeholder input from across the Bangsamoro Economic and Investment Ecosystem.</div>
+      </div>
+      <div class="exec-card c2 reveal d2">
+        <div class="exec-num">02</div>
+        <div class="exec-lbl">Quantify Risk & Resilience</div>
+        <div class="exec-desc">Apply Strat Planner Pro mathematical formulations (Resilience Index, Risk Score, Vulnerability Index) to convert qualitative insights into actionable metrics.</div>
+      </div>
+      <div class="exec-card c3 reveal d3">
+        <div class="exec-num">03</div>
+        <div class="exec-lbl">Inform Implementation</div>
+        <div class="exec-desc">Generate data-driven recommendations for the 3-phase, ₱120–160B roadmap deployment across Foundations, Transformers, Enablers, Connectors, and Financiers.</div>
+      </div>
+      <div class="exec-card c4 reveal d1">
+        <div class="exec-num">04</div>
+        <div class="exec-lbl">Embed Khalifa Stewardship</div>
+        <div class="exec-desc">Ensure all interventions align with Islamic ethical principles, cultural authenticity, and community benefit-sharing — the moral operating system of the roadmap.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PANEL B: C.A.R.E. FRAMEWORK -->
+  <section class="dash-section reveal" aria-labelledby="care-title">
+    <div class="section-head">
+      <div class="section-label-wrap">
+        <span class="section-kicker">Panel B · Guiding Philosophy</span>
+        <h2 class="section-title" id="care-title">The C.A.R.E. Framework</h2>
+        <div class="section-rule"></div>
+      </div>
+      <span class="section-count">4 Pillars · Khalifa-Aligned</span>
+    </div>
+
+    <div class="care-grid">
+      <div class="care-card c-context reveal d1">
+        <div class="care-letter">C</div>
+        <div class="care-title">Context-Specific</div>
+        <div class="care-desc">Grounded in BARMM's unique political, cultural, and geographic realities. Provincial nuances (Maguindanao's services base, Lanao del Sur's agro-industrial corridor, Tawi-Tawi's seaweed dominance) are explicitly integrated into every question.</div>
+      </div>
+      <div class="care-card c-action reveal d2">
+        <div class="care-letter">A</div>
+        <div class="care-title">Action-Oriented</div>
+        <div class="care-desc">Every question maps to a specific leverage point, systems archetype, or implementation bottleneck. Responses feed directly into trigger-based interventions and the Bangsamoro Investment Command Center's adaptive management protocols.</div>
+      </div>
+      <div class="care-card c-realtime reveal d3">
+        <div class="care-letter">R</div>
+        <div class="care-title">Real-Time & Non-Linear</div>
+        <div class="care-desc">Embraces systems thinking through Causal Loop Diagrams (CLDs) and archetype validation. Recognizes that BARMM's economy is a complex adaptive system, not a linear checklist of sectors.</div>
+      </div>
+      <div class="care-card c-evidence reveal d1">
+        <div class="care-letter">E</div>
+        <div class="care-title">Evidence-Based</div>
+        <div class="care-desc">Calibrated against PSA-BARMM baselines, OIC/SMIIC halal standards, ESG frameworks, PDP 2023–2028 targets, and UN SDGs. Mathematical rigor ensures defensible, auditable strategic prioritization.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PANEL C: METHODOLOGY -->
+  <section class="dash-section reveal" aria-labelledby="method-title">
+    <div class="section-head">
+      <div class="section-label-wrap">
+        <span class="section-kicker">Panel C · Survey Methodology</span>
+        <h2 class="section-title" id="method-title">BEIE Cluster Mapping & Mathematical Formulations</h2>
+        <div class="section-rule"></div>
+      </div>
+      <span class="section-count">5 Clusters · 4 SWOT Quadrants</span>
+    </div>
+
+    <div class="tech-grid">
+      <div class="tech-card">
+        <div class="tech-title">
+          <svg class="tech-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+          Strengths — Resilience Index
+        </div>
+        <ul class="tech-list">
+          <li>Formula: <code>RI = (Impact × Likelihood) / 5</code></li>
+          <li>Scale: 1–5 (higher = stronger resilience)</li>
+          <li>Example: Halal legitimacy (I=5, L=5) → RI = 5.0</li>
+          <li>Measures buffering capacity against external shocks</li>
+        </ul>
+      </div>
+      <div class="tech-card">
+        <div class="tech-title">
+          <svg class="tech-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+          Opportunities — Resilience Index
+        </div>
+        <ul class="tech-list">
+          <li>Formula: <code>RI = √(Impact × Likelihood)</code></li>
+          <li>Scale: 1–5 (higher = greater opportunity exploitation)</li>
+          <li>Square root moderates extreme values</li>
+          <li>Example: ASEAN halal market (I=5, L=4) → RI = 4.47</li>
+        </ul>
+      </div>
+      <div class="tech-card">
+        <div class="tech-title">
+          <svg class="tech-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+          Weaknesses — Risk Score
+        </div>
+        <ul class="tech-list">
+          <li>Formula: <code>Risk = Impact × Likelihood</code></li>
+          <li>Scale: 1–25 (higher = greater internal risk)</li>
+          <li>Example: Infrastructure deficits (I=5, L=5) → Risk = 25</li>
+          <li>Identifies binding constraints on growth</li>
+        </ul>
+      </div>
+      <div class="tech-card">
+        <div class="tech-title">
+          <svg class="tech-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.618 5.984A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+          Threats — Vulnerability Index
+        </div>
+        <ul class="tech-list">
+          <li>Formula: <code>VI = (Impact² × Likelihood) / 25</code></li>
+          <li>Scale: 1–5 (higher = greater external vulnerability)</li>
+          <li>Squaring Impact emphasizes severity of shocks</li>
+          <li>Example: Climate change (I=5, L=5) → VI = 5.0</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- PANEL D: TECHNICAL ARCHITECTURE -->
+  <section class="dash-section reveal" aria-labelledby="tech-title">
+    <div class="section-head">
+      <div class="section-label-wrap">
+        <span class="section-kicker">Panel D · Technical Architecture</span>
+        <h2 class="section-title" id="tech-title">Frontend, Backend & Data Pipeline</h2>
+        <div class="section-rule"></div>
+      </div>
+      <span class="section-count">3 Layers · Full Stack</span>
+    </div>
+
+    <div class="tech-grid">
+      <div class="tech-card">
+        <div class="tech-title">
+          <svg class="tech-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+          Frontend — React + TypeScript
+        </div>
+        <ul class="tech-list">
+          <li><code>validation-survey.html</code> — Main survey page</li>
+          <li>16 modular section components (Section1–16)</li>
+          <li>React Hook Form + Zod schema validation</li>
+          <li>shadcn/ui component library (Cinzel + DM Sans)</li>
+          <li>Responsive, accessible, mobile-first design</li>
+        </ul>
+      </div>
+      <div class="tech-card">
+        <div class="tech-title">
+          <svg class="tech-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12H3l9-9 9 9h-2M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/></svg>
+          Backend — Netlify Functions
+        </div>
+        <ul class="tech-list">
+          <li><code>netlify/functions/submit.js</code> — Serverless endpoint</li>
+          <li>Receives POST from frontend, validates payload</li>
+          <li>Generates unique JSON file per response</li>
+          <li>Commits to GitHub repo via API (GITHUB_TOKEN)</li>
+          <li>Supabase fallback for high-volume periods</li>
+        </ul>
+      </div>
+      <div class="tech-card">
+        <div class="tech-title">
+          <svg class="tech-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/></svg>
+          Data Storage — GitHub + Supabase
+        </div>
+        <ul class="tech-list">
+          <li><code>data/responses/</code> — Individual JSON files</li>
+          <li>Each file: timestamp + demographics + responses</li>
+          <li>Immutable audit trail (Git history)</li>
+          <li>Supabase table for aggregated analytics</li>
+          <li>Strat Planner Pro MEL Dashboard ingestion</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- PANEL E: SURVEY SECTIONS -->
+  <section class="dash-section reveal" aria-labelledby="sections-title">
+    <div class="section-head">
+      <div class="section-label-wrap">
+        <span class="section-kicker">Panel E · Survey Structure</span>
+        <h2 class="section-title" id="sections-title">16 Sections — Complete Breakdown</h2>
+        <div class="section-rule"></div>
+      </div>
+      <span class="section-count">60+ Questions</span>
+    </div>
+
+    <div class="sections-timeline">
+      <div class="section-item reveal d1">
+        <div class="section-num">01</div>
+        <div class="section-body">
+          <div class="section-name">BEIE Framework Context</div>
+          <div class="section-detail">Video introduction to the 5-cluster ecosystem. Validates framework comprehension and provincial relevance. Sets the stage for all subsequent sections.</div>
+        </div>
+        <span class="section-badge survey">Survey</span>
+      </div>
+      <div class="section-item reveal d2">
+        <div class="section-num">02</div>
+        <div class="section-body">
+          <div class="section-name">Cross-Cutting Operating Systems</div>
+          <div class="section-detail">Moral Governance, Resilience, Inclusivity, Peace. Validates the "operating system" that determines whether all clusters function effectively. Links to "Shifting the Burden" archetype.</div>
+        </div>
+        <span class="section-badge survey">Survey</span>
+      </div>
+      <div class="section-item reveal d3">
+        <div class="section-num">03</div>
+        <div class="section-body">
+          <div class="section-name">Cluster 1 — Foundations</div>
+          <div class="section-detail">Agriculture, Fisheries, Forestry, Energy. Validates post-harvest loss reduction targets, ZBIP energy interconnection, and climate-smart agriculture interventions.</div>
+        </div>
+        <span class="section-badge survey">Survey</span>
+      </div>
+      <div class="section-item reveal d1">
+        <div class="section-num">04</div>
+        <div class="section-body">
+          <div class="section-name">Cluster 2 — Transformers</div>
+          <div class="section-detail">Halal Industry, Manufacturing, Logistics. Validates BHB certification bottlenecks, Halal Park viability, and OIC/SMIIC accreditation pathways.</div>
+        </div>
+        <span class="section-badge survey">Survey</span>
+      </div>
+      <div class="section-item reveal d2">
+        <div class="section-num">05</div>
+        <div class="section-body">
+          <div class="section-name">Cluster 3 — Enablers</div>
+          <div class="section-detail">Infrastructure, Human Capital, Digital. Validates 59.3% literacy constraint, 85% broadband target, and TESDA-industry alignment programs.</div>
+        </div>
+        <span class="section-badge survey">Survey</span>
+      </div>
+      <div class="section-item reveal d3">
+        <div class="section-num">06</div>
+        <div class="section-body">
+          <div class="section-name">Cluster 4 — Connectors</div>
+          <div class="section-detail">Trade, BIMP-EAGA, UAE/GCC Halal Corridor. Validates export market priorities, cross-border trade formalization, and tourism infrastructure needs.</div>
+        </div>
+        <span class="section-badge survey">Survey</span>
+      </div>
+      <div class="section-item reveal d1">
+        <div class="section-num">07</div>
+        <div class="section-body">
+          <div class="section-name">Cluster 5 — Financiers</div>
+          <div class="section-detail">Islamic Banking, Takaful, Waqf, Microfinance. Validates RA 11439 implementation, financial inclusion targets, and Shariah-compliant product development.</div>
+        </div>
+        <span class="section-badge survey">Survey</span>
+      </div>
+      <div class="section-item reveal d2">
+        <div class="section-num">08</div>
+        <div class="section-body">
+          <div class="section-name">Strategic Options Evaluation</div>
+          <div class="section-detail">Validates HEDS, GEMS, IFES, IEDS strategic pathways. Confirms 3-phase sequencing logic and coherent implementation architecture.</div>
+        </div>
+        <span class="section-badge survey">Survey</span>
+      </div>
+      <div class="section-item reveal d3">
+        <div class="section-num">09</div>
+        <div class="section-body">
+          <div class="section-name">Investment Priorities & KPI Targets</div>
+          <div class="section-detail">Validates ₱120–160B budget realism, ₱550B GRDP target ambition, and 2035 terminal KPI calibration against international benchmarks.</div>
+        </div>
+        <span class="section-badge survey">Survey</span>
+      </div>
+      <div class="section-item reveal d1">
+        <div class="section-num">10</div>
+        <div class="section-body">
+          <div class="section-name">IEDS Evaluation Matrix</div>
+          <div class="section-detail">7-criteria weighted scoring (Economic Impact, Feasibility, Identity Alignment, Systems Leverage, Risk-Return, Inclusivity, Sustainability). Generates composite IEDS score.</div>
+        </div>
+        <span class="section-badge logic">Logic</span>
+      </div>
+      <div class="section-item reveal d2">
+        <div class="section-num">11</div>
+        <div class="section-body">
+          <div class="section-name">Provincial Equity & Inclusion</div>
+          <div class="section-detail">Validates affirmative investment policies for lagging provinces (Tawi-Tawi, Sulu, Basilan). Addresses "Success to the Successful" archetype.</div>
+        </div>
+        <span class="section-badge survey">Survey</span>
+      </div>
+      <div class="section-item reveal d3">
+        <div class="section-num">12</div>
+        <div class="section-body">
+          <div class="section-name">Climate Resilience & Green Economy</div>
+          <div class="section-detail">Validates REDD+ carbon markets, Payment for Ecosystem Services (PES), eco-tourism user fees, and climate-smart agriculture programs.</div>
+        </div>
+        <span class="section-badge survey">Survey</span>
+      </div>
+      <div class="section-item reveal d1">
+        <div class="section-num">13</div>
+        <div class="section-body">
+          <div class="section-name">Policy & Governance Recommendations</div>
+          <div class="section-detail">Validates Bangsamoro Forestry Code, JMC No. 2026-01, BICC establishment, and Digital Governance Act. Links to "Tragedy of the Commons" archetype.</div>
+        </div>
+        <span class="section-badge survey">Survey</span>
+      </div>
+      <div class="section-item reveal d2">
+        <div class="section-num">14</div>
+        <div class="section-body">
+          <div class="section-name">Respondent Profile</div>
+          <div class="section-detail">Captures stakeholder category, province, and expertise areas. Enables cross-tabulated analysis and representative sampling validation.</div>
+        </div>
+        <span class="section-badge data">Data</span>
+      </div>
+      <div class="section-item reveal d3">
+        <div class="section-num">15</div>
+        <div class="section-body">
+          <div class="section-name">Review & Submission</div>
+          <div class="section-detail">Final consent checkbox, data privacy notice, and submission confirmation. Triggers backend commit to GitHub repository.</div>
+        </div>
+        <span class="section-badge consent">Consent</span>
+      </div>
+      <div class="section-item reveal d1">
+        <div class="section-num">16</div>
+        <div class="section-body">
+          <div class="section-name">C.A.R.E. & Khalifa Validation</div>
+          <div class="section-detail">Validates roadmap alignment with C.A.R.E. pillars (Context, Action, Real-time, Evidence) and Khalifa stewardship principles. Overall alignment score.</div>
+        </div>
+        <span class="section-badge survey">Survey</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- PANEL F: DATA ANALYSIS & MEL -->
+  <section class="dash-section reveal" aria-labelledby="mel-title">
+    <div class="section-head">
+      <div class="section-label-wrap">
+        <span class="section-kicker">Panel F · Monitoring, Evaluation & Learning</span>
+        <h2 class="section-title" id="mel-title">Data Analysis & Strategic Integration</h2>
+        <div class="section-rule"></div>
+      </div>
+      <span class="section-count">6 MEL Dimensions</span>
+    </div>
+
+    <div class="mel-grid">
+      <div class="mel-card reveal d1">
+        <div class="mel-icon">📊</div>
+        <div class="mel-title">Quantitative Analysis</div>
+        <div class="mel-desc">Calculate Resilience Index, Risk Score, and Vulnerability Index for each BEIE cluster. Identify highest-risk weaknesses and strongest resilience drivers.</div>
+      </div>
+      <div class="mel-card reveal d2">
+        <div class="mel-icon">🔍</div>
+        <div class="mel-title">Qualitative Thematic Coding</div>
+        <div class="mel-desc">Code open-ended responses (Sections 8.3, 15.1, 15.2) for recurring themes. Map themes to systems archetypes and leverage points.</div>
+      </div>
+      <div class="mel-card reveal d3">
+        <div class="mel-icon">🗺️</div>
+        <div class="mel-title">Provincial Heat Maps</div>
+        <div class="mel-desc">Cross-tabulate responses by province. Generate heat maps showing RI, Risk, VI scores by cluster. Identify provincial-specific intervention priorities.</div>
+      </div>
+      <div class="mel-card reveal d1">
+        <div class="mel-icon">⚖️</div>
+        <div class="mel-title">Archetype Validation</div>
+        <div class="mel-desc">Confirm presence of 5 systems archetypes (Limits to Growth, Fixes that Fail, Tragedy of the Commons, Success to the Successful, Growth & Underinvestment).</div>
+      </div>
+      <div class="mel-card reveal d2">
+        <div class="mel-icon">🎯</div>
+        <div class="mel-title">IEDS Composite Scoring</div>
+        <div class="mel-desc">Calculate weighted IEDS score across 7 criteria. Validate IEDS as optimal strategic pathway. Generate confidence intervals for implementation planning.</div>
+      </div>
+      <div class="mel-card reveal d3">
+        <div class="mel-icon">📈</div>
+        <div class="mel-title">Trigger-Based Interventions</div>
+        <div class="mel-desc">Define KPI variance thresholds (±15%). When survey data indicates threshold breach, trigger automatic corrective action plans via BICC.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PANEL G: IMPLEMENTATION TIMELINE -->
+  <section class="dash-section reveal" aria-labelledby="timeline-title">
+    <div class="section-head">
+      <div class="section-label-wrap">
+        <span class="section-kicker">Panel G · Deployment Timeline</span>
+        <h2 class="section-title" id="timeline-title">Implementation Phases</h2>
+        <div class="section-rule"></div>
+      </div>
+      <span class="section-count">4 Phases · 12 Weeks</span>
+    </div>
+
+    <div class="timeline-phases">
+      <div class="phase-row reveal d1">
+        <div class="phase-marker">
+          <div class="phase-dot active"></div>
+          <div class="phase-time">Week 1–2</div>
+        </div>
+        <div class="phase-content">
+          <div class="phase-title">Phase 1: Technical Setup</div>
+          <div class="phase-desc">Configure Netlify environment variables (GITHUB_TOKEN, SUPABASE_URL, SUPABASE_SERVICE_KEY). Test frontend-backend pipeline with sample submissions. Verify GitHub commit workflow.</div>
+          <div class="phase-deliverables">
+            <span class="phase-tag">Environment Config</span>
+            <span class="phase-tag">Pipeline Testing</span>
+            <span class="phase-tag">Security Audit</span>
+          </div>
+        </div>
+      </div>
+      <div class="phase-row reveal d2">
+        <div class="phase-marker">
+          <div class="phase-dot"></div>
+          <div class="phase-time">Week 3–4</div>
+        </div>
+        <div class="phase-content">
+          <div class="phase-title">Phase 2: Staff Training</div>
+          <div class="phase-desc">Conduct orientation briefings for all BOI-MTIT staff. Train on survey methodology, technical architecture, and data analysis protocols. Distribute this briefing document.</div>
+          <div class="phase-deliverables">
+            <span class="phase-tag">Orientation Sessions</span>
+            <span class="phase-tag">Training Materials</span>
+            <span class="phase-tag">Q&A Support</span>
+          </div>
+        </div>
+      </div>
+      <div class="phase-row reveal d3">
+        <div class="phase-marker">
+          <div class="phase-dot"></div>
+          <div class="phase-time">Week 5–10</div>
+        </div>
+        <div class="phase-content">
+          <div class="phase-title">Phase 3: Stakeholder Deployment</div>
+          <div class="phase-desc">Launch survey distribution via email, social media, and in-person workshops. Target 200+ responses across all BEIE clusters. Monitor submission rates and follow up with non-respondents.</div>
+          <div class="phase-deliverables">
+            <span class="phase-tag">Survey Launch</span>
+            <span class="phase-tag">Response Monitoring</span>
+            <span class="phase-tag">Follow-up Campaigns</span>
+          </div>
+        </div>
+      </div>
+      <div class="phase-row reveal d1">
+        <div class="phase-marker">
+          <div class="phase-dot upcoming"></div>
+          <div class="phase-time">Week 11–12</div>
+        </div>
+        <div class="phase-content">
+          <div class="phase-title">Phase 4: Analysis & Reporting</div>
+          <div class="phase-desc">Conduct quantitative and qualitative analysis. Generate provincial heat maps, archetype validation reports, and IEDS composite scores. Present findings to BICC for action planning.</div>
+          <div class="phase-deliverables">
+            <span class="phase-tag">Data Analysis</span>
+            <span class="phase-tag">Final Report</span>
+            <span class="phase-tag">BICC Presentation</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PANEL H: STAFF ROLES -->
+  <section class="dash-section reveal" aria-labelledby="roles-title">
+    <div class="section-head">
+      <div class="section-label-wrap">
+        <span class="section-kicker">Panel H · Staff Responsibilities</span>
+        <h2 class="section-title" id="roles-title">Roles & Accountability Matrix</h2>
+        <div class="section-rule"></div>
+      </div>
+      <span class="section-count">5 Key Roles</span>
+    </div>
+
+    <div class="roles-table-wrap">
+      <table class="roles-table" aria-label="Staff roles and responsibilities">
+        <thead>
+          <tr>
+            <th scope="col">Role</th>
+            <th scope="col">Primary Responsibilities</th>
+            <th scope="col">Key Deliverables</th>
+            <th scope="col">Timeline</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="role-badge lead">Lead</span>Survey Coordinator</td>
+            <td>Manage end-to-end survey deployment. Coordinate with provincial offices. Monitor response rates. Escalate technical issues.</td>
+            <td>Deployment plan, response dashboard, weekly status reports</td>
+            <td>Week 1–12</td>
+          </tr>
+          <tr>
+            <td><span class="role-badge lead">Lead</span>Section Leads (BEIE Clusters)</td>
+            <td>Review cluster-specific responses. Conduct thematic coding of open-ended feedback. Recommend cluster-specific interventions.</td>
+            <td>Cluster analysis reports, intervention recommendations</td>
+            <td>Week 11–12</td>
+          </tr>
+          <tr>
+            <td><span class="role-badge support">Support</span>MEL Analyst</td>
+            <td>Calculate RI, Risk, VI scores. Generate provincial heat maps. Validate systems archetypes. Calculate IEDS composite scores.</td>
+            <td>Quantitative analysis, heat maps, archetype validation</td>
+            <td>Week 11–12</td>
+          </tr>
+          <tr>
+            <td><span class="role-badge support">Support</span>IT Support</td>
+            <td>Troubleshoot technical issues. Manage Netlify environment. Monitor GitHub commit workflow. Ensure data security.</td>
+            <td>Technical support logs, security audit, uptime monitoring</td>
+            <td>Week 1–12</td>
+          </tr>
+          <tr>
+            <td><span class="role-badge monitor">Monitor</span>Communication Officer</td>
+            <td>Draft stakeholder communications. Manage social media promotion. Prepare final report. Coordinate BICC presentation.</td>
+            <td>Communication materials, final report, presentation deck</td>
+            <td>Week 3–12</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- PANEL I: RISK MITIGATION -->
+  <section class="dash-section reveal" aria-labelledby="risk-title">
+    <div class="section-head">
+      <div class="section-label-wrap">
+        <span class="section-kicker">Panel I · Risk Management</span>
+        <h2 class="section-title" id="risk-title">Risk Mitigation Strategies</h2>
+        <div class="section-rule"></div>
+      </div>
+      <span class="section-count">6 Key Risks</span>
+    </div>
+
+    <div class="risk-grid">
+      <div class="risk-card high reveal d1">
+        <span class="risk-level">High Risk</span>
+        <div class="risk-title">Low Response Rate</div>
+        <div class="risk-desc">Insufficient stakeholder participation may compromise data quality and representative sampling.</div>
+        <div class="risk-mitigation"><strong>Mitigation:</strong> Incentivize participation (e.g., priority access to BIRD App). Conduct in-person workshops. Follow up with non-respondents via email and phone.</div>
+      </div>
+      <div class="risk-card high reveal d2">
+        <span class="risk-level">High Risk</span>
+        <div class="risk-title">Data Quality Issues</div>
+        <div class="risk-desc">Incomplete or inconsistent responses may compromise analysis validity.</div>
+        <div class="risk-mitigation"><strong>Mitigation:</strong> Implement real-time validation (Zod schema). Provide clear instructions. Conduct spot checks. Offer technical support hotline.</div>
+      </div>
+      <div class="risk-card medium reveal d3">
+        <span class="risk-level">Medium Risk</span>
+        <div class="risk-title">Technical Failures</div>
+        <div class="risk-desc">Netlify function outages, GitHub API rate limits, or Supabase downtime may disrupt data collection.</div>
+        <div class="risk-mitigation"><strong>Mitigation:</strong> Test pipeline thoroughly. Implement Supabase fallback. Monitor uptime. Have backup deployment channels (paper forms).</div>
+      </div>
+      <div class="risk-card medium reveal d1">
+        <span class="risk-level">Medium Risk</span>
+        <div class="risk-title">Stakeholder Fatigue</div>
+        <div class="risk-desc">Survey length (60+ questions) may cause respondent drop-off or superficial responses.</div>
+        <div class="risk-mitigation"><strong>Mitigation:</strong> Keep survey concise (15–20 minutes). Use progressive disclosure. Provide progress indicators. Offer break-and-resume functionality.</div>
+      </div>
+      <div class="risk-card low reveal d2">
+        <span class="risk-level">Low Risk</span>
+        <div class="risk-title">Political Sensitivity</div>
+        <div class="risk-desc">Responses may touch on politically sensitive topics (governance, security, resource allocation).</div>
+        <div class="risk-mitigation"><strong>Mitigation:</strong> Ensure anonymity. Focus on systemic issues rather than individual blame. Frame questions neutrally. Provide data privacy notice.</div>
+      </div>
+      <div class="risk-card low reveal d3">
+        <span class="risk-level">Low Risk</span>
+        <div class="risk-title">Cultural Misalignment</div>
+        <div class="risk-desc">Survey design may not adequately reflect Islamic ethical principles or cultural norms.</div>
+        <div class="risk-mitigation"><strong>Mitigation:</strong> Consult with Islamic scholars and cultural advisors. Embed Khalifa stewardship principles. Validate with community leaders.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PANEL J: CALL TO ACTION -->
+  <section class="cta-section reveal" aria-labelledby="cta-title">
+    <h2 class="cta-title" id="cta-title">Ready to Deploy the Validation Survey</h2>
+    <p class="cta-desc">The BIRD 2026–2035 Validation Survey is a strategic diagnostic tool that operationalizes the C.A.R.E. framework and Khalifa stewardship principles. Your role as BOI-MTIT staff is critical to ensuring its success. Let's transform the Bangsamoro together.</p>
+    <div class="cta-actions">
+      <a href="validation-survey.html" class="cta-btn">
+        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+        Launch Survey
+      </a>
+      <a href="dashboard.html" class="cta-btn outline">
+        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+        View Dashboard
+      </a>
+      <a href="roadmap.html" class="cta-btn outline">
+        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        Read Roadmap
+      </a>
+    </div>
+  </section>
+
+</main>
+
+<footer style="text-align:center;padding:2rem 1rem;border-top:1px solid var(--gold-border);margin-top:var(--s8);">
+  <div style="margin-bottom:1rem;display:flex;justify-content:center;gap:1.5rem;flex-wrap:wrap;">
+    <a href="dashboard.html" style="color:var(--gold);text-decoration:none;font-size:.8rem;font-weight:600;">Dashboard</a>
+    <a href="roadmap.html" style="color:rgba(255,255,255,.5);text-decoration:none;font-size:.8rem;">Roadmap</a>
+    <a href="validation-survey.html" style="color:rgba(255,255,255,.5);text-decoration:none;font-size:.8rem;">Survey</a>
+  </div>
+  <p style="font-size:.75rem;color:rgba(255,255,255,.3);">© 2026 BARMM · Ministry of Trade, Investments and Tourism · <span style="color:var(--gold);">The Emerging Bangsamoro</span> · Investment Roadmap 2026–2035</p>
+  <p style="font-size:.68rem;color:rgba(255,255,255,.2);margin-top:.3rem;">Staff Orientation Briefing · BIRD 2026–2035 Validation Survey · BOI-MTIT, BARMM</p>
+</footer>
+
+<script>
+function updateTime(){
+  const now=new Date();
+  const opt={weekday:'short',year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true};
+  document.getElementById('liveTime').textContent=now.toLocaleString('en-PH',opt)+' PHT';
+}
+updateTime();
+setInterval(updateTime,1000);
+
+window.addEventListener('scroll',()=>{
+  document.getElementById('siteNav').classList.toggle('scrolled',window.scrollY>40);
+},{passive:true});
+
+const revealObs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      e.target.classList.add('visible');
+      revealObs.unobserve(e.target);
+    }
+  });
+},{threshold:.06,rootMargin:'0px 0px -30px 0px'});
+document.querySelectorAll('.reveal').forEach(el=>revealObs.observe(el));
+</script>
+</body>
+</html>
