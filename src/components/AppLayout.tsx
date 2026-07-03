@@ -7,6 +7,9 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { StratLogo } from '@/components/branding/Logo';
 
+// ─── CRITICAL PATH: Load HeroSection immediately (first screen)
+import HeroSection from './strategic/HeroSection';
+
 // ─── LAZY LOADED COMPONENTS ───────────────────────────────────────────────────
 // Sidebar & Topbar load first (shell), content components load after
 const Sidebar = lazy(() => import('./strategic/Sidebar'));
@@ -15,10 +18,7 @@ const AuthModal        = lazy(() => import('./auth/AuthModal'));
 const UserProfileModal = lazy(() => import('./auth/UserProfileModal'));
 const SettingsPage     = lazy(() => import('./settings/SettingsPage'));
 
-// ─── HERO loads immediately (it's the first thing users see)
-const HeroSection = lazy(() => import('./strategic/HeroSection'));
-
-// ─── BIRD Validation Survey Wizard (NEW)
+// ─── BIRD Validation Survey Wizard
 const SurveyWizard = lazy(() => import('./strategic/SurveyWizard'));
 
 // ─── Content views — each chunk is a separate JS bundle loaded on demand
@@ -290,21 +290,20 @@ const AppLayout: React.FC = () => {
   const isLoading = authLoading || (isAuthenticated && plansLoading);
 
   // ─── LANDING ──────────────────────────────────────────────────────────────
+  // HeroSection is loaded synchronously for instant first paint
   if (uiState.showLanding && !currentPlan) {
     return (
-      <Suspense fallback={<GlobalLoader message="Loading experience…" />}>
-        <HeroSection
-          onStartPlanning={handleStartPlanning}
-          onViewDemo={() => updateUiState({ showLanding: false })}
-          onSignIn={() => updateUiState({ showAuthModal: true })}
-          onOpenValidationSurvey={() => {
-            updateUiState({ showLanding: false });
-            goToView('validation');
-          }}
-          isAuthenticated={isAuthenticated}
-          userName={userDisplayInfo.name}
-        />
-      </Suspense>
+      <HeroSection
+        onStartPlanning={handleStartPlanning}
+        onViewDemo={() => updateUiState({ showLanding: false })}
+        onSignIn={() => updateUiState({ showAuthModal: true })}
+        onOpenValidationSurvey={() => {
+          updateUiState({ showLanding: false });
+          goToView('validation');
+        }}
+        isAuthenticated={isAuthenticated}
+        userName={userDisplayInfo.name}
+      />
     );
   }
 

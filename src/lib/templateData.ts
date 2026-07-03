@@ -265,7 +265,7 @@ export const BUILTIN_TEMPLATES: PlanTemplate[] = [
         { category: 'weakness', description: 'International presence minimal — only 8% of ARR from outside North America despite product suitability', impactScore: 4, likelihoodScore: 4 },
         { category: 'weakness', description: 'Customer success team under-resourced — 1 CSM per 185 accounts vs industry benchmark of 1:80', impactScore: 4, likelihoodScore: 5 },
         { category: 'opportunity', description: 'AI integration wave: customers willing to pay 40–60% premium for AI-native workflow features vs legacy tools', impactScore: 5, likelihoodScore: 5 },
-        { category: 'opportunity', description: 'Enterprise upmarket expansion: 1,200 enterprise-qualified accounts in CRM with no active outreach', impactScore: 5, likelihoodScore: 5, likelihoodScore: 5 },
+        { category: 'opportunity', description: 'Enterprise upmarket expansion: 1,200 enterprise-qualified accounts in CRM with no active outreach', impactScore: 5, likelihoodScore: 5 },
         { category: 'opportunity', description: 'Developer ecosystem and API marketplace — platform-layer strategy to generate partner-sourced ARR', impactScore: 5, likelihoodScore: 4 },
         { category: 'opportunity', description: 'Vertical SaaS consolidation: 3 complementary tools in adjacent space available for tuck-in acquisition at 4–6x ARR', impactScore: 4, likelihoodScore: 4 },
         { category: 'opportunity', description: 'EMEA market entry via channel partner program with 12 pre-qualified regional partners', impactScore: 4, likelihoodScore: 4 },
