@@ -7,8 +7,8 @@ Official strategic planning platform for the **Bangsamoro Investment Roadmap Dev
 ---
 
 ## 🌐 Live Platform
-- **Web App:**https://github.com/asilvainnovations/BIRD-2026-2035/public/home.html
-- **User Manual:** https://github.com/asilvainnovations/BIRD-2026-2035/public/user-manual.html
+- **Web App:**https://asilvainnovations.github.io/BIRD-2026-2035/public/home.html
+- **User Manual:** https://asilvainnovations.github.io/BIRD-2026-2035/public/user-manual.html
 - **Developer Docs:** https://asilvainnovations.github.io/strat-planner-pwa/developer-doc.html
 
 ---
