@@ -12,6 +12,7 @@ const AdminDashboard = lazy(() => import('@/pages/AdminDashboard'));
 const NotFound = lazy(() => import('@/pages/NotFound'));
 const SharedPlanView = lazy(() => import('@/pages/SharedPlanView'));
 
+
 // ─── Loading Fallback ───────────────────────────────────────────────────────
 const AppLoadingFallback = React.memo(() => (
   <div className="min-h-screen bg-[#0A1628] flex flex-col items-center justify-center p-6">
@@ -31,6 +32,7 @@ const AppLoadingFallback = React.memo(() => (
 ));
 
 // ─── Error Boundary for Better Error Handling ────────────────────────────────
+<p className="text-slate-400">Sentry Error Tracking Initialized</p>
 class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean }> {
   constructor(props: { children: React.ReactNode }) {
     super(props);
