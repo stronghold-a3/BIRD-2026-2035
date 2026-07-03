@@ -234,7 +234,7 @@ const AppLayout: React.FC = () => {
     const common = { plan: currentPlan, onNavigate: navigateToView };
     switch (activeView) {
       case 'validation': 
-        return <ValidationSurvey />;
+        return <SurveyWizard />;
       
       // ✅ FIXED: Added onAddItem and onRemoveItem props for full CRUD support
       case 'swot':       
