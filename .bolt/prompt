@@ -1,0 +1,87 @@
+🚀 Enhanced Project Instructions
+
+🔧 Tech Stack
+- *Frontend:** React + TailwindCSS  
+- **Backend/DB:** Supabase  
+- **Auth:** `useAuth` hook from `/lib/auth.ts`  
+- **Data Access:** All queries must go through `/lib/db`  
+
+### 📐 Coding Guidelines
+- **No Mock Data:** Always connect to real Supabase tables.  
+- **Type Safety:** Use TypeScript consistently; add null checks for root containers.  
+- **Strict Mode:** Wrap the app in `<React.StrictMode>` for better error detection.  
+- **Error Boundaries:** Sentry automatically wraps your app; ensure proper configuration.  
+
+### 🛡️ Monitoring & Error Handling
+- **Sentry Integrations:**  
+  - Enable `browserTracing` and `replay`.  
+  - Configure trace sampling rates for performance monitoring.  
+- **Environment Awareness:**  
+  - Show `ErrorButton` only in development mode.  
+  - Configure Sentry DSN and environment variables securely.  
+- **Data Storage Location:** Ensure compliance with US/EU storage requirements.  
+
+### 🎨 Accessibility & UX
+- Use semantic HTML elements.  
+- Add proper ARIA labels for interactive components.  
+- Ensure color contrast meets WCAG standards.  
+
+### 📦 Deployment
+- Use Netlify for builds and deploys.  
+- Configure environment variables in Netlify dashboard.  
+- Run Lighthouse audits (via Netlify plugin) to track performance and accessibility.  
+
+Here’s a step‑by‑step onboarding checklist for developers joining the project. It’s structured so they can follow each step in order and quickly get the app running with all best practices applied.
+
+01 Clone the Repository
+Start by pulling the project codebase locally.
+Run git clone <repo-url>
+Navigate into the project folder with cd project-name
+
+Install Dependencies
+Ensure all required packages are installed.
+Run npm install or yarn install
+Verify react, tailwindcss, and @supabase/supabase-js are present
+
+Configure Environment Variables
+Set up Supabase and Sentry credentials securely.
+
+Create .env.local
+Add SUPABASE_URL and SUPABASE_KEY
+Add SENTRY_DSN and environment identifiers
+Verify Database Access
+All queries must go through /lib/db.
+Check /lib/db module for query wrappers
+Test connection with a sample query
+05 Set Up Authentication
+Use the provided useAuth hook for state management.
+Import useAuth from /lib/auth.ts
+Confirm login/logout flows work with Supabase
+
+06 Enable Strict Mode
+Wrap the app in <React.StrictMode> for better error detection.
+
+Edit index.tsx or main.tsx
+Ensure Integrate Sentry Monitoring
+Add recommended integrations for error tracking.
+
+Enable browserTracing and replay
+Configure trace sampling rates
+Confirm error boundaries auto‑wrap the app
+Check Environment Awareness
+Ensure dev‑only features don’t leak into production.
+
+Show ErrorButton only in development
+Hide debug logs in production builds
+
+09 Run Accessibility Audit
+Verify ARIA labels and semantic HTML are applied.
+
+Use Lighthouse or axe plugin
+Fix contrast, labels, and keyboard navigation issues
+
+Deploy to Netlify
+Push code and configure builds.
+Connect repo to Netlify
+Add environment variables in Netlify dashboard
+Run Lighthouse plugin for performance checks
