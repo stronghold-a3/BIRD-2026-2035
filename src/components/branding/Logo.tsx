@@ -13,7 +13,7 @@ const LOGO_URL         = BRAND_ASSETS.LOGO_URL;
 const AI_AVATAR_URL    = BRAND_ASSETS.AI_AVATAR_URL;
 
 export const BIRD_BANNER_URL =
-  'https://rgvteytgkugdqdodedxq.databasepad.com/storage/v1/object/public/bird-images/public/BIRD%20Banner.png';
+  'https://lydsisparsmvextskevw.supabase.co/storage/v1/object/public/bird-images/1.Banner.png';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface LogoProps {
@@ -103,4 +103,4 @@ export const BIRDWordmark: React.FC<{ className?: string; size?: 'sm' | 'md' | '
   );
 };
 
-export default StratLogo;
+export default Logo;
