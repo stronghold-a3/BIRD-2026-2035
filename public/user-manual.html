@@ -1,0 +1,1926 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BIRD 2026–2035 — User Manual</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Roboto+Condensed:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+DESIGN TOKENS — BIRD 2026-2035 LIQUID GLASS
+============================================================ */
+:root {
+--blue-950: #030712;
+--blue-900: #0A1628;
+--blue-850: #0D1F3C;
+--blue-800: #0F2952;
+--blue-700: #1A3A6B;
+--blue-600: #1E4D9B;
+--blue-500: #2563EB;
+--blue-400: #3B82F6;
+--blue-300: #60A5FA;
+--blue-200: #93C5FD;
+--blue-100: #BFDBFE;
+--blue-50:  #EFF6FF;
+--cyan-500: #06B6D4;
+--cyan-400: #22D3EE;
+--sky-500:  #0EA5E9;
+--indigo-500: #6366F1;
+--indigo-400: #818CF8;
+--fuchsia-500: #D946EF;
+--fuchsia-600: #C026D3;
+--fuchsia-700: #A21CAF;
+--success: #10B981;
+--warning: #F59E0B;
+--danger:  #EF4444;
+--glass-bg:           rgba(255,255,255,0.07);
+--glass-bg-hover:     rgba(255,255,255,0.11);
+--glass-border:       rgba(255,255,255,0.13);
+--glass-border-strong:rgba(255,255,255,0.22);
+--glass-shadow:       0 8px 32px rgba(0,0,0,0.35), 0 2px 8px rgba(0,0,0,0.2);
+--glass-inset:        inset 0 1px 0 rgba(255,255,255,0.14);
+--font-display: 'Poppins', sans-serif;
+--font-ui:      'Inter', sans-serif;
+--font-data:    'Roboto Condensed', sans-serif;
+--radius-sm:   8px;
+--radius-md:   12px;
+--radius-lg:   16px;
+--radius-xl:   24px;
+--radius-full: 9999px;
+--text-primary:   rgba(255,255,255,0.95);
+--text-secondary: rgba(255,255,255,0.65);
+--text-tertiary:  rgba(255,255,255,0.38);
+--sidebar-w: 280px;
+--header-h:  64px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+body { font-family: var(--font-ui); background: var(--blue-900); color: var(--text-primary); min-height: 100vh; overflow-x: hidden; }
+/* ============================================================ BACKGROUND ============================================================ */
+.app-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.bg-orb { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.14; animation: orb-drift 22s ease-in-out infinite; }
+.bg-orb-1 { width: 700px; height: 700px; background: radial-gradient(circle, #1E4D9B, transparent); top: -250px; left: -200px; animation-delay: 0s; }
+.bg-orb-2 { width: 560px; height: 560px; background: radial-gradient(circle, #06B6D4, transparent); top: 35%; right: -160px; animation-delay: -8s; }
+.bg-orb-3 { width: 480px; height: 480px; background: radial-gradient(circle, #6366F1, transparent); bottom: -120px; left: 32%; animation-delay: -16s; }
+.bg-orb-4 { width: 320px; height: 320px; background: radial-gradient(circle, #0EA5E9, transparent); top: 60%; left: 10%; animation-delay: -4s; }
+.bg-grid { position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px); background-size: 44px 44px; }
+@keyframes orb-drift { 0%,100% { transform: translate(0,0) scale(1); } 33% { transform: translate(28px,-24px) scale(1.08); } 66% { transform: translate(-18px,18px) scale(0.93); } }
+/* ============================================================ HEADER ============================================================ */
+.top-bar { position: fixed; top: 0; left: 0; right: 0; height: var(--header-h); z-index: 1000; display: flex; align-items: center; padding: 0 24px; gap: 16px; background: rgba(10,22,40,0.88); backdrop-filter: blur(32px) saturate(200%); border-bottom: 1px solid var(--glass-border); box-shadow: 0 4px 28px rgba(0,0,0,0.28); }
+.logo { display: flex; align-items: center; gap: 10px; text-decoration: none; flex-shrink: 0; }
+.logo-img { width: 36px; height: 36px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.18); box-shadow: 0 0 0 4px rgba(37,99,235,0.22), 0 4px 12px rgba(0,0,0,0.3); object-fit: cover; }
+.logo-text { font-family: var(--font-display); font-weight: 700; font-size: 17px; background: linear-gradient(135deg, #fff 0%, var(--blue-200) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -0.3px; }
+.logo-badge { font-family: var(--font-data); font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; background: var(--blue-500); color: white; padding: 2px 6px; border-radius: 4px; align-self: flex-start; margin-top: 2px; }
+.header-center { flex: 1; display: flex; align-items: center; justify-content: center; }
+.manual-badge { font-family: var(--font-data); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-tertiary); }
+.manual-badge span { color: var(--blue-300); margin: 0 6px; }
+.header-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.version-chip { padding: 5px 12px; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-full); font-size: 11px; font-family: var(--font-data); color: var(--text-secondary); }
+.btn-print { padding: 8px 16px; background: linear-gradient(135deg, var(--blue-500), var(--blue-600)); border: 1px solid rgba(255,255,255,0.18); border-radius: var(--radius-full); color: white; font-family: var(--font-ui); font-size: 12px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s ease; box-shadow: 0 4px 14px rgba(37,99,235,0.38); }
+.btn-print:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(37,99,235,0.48); }
+.btn-ai { padding: 8px 16px; background: linear-gradient(135deg, var(--fuchsia-600), var(--indigo-500)); border: 1px solid rgba(255,255,255,0.18); border-radius: var(--radius-full); color: white; font-family: var(--font-ui); font-size: 12px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s ease; box-shadow: 0 4px 14px rgba(192,38,211,0.38); }
+.btn-ai:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(192,38,211,0.48); }
+/* ============================================================ LAYOUT ============================================================ */
+.layout { display: flex; padding-top: var(--header-h); min-height: 100vh; position: relative; z-index: 1; }
+/* ============================================================ SIDEBAR ============================================================ */
+.sidebar { position: fixed; top: var(--header-h); left: 0; bottom: 0; width: var(--sidebar-w); z-index: 900; display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden; background: rgba(10,22,40,0.78); backdrop-filter: blur(30px) saturate(200%); border-right: 1px solid var(--glass-border); padding-bottom: 24px; }
+.sidebar::-webkit-scrollbar { width: 4px; }
+.sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
+.sidebar-top { padding: 20px 16px 10px; }
+.sidebar-heading { font-family: var(--font-data); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.8px; color: var(--text-tertiary); margin-bottom: 14px; }
+.toc-section { margin-bottom: 6px; }
+.toc-section-label { padding: 6px 16px 4px; font-family: var(--font-data); font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-tertiary); }
+.toc-link { display: flex; align-items: center; gap: 10px; padding: 9px 16px; margin: 1px 8px; border-radius: var(--radius-md); cursor: pointer; transition: all 0.18s ease; font-size: 13px; font-weight: 500; color: var(--text-secondary); text-decoration: none; user-select: none; }
+.toc-link:hover { background: var(--glass-bg); color: var(--text-primary); }
+.toc-link.active { background: linear-gradient(135deg, rgba(37,99,235,0.22), rgba(6,182,212,0.08)); color: white; border: 1px solid rgba(37,99,235,0.28); box-shadow: 0 2px 12px rgba(37,99,235,0.18), inset 0 1px 0 rgba(255,255,255,0.08); }
+.toc-link .toc-num { width: 20px; height: 20px; border-radius: 50%; background: var(--glass-bg); border: 1px solid var(--glass-border); display: flex; align-items: center; justify-content: center; font-size: 9px; font-family: var(--font-data); font-weight: 700; flex-shrink: 0; color: var(--blue-300); }
+.toc-link.active .toc-num { background: var(--blue-600); border-color: transparent; color: white; }
+.toc-link .toc-icon { font-size: 13px; flex-shrink: 0; }
+.progress-track { margin: 16px 16px 0; padding: 12px; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-md); }
+.progress-label { font-size: 10px; font-family: var(--font-data); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-tertiary); margin-bottom: 8px; display: flex; justify-content: space-between; }
+.progress-bar { height: 4px; background: rgba(255,255,255,0.08); border-radius: var(--radius-full); overflow: hidden; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, var(--blue-500), var(--cyan-500)); border-radius: var(--radius-full); transition: width 0.4s ease; }
+/* ============================================================ CONTENT ============================================================ */
+.content { flex: 1; margin-left: var(--sidebar-w); padding: 48px 48px 80px; max-width: calc(100% - var(--sidebar-w)); }
+/* ============================================================ HERO ============================================================ */
+.hero { position: relative; border-radius: var(--radius-xl); padding: 52px 48px; margin-bottom: 40px; overflow: hidden; background: linear-gradient(135deg, rgba(15,41,82,0.9) 0%, rgba(37,99,235,0.25) 50%, rgba(6,182,212,0.15) 100%); border: 1px solid var(--glass-border-strong); box-shadow: var(--glass-shadow), var(--glass-inset); backdrop-filter: blur(24px) saturate(180%); }
+.hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 80% 50%, rgba(37,99,235,0.18) 0%, transparent 60%), radial-gradient(ellipse at 20% 80%, rgba(6,182,212,0.12) 0%, transparent 50%); }
+.hero::after { content: ''; position: absolute; top: -1px; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--blue-500), var(--cyan-500), var(--indigo-500)); border-radius: var(--radius-xl) var(--radius-xl) 0 0; }
+.hero-inner { position: relative; z-index: 1; }
+.hero-eyebrow { display: inline-flex; align-items: center; gap: 8px; padding: 5px 14px; background: rgba(37,99,235,0.2); border: 1px solid rgba(37,99,235,0.35); border-radius: var(--radius-full); font-size: 11px; font-family: var(--font-data); font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--blue-300); margin-bottom: 20px; }
+.hero-title { font-family: var(--font-display); font-size: clamp(28px, 4vw, 44px); font-weight: 800; line-height: 1.15; margin-bottom: 14px; background: linear-gradient(135deg, #fff 0%, var(--blue-100) 60%, var(--cyan-400) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -0.5px; }
+.hero-subtitle { font-size: 15px; color: var(--text-secondary); line-height: 1.7; max-width: 640px; margin-bottom: 28px; }
+.hero-meta { display: flex; gap: 20px; flex-wrap: wrap; }
+.hero-meta-item { display: flex; align-items: center; gap: 7px; font-size: 12px; font-family: var(--font-data); color: var(--text-secondary); }
+.hero-meta-item .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--blue-400); animation: pulse-dot 2s infinite; }
+@keyframes pulse-dot { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.75); } }
+/* ============================================================ SECTION ============================================================ */
+.section { margin-bottom: 48px; scroll-margin-top: 88px; animation: section-in 0.5s ease both; }
+@keyframes section-in { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+.section-header { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 24px; padding-bottom: 18px; border-bottom: 1px solid rgba(255,255,255,0.07); }
+.section-num { width: 40px; height: 40px; border-radius: var(--radius-md); background: linear-gradient(135deg, var(--blue-600), var(--blue-700)); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 16px; font-weight: 700; flex-shrink: 0; box-shadow: 0 4px 14px rgba(37,99,235,0.35); }
+.section-title { font-family: var(--font-display); font-size: 22px; font-weight: 700; background: linear-gradient(135deg, white, var(--blue-200)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 4px; }
+.section-subtitle { font-size: 12px; font-family: var(--font-data); color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 1px; }
+/* ============================================================ COLLAPSIBLE CARDS ============================================================ */
+.coll-card { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-xl); margin-bottom: 10px; overflow: hidden; transition: border-color 0.25s ease, box-shadow 0.25s ease; position: relative; }
+.coll-card:hover { border-color: rgba(255,255,255,0.2); }
+.coll-card.open { border-color: rgba(37,99,235,0.35); box-shadow: 0 4px 24px rgba(37,99,235,0.12); }
+.coll-header { display: flex; align-items: center; gap: 14px; padding: 16px 20px; cursor: pointer; user-select: none; transition: background 0.18s ease; position: relative; }
+.coll-header:hover { background: var(--glass-bg-hover); }
+.coll-card.open .coll-header { background: linear-gradient(135deg, rgba(37,99,235,0.1), rgba(6,182,212,0.04)); }
+.coll-header-icon { width: 34px; height: 34px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; background: var(--glass-bg); border: 1px solid var(--glass-border); transition: all 0.25s ease; }
+.coll-card.open .coll-header-icon { background: linear-gradient(135deg, var(--blue-600), var(--blue-700)); border-color: transparent; box-shadow: 0 4px 12px rgba(37,99,235,0.3); }
+.coll-header-text { flex: 1; }
+.coll-header-title { font-family: var(--font-display); font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 2px; }
+.coll-header-sub { font-size: 11px; font-family: var(--font-data); color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.8px; }
+.coll-chevron { width: 24px; height: 24px; border-radius: 50%; background: var(--glass-bg); border: 1px solid var(--glass-border); display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--blue-300); transition: transform 0.3s cubic-bezier(0.4,0,0.2,1), background 0.2s ease; flex-shrink: 0; }
+.coll-card.open .coll-chevron { transform: rotate(180deg); background: var(--blue-600); border-color: transparent; color: white; }
+.coll-body { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.38s cubic-bezier(0.4,0,0.2,1); }
+.coll-card.open .coll-body { grid-template-rows: 1fr; }
+.coll-body-inner { overflow: hidden; padding: 0 20px; transition: padding 0.38s ease; }
+.coll-card.open .coll-body-inner { padding: 0 20px 20px; }
+.coll-card.open::before { content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 100%; background: linear-gradient(180deg, var(--blue-500), var(--cyan-500)); border-radius: 2px 0 0 2px; }
+/* ============================================================ GLASS CARDS ============================================================ */
+.glass-card { background: var(--glass-bg); backdrop-filter: blur(20px) saturate(180%); border: 1px solid var(--glass-border); border-radius: var(--radius-xl); padding: 24px; box-shadow: var(--glass-shadow), var(--glass-inset); margin-bottom: 16px; transition: all 0.28s cubic-bezier(0.4,0,0.2,1); }
+.glass-card:hover { background: var(--glass-bg-hover); border-color: var(--glass-border-strong); transform: translateY(-2px); box-shadow: 0 16px 48px rgba(0,0,0,0.38), var(--glass-inset); }
+.glass-card.accent-top { position: relative; }
+.glass-card.accent-top::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--card-accent, linear-gradient(90deg, var(--blue-500), var(--cyan-500))); border-radius: var(--radius-xl) var(--radius-xl) 0 0; }
+.card-h3 { font-family: var(--font-display); font-size: 15px; font-weight: 600; color: var(--text-primary); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+.card-h3 .ch-icon { width: 28px; height: 28px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+/* ============================================================ PROSE ============================================================ */
+.prose p { font-size: 14px; line-height: 1.78; color: var(--text-secondary); margin-bottom: 12px; }
+.prose p strong { color: var(--text-primary); font-weight: 600; }
+.prose p a { color: var(--blue-300); text-decoration: none; border-bottom: 1px solid rgba(96,165,250,0.3); }
+.prose ol, .prose ul { margin: 8px 0 16px; padding-left: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.prose ol { counter-reset: ol-cnt; }
+.prose ol li, .prose ul li { position: relative; padding: 9px 14px 9px 42px; font-size: 13px; line-height: 1.65; color: var(--text-secondary); background: rgba(255,255,255,0.035); border: 1px solid rgba(255,255,255,0.07); border-radius: var(--radius-md); transition: background 0.18s ease; }
+.prose ol li:hover, .prose ul li:hover { background: rgba(255,255,255,0.06); }
+.prose ol li strong, .prose ul li strong { color: var(--text-primary); font-weight: 600; }
+.prose ol li::before { counter-increment: ol-cnt; content: counter(ol-cnt); position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; border-radius: 50%; background: var(--blue-600); color: white; font-size: 10px; font-family: var(--font-data); font-weight: 700; display: flex; align-items: center; justify-content: center; }
+.prose ul li::before { content: '▸'; position: absolute; left: 14px; top: 10px; color: var(--blue-400); font-size: 11px; }
+.prose h3 { font-family: var(--font-display); font-size: 16px; font-weight: 700; color: var(--text-primary); margin: 24px 0 10px; display: flex; align-items: center; gap: 8px; }
+.prose h3::before { content: ''; display: block; width: 4px; height: 16px; background: linear-gradient(180deg, var(--blue-400), var(--cyan-500)); border-radius: 2px; flex-shrink: 0; }
+.prose h4 { font-family: var(--font-data); font-size: 13px; font-weight: 700; color: var(--blue-300); text-transform: uppercase; letter-spacing: 0.8px; margin: 18px 0 8px; }
+/* ============================================================ CALLOUTS ============================================================ */
+.callout { display: flex; gap: 14px; padding: 16px 18px; border-radius: var(--radius-lg); margin: 16px 0; border: 1px solid; }
+.callout-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+.callout-body { flex: 1; }
+.callout-title { font-family: var(--font-ui); font-size: 13px; font-weight: 700; margin-bottom: 6px; }
+.callout-text { font-size: 13px; line-height: 1.65; }
+.callout-text strong { font-weight: 600; }
+.callout-text ul { margin: 6px 0 0; padding-left: 0; list-style: none; display: flex; flex-direction: column; gap: 4px; }
+.callout-text ul li { position: relative; padding-left: 16px; font-size: 13px; line-height: 1.6; background: none; border: none; border-radius: 0; }
+.callout-text ul li::before { content: '•'; position: absolute; left: 0; top: 0; }
+.callout-info { background: rgba(37,99,235,0.08); border-color: rgba(37,99,235,0.3); }
+.callout-info .callout-title { color: var(--blue-300); }
+.callout-info .callout-text, .callout-info .callout-text li::before { color: var(--blue-200); }
+.callout-success { background: rgba(16,185,129,0.08); border-color: rgba(16,185,129,0.3); }
+.callout-success .callout-title { color: #34D399; }
+.callout-success .callout-text, .callout-success .callout-text li::before { color: #6EE7B7; }
+.callout-warning { background: rgba(245,158,11,0.08); border-color: rgba(245,158,11,0.3); }
+.callout-warning .callout-title { color: #FBBF24; }
+.callout-warning .callout-text, .callout-warning .callout-text li::before { color: #FCD34D; }
+.callout-ai { background: linear-gradient(135deg, rgba(192,38,211,0.1), rgba(6,182,212,0.05)); border-color: rgba(192,38,211,0.3); position: relative; overflow: hidden; }
+.callout-ai::before { content: '✦'; position: absolute; right: 14px; top: 10px; font-size: 32px; opacity: 0.06; }
+.callout-ai .callout-title { color: var(--fuchsia-500); }
+.callout-ai .callout-text, .callout-ai .callout-text li::before { color: rgba(232,121,249,0.85); }
+/* ============================================================ EXAMPLE BOX ============================================================ */
+.example-box { background: linear-gradient(135deg, rgba(37,99,235,0.08), rgba(6,182,212,0.04)); border-left: 3px solid var(--blue-500); border-radius: 0 var(--radius-md) var(--radius-md) 0; padding: 14px 16px; margin: 14px 0; font-size: 13px; line-height: 1.65; color: var(--text-secondary); }
+.example-box strong { color: var(--blue-300); font-weight: 600; }
+/* ============================================================ DATA TABLE ============================================================ */
+.data-table { width: 100%; border-collapse: collapse; border-radius: var(--radius-lg); overflow: hidden; border: 1px solid var(--glass-border); margin: 14px 0; font-size: 13px; }
+.data-table th { background: rgba(15,41,82,0.85); color: var(--blue-300); font-family: var(--font-data); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--glass-border); }
+.data-table td { padding: 9px 14px; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--text-secondary); line-height: 1.55; }
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td { background: rgba(255,255,255,0.03); }
+.data-table td:first-child { font-weight: 600; color: var(--text-primary); }
+.data-table td strong { color: var(--text-primary); font-weight: 600; }
+/* ============================================================ STATUS BADGES ============================================================ */
+.status-badges { display: flex; gap: 10px; flex-wrap: wrap; margin: 14px 0; }
+.status-badge { display: inline-flex; align-items: center; gap: 7px; padding: 7px 14px; border-radius: var(--radius-full); font-size: 12px; font-family: var(--font-data); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; border: 1px solid; }
+.badge-green   { background: rgba(16,185,129,0.12); color: #34D399; border-color: rgba(16,185,129,0.3); }
+.badge-yellow  { background: rgba(245,158,11,0.12); color: #FBBF24; border-color: rgba(245,158,11,0.3); }
+.badge-red     { background: rgba(239,68,68,0.12);  color: #FC8181; border-color: rgba(239,68,68,0.3); }
+.badge-blue    { background: rgba(37,99,235,0.12);  color: #93C5FD; border-color: rgba(37,99,235,0.3); }
+.badge-purple  { background: rgba(99,102,241,0.12); color: #a5b4fc; border-color: rgba(99,102,241,0.3); }
+.badge-cyan    { background: rgba(6,182,212,0.12);  color: #67e8f9; border-color: rgba(6,182,212,0.3); }
+.badge-fuchsia { background: rgba(192,38,211,0.12); color: #e879f9; border-color: rgba(192,38,211,0.3); }
+/* ============================================================ GRID LAYOUTS ============================================================ */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.qr-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 16px 0; }
+.qr-card { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); padding: 16px; transition: all 0.2s ease; }
+.qr-card:hover { background: var(--glass-bg-hover); transform: translateY(-2px); }
+.qr-label { font-size: 10px; font-family: var(--font-data); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-tertiary); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+.qr-label::before { content: ''; display: block; width: 3px; height: 12px; background: var(--card-color, var(--blue-500)); border-radius: 2px; }
+.qr-value { font-family: var(--font-data); font-size: 13px; font-weight: 600; color: var(--text-primary); line-height: 1.5; }
+.qr-sub { font-size: 11px; color: var(--text-tertiary); margin-top: 3px; }
+/* ============================================================ TOOLTIPS ============================================================ */
+.tip { position: relative; display: inline; cursor: help; color: var(--blue-300); border-bottom: 1px dashed rgba(96,165,250,0.45); transition: color 0.18s ease; }
+.tip:hover { color: var(--blue-200); }
+.tip::after { content: attr(data-tip); position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%) translateY(4px); background: rgba(10,22,40,0.96); color: var(--text-primary); padding: 8px 12px; border-radius: var(--radius-md); font-size: 12px; font-family: var(--font-ui); font-weight: 400; line-height: 1.5; width: max-content; max-width: 240px; text-align: center; white-space: normal; opacity: 0; pointer-events: none; transition: opacity 0.22s ease, transform 0.22s ease; z-index: 9999; border: 1px solid rgba(37,99,235,0.4); box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+.tip::before { content: ''; position: absolute; bottom: calc(100% + 4px); left: 50%; transform: translateX(-50%) translateY(4px); border: 5px solid transparent; border-top-color: rgba(37,99,235,0.4); opacity: 0; pointer-events: none; transition: opacity 0.22s ease, transform 0.22s ease; z-index: 9999; }
+.tip:hover::after, .tip:hover::before { opacity: 1; transform: translateX(-50%) translateY(0); }
+/* ============================================================ FLOW STEPS ============================================================ */
+.flow-steps { display: flex; flex-direction: column; gap: 0; margin: 12px 0; }
+.flow-step { display: flex; gap: 14px; position: relative; }
+.flow-step:not(:last-child)::after { content: ''; position: absolute; left: 15px; top: 34px; bottom: -8px; width: 2px; background: linear-gradient(180deg, rgba(37,99,235,0.5), rgba(6,182,212,0.2)); }
+.flow-step-num { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--blue-600), var(--blue-500)); display: flex; align-items: center; justify-content: center; font-size: 12px; font-family: var(--font-data); font-weight: 700; color: white; flex-shrink: 0; box-shadow: 0 4px 12px rgba(37,99,235,0.3); margin-top: 2px; }
+.flow-step-body { flex: 1; padding-bottom: 18px; }
+.flow-step-title { font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }
+.flow-step-desc { font-size: 12.5px; color: var(--text-secondary); line-height: 1.6; }
+/* ============================================================ MINI METRIC CARDS ============================================================ */
+.metric-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 14px 0; }
+.metric-card { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); padding: 14px 16px; text-align: center; transition: all 0.2s ease; }
+.metric-card:hover { background: var(--glass-bg-hover); transform: translateY(-2px); }
+.metric-card .mc-icon { font-size: 20px; margin-bottom: 6px; }
+.metric-card .mc-label { font-size: 10px; font-family: var(--font-data); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-tertiary); margin-bottom: 4px; }
+.metric-card .mc-value { font-size: 13px; font-weight: 600; color: var(--text-primary); line-height: 1.4; }
+/* ============================================================ PHASE TAGS ============================================================ */
+.phase-badge { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: var(--radius-full); font-size: 10px; font-family: var(--font-data); font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; border: 1px solid; margin-bottom: 6px; }
+.phase-1 { background: rgba(16,185,129,0.1); color: #34D399; border-color: rgba(16,185,129,0.25); }
+.phase-2 { background: rgba(37,99,235,0.1); color: #93C5FD; border-color: rgba(37,99,235,0.25); }
+.phase-3 { background: rgba(6,182,212,0.1); color: #67e8f9; border-color: rgba(6,182,212,0.25); }
+/* ============================================================ FAQ ============================================================ */
+.faq-item { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); margin-bottom: 8px; overflow: hidden; }
+.faq-item.open { border-color: rgba(37,99,235,0.3); }
+.faq-q { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px; cursor: pointer; font-size: 14px; font-weight: 600; color: var(--text-primary); user-select: none; transition: background 0.18s ease; }
+.faq-q:hover { background: var(--glass-bg-hover); }
+.faq-chevron { width: 20px; height: 20px; border-radius: 50%; background: var(--glass-bg); border: 1px solid var(--glass-border); display: flex; align-items: center; justify-content: center; font-size: 10px; transition: transform 0.25s ease, background 0.18s ease; flex-shrink: 0; color: var(--blue-300); }
+.faq-item.open .faq-chevron { transform: rotate(180deg); background: var(--blue-600); border-color: transparent; }
+.faq-a { display: none; padding: 14px 18px 16px; font-size: 13px; line-height: 1.72; color: var(--text-secondary); border-top: 1px solid rgba(255,255,255,0.05); }
+.faq-item.open .faq-a { display: block; }
+.faq-a ol { margin: 8px 0; padding-left: 0; list-style: none; counter-reset: faq-cnt; display: flex; flex-direction: column; gap: 4px; }
+.faq-a ol li { counter-increment: faq-cnt; position: relative; padding: 6px 10px 6px 32px; font-size: 13px; color: var(--text-secondary); background: rgba(255,255,255,0.03); border-radius: var(--radius-sm); }
+.faq-a ol li::before { content: counter(faq-cnt); position: absolute; left: 8px; top: 7px; width: 16px; height: 16px; background: var(--blue-700); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9px; font-family: var(--font-data); font-weight: 700; color: white; }
+/* ============================================================ SCROLL PROGRESS ============================================================ */
+.scroll-progress { position: fixed; top: var(--header-h); left: var(--sidebar-w); right: 0; height: 2px; background: linear-gradient(90deg, var(--blue-500), var(--cyan-500), var(--indigo-400)); transform-origin: left; transform: scaleX(0); z-index: 999; transition: transform 0.1s linear; }
+.back-top { position: fixed; bottom: 28px; right: 28px; z-index: 999; width: 42px; height: 42px; border-radius: 50%; background: var(--glass-bg); backdrop-filter: blur(16px); border: 1px solid var(--glass-border-strong); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; transition: all 0.22s ease; opacity: 0; pointer-events: none; box-shadow: 0 4px 20px rgba(0,0,0,0.3); color: var(--text-primary); }
+.back-top.visible { opacity: 1; pointer-events: all; }
+.back-top:hover { background: var(--blue-600); border-color: transparent; transform: translateY(-3px); box-shadow: 0 8px 24px rgba(37,99,235,0.4); }
+/* ============================================================ FOOTER ============================================================ */
+.footer { position: relative; z-index: 1; background: rgba(10,22,40,0.8); backdrop-filter: blur(20px); border-top: 1px solid var(--glass-border); padding: 40px 48px; margin-left: var(--sidebar-w); }
+.footer-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 32px; margin-bottom: 32px; }
+.footer-col-title { font-family: var(--font-data); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-tertiary); margin-bottom: 12px; }
+.footer-col p, .footer-col a { font-size: 13px; color: var(--text-secondary); line-height: 1.8; display: block; text-decoration: none; transition: color 0.18s; }
+.footer-col a:hover { color: var(--blue-300); }
+.footer-bottom { display: flex; align-items: center; justify-content: space-between; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.06); }
+.footer-brand { font-family: var(--font-display); font-size: 14px; font-weight: 700; background: linear-gradient(135deg, white, var(--blue-300)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.footer-copy { font-size: 12px; color: var(--text-tertiary); font-family: var(--font-data); }
+/* ============================================================ SCROLLBAR ============================================================ */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.22); }
+/* ============================================================ UTILITIES ============================================================ */
+.mt-4  { margin-top: 16px; }
+.mb-4  { margin-bottom: 16px; }
+.mb-6  { margin-bottom: 24px; }
+/* ============================================================ AI ASSISTANT FAB & CHAT ============================================================ */
+.ai-fab { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; align-items: center; gap: 10px; padding: 14px 22px; border-radius: var(--radius-full); background: linear-gradient(135deg, var(--fuchsia-600), var(--indigo-500), var(--cyan-500)); color: white; font-family: var(--font-display); font-size: 14px; font-weight: 700; cursor: pointer; border: none; box-shadow: 0 8px 32px rgba(192,38,211,0.4), 0 0 0 1px rgba(255,255,255,0.1); transition: all 0.3s cubic-bezier(0.4,0,0.2,1); animation: fab-glow 3s ease-in-out infinite; }
+.ai-fab:hover { transform: scale(1.05); box-shadow: 0 12px 40px rgba(192,38,211,0.5), 0 0 0 1px rgba(255,255,255,0.2); }
+.ai-fab .fab-icon { font-size: 18px; }
+@keyframes fab-glow { 0%,100% { box-shadow: 0 8px 32px rgba(192,38,211,0.4), 0 0 0 1px rgba(255,255,255,0.1); } 50% { box-shadow: 0 8px 32px rgba(192,38,211,0.6), 0 0 0 1px rgba(255,255,255,0.2), 0 0 20px rgba(192,38,211,0.3); } }
+.ai-chat { position: fixed; bottom: 24px; right: 24px; z-index: 10000; display: none; flex-direction: column; width: 420px; max-width: calc(100vw - 48px); height: 72vh; max-height: 600px; border-radius: var(--radius-xl); overflow: hidden; background: rgba(10,22,40,0.95); backdrop-filter: blur(32px) saturate(200%); border: 1px solid var(--glass-border-strong); box-shadow: 0 24px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05); animation: chat-in 0.3s ease; }
+.ai-chat.open { display: flex; }
+@keyframes chat-in { from { opacity: 0; transform: translateY(16px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
+.ai-chat-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: linear-gradient(135deg, var(--fuchsia-700), var(--indigo-500), var(--blue-600)); flex-shrink: 0; }
+.ai-chat-header-left { display: flex; align-items: center; gap: 10px; }
+.ai-avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--fuchsia-500), var(--cyan-400)); display: flex; align-items: center; justify-content: center; font-size: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+.ai-chat-title { font-family: var(--font-display); font-size: 14px; font-weight: 700; color: white; }
+.ai-chat-subtitle { font-size: 10px; color: rgba(255,255,255,0.7); }
+.ai-chat-header-right { display: flex; align-items: center; gap: 6px; }
+.ai-chat-btn { width: 28px; height: 28px; border-radius: 50%; background: rgba(255,255,255,0.15); border: none; color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 12px; transition: background 0.2s; }
+.ai-chat-btn:hover { background: rgba(255,255,255,0.25); }
+.ai-chat-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; background: rgba(10,22,40,0.6); }
+.ai-chat-body::-webkit-scrollbar { width: 4px; }
+.ai-chat-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
+.ai-msg { display: flex; gap: 8px; max-width: 88%; animation: msg-in 0.25s ease; }
+.ai-msg.user { align-self: flex-end; flex-direction: row-reverse; }
+@keyframes msg-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.ai-msg-avatar { width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; margin-top: 2px; }
+.ai-msg.assistant .ai-msg-avatar { background: linear-gradient(135deg, var(--fuchsia-500), var(--cyan-400)); }
+.ai-msg.user .ai-msg-avatar { background: var(--blue-600); }
+.ai-msg-bubble { padding: 10px 14px; border-radius: var(--radius-lg); font-size: 13px; line-height: 1.65; white-space: pre-wrap; }
+.ai-msg.assistant .ai-msg-bubble { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); color: var(--text-primary); border-top-left-radius: 4px; }
+.ai-msg.user .ai-msg-bubble { background: linear-gradient(135deg, var(--blue-600), var(--blue-500)); color: white; border-top-right-radius: 4px; }
+.ai-suggestions { display: flex; flex-direction: column; gap: 6px; padding-top: 4px; }
+.ai-suggestions-label { font-size: 10px; font-family: var(--font-data); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-tertiary); padding: 0 4px; }
+.ai-suggestion-btn { display: flex; align-items: flex-start; gap: 8px; padding: 10px 12px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: var(--radius-md); cursor: pointer; font-size: 12px; color: var(--text-secondary); text-align: left; transition: all 0.2s; font-family: var(--font-ui); line-height: 1.5; }
+.ai-suggestion-btn:hover { background: rgba(192,38,211,0.08); border-color: rgba(192,38,211,0.3); color: var(--text-primary); }
+.ai-suggestion-btn .sug-icon { font-size: 12px; flex-shrink: 0; margin-top: 1px; color: var(--fuchsia-500); }
+.ai-loading { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); border-radius: var(--radius-lg); border-top-left-radius: 4px; }
+.ai-loading-dots { display: flex; gap: 3px; }
+.ai-loading-dots span { width: 5px; height: 5px; border-radius: 50%; background: var(--text-tertiary); animation: bounce-dot 1.2s infinite; }
+.ai-loading-dots span:nth-child(2) { animation-delay: 0.15s; }
+.ai-loading-dots span:nth-child(3) { animation-delay: 0.3s; }
+@keyframes bounce-dot { 0%,80%,100% { transform: scale(0.6); opacity: 0.4; } 40% { transform: scale(1); opacity: 1; } }
+.ai-loading-text { font-size: 11px; color: var(--text-tertiary); }
+.ai-chat-input-area { display: flex; align-items: center; gap: 8px; padding: 12px 14px; border-top: 1px solid rgba(255,255,255,0.08); background: rgba(10,22,40,0.8); flex-shrink: 0; }
+.ai-chat-input { flex: 1; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius-full); padding: 10px 16px; font-size: 13px; color: var(--text-primary); font-family: var(--font-ui); outline: none; transition: all 0.2s; }
+.ai-chat-input::placeholder { color: var(--text-tertiary); }
+.ai-chat-input:focus { border-color: rgba(192,38,211,0.4); box-shadow: 0 0 0 3px rgba(192,38,211,0.1); }
+.ai-chat-input:disabled { opacity: 0.5; }
+.ai-send-btn { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--fuchsia-600), var(--cyan-500)); border: none; color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; transition: all 0.2s; flex-shrink: 0; }
+.ai-send-btn:hover { transform: scale(1.05); box-shadow: 0 4px 12px rgba(192,38,211,0.4); }
+.ai-send-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+.ai-chat-footer { padding: 6px 14px 8px; text-align: center; border-top: 1px solid rgba(255,255,255,0.04); flex-shrink: 0; }
+.ai-chat-footer p { font-size: 9px; color: var(--text-tertiary); font-family: var(--font-data); }
+/* ============================================================ RESPONSIVE ============================================================ */
+@media (max-width: 900px) {
+:root { --sidebar-w: 0px; }
+.sidebar { transform: translateX(-280px); }
+.content { margin-left: 0; padding: 32px 20px 60px; max-width: 100%; }
+.footer { margin-left: 0; padding: 32px 20px; }
+.footer-grid, .grid-2, .grid-3, .grid-4, .qr-grid, .metric-row { grid-template-columns: 1fr; }
+.scroll-progress { left: 0; }
+.footer-bottom { flex-direction: column; gap: 8px; text-align: center; }
+.ai-chat { width: calc(100vw - 32px); right: 16px; bottom: 16px; }
+.ai-fab { bottom: 16px; right: 16px; padding: 12px 18px; font-size: 13px; }
+}
+@media print {
+.sidebar, .top-bar, .back-top, .scroll-progress, .ai-fab, .ai-chat { display: none !important; }
+.content { margin-left: 0; padding: 0; }
+.footer { margin-left: 0; }
+.section { break-inside: avoid; }
+.glass-card, .coll-card { box-shadow: none; border: 1px solid #ddd; background: #f9fafb; }
+body { background: white; color: #1a1a2e; }
+.section-title, .card-h3, .prose h3 { -webkit-text-fill-color: #0F2952; }
+.coll-body { display: block !important; }
+.coll-body-inner { padding: 0 20px 20px !important; overflow: visible !important; }
+}
+</style>
+<base target="_blank">
+</head>
+<body>
+<div class="app-bg">
+<div class="bg-orb bg-orb-1"></div>
+<div class="bg-orb bg-orb-2"></div>
+<div class="bg-orb bg-orb-3"></div>
+<div class="bg-orb bg-orb-4"></div>
+<div class="bg-grid"></div>
+</div>
+<div class="scroll-progress" id="scrollProgress"></div>
+<div class="back-top" id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">▲</div>
+
+<!-- HEADER -->
+<header class="top-bar">
+<a class="logo" href="#">
+<img src="https://rgvteytgkugdqdodedxq.databasepad.com/storage/v1/object/public/bird-images/public/MTIT%20Logo.webp" class="logo-img" alt="BIRD 2026-2035" onerror="this.style.display='none'">
+<div>
+<div class="logo-text">BIRD 2026–2035</div>
+</div>
+<span class="logo-badge">BOI-MTIT</span>
+</a>
+<div class="header-center">
+<span class="manual-badge">User Manual <span>·</span> v2026-2035</span>
+</div>
+<div class="header-right">
+<div class="version-chip">📅 May 2026</div>
+<button class="btn-ai" onclick="toggleAIChat()">✦ Ask BIRD AI</button>
+<button class="btn-print" onclick="window.print()">🖨️ Print Manual</button>
+</div>
+</header>
+
+<div class="layout">
+<!-- SIDEBAR -->
+<nav class="sidebar" id="sidebar">
+<div class="sidebar-top">
+<div class="sidebar-heading">Table of Contents</div>
+</div>
+<div class="toc-section">
+<a class="toc-link active" href="#getting-started" onclick="setActive(this)"><span class="toc-num">1</span><span class="toc-icon">🚀</span>Getting Started</a>
+</div>
+<div class="toc-section">
+<a class="toc-link" href="#navigation" onclick="setActive(this)"><span class="toc-num">2</span><span class="toc-icon">🧭</span>Navigation Overview</a>
+<a class="toc-link" href="#sign-in" onclick="setActive(this)"><span class="toc-num">3</span><span class="toc-icon">🔐</span>Sign In & Account</a>
+<a class="toc-link" href="#creating-plans" onclick="setActive(this)"><span class="toc-num">4</span><span class="toc-icon">📋</span>Creating Plans</a>
+</div>
+<div class="toc-section">
+<div class="toc-section-label">Core Modules</div>
+<a class="toc-link" href="#mel-dashboard" onclick="setActive(this)"><span class="toc-num">5</span><span class="toc-icon">📊</span>MEL Dashboard</a>
+<a class="toc-link" href="#swot" onclick="setActive(this)"><span class="toc-num">6</span><span class="toc-icon">🔍</span>SWOT Analysis</a>
+<a class="toc-link" href="#systems-thinking" onclick="setActive(this)"><span class="toc-num">7</span><span class="toc-icon">🔄</span>Systems Thinking</a>
+<a class="toc-link" href="#strategy-matrix" onclick="setActive(this)"><span class="toc-num">8</span><span class="toc-icon">⚡</span>Strategy Matrix</a>
+<a class="toc-link" href="#balanced-scorecard" onclick="setActive(this)"><span class="toc-num">9</span><span class="toc-icon">🎯</span>Balanced Scorecard</a>
+<a class="toc-link" href="#paps" onclick="setActive(this)"><span class="toc-num">10</span><span class="toc-icon">🏗</span>PAPs Management</a>
+</div>
+<div class="toc-section">
+<div class="toc-section-label">AI & Tools</div>
+<a class="toc-link" href="#bird-ai" onclick="setActive(this)"><span class="toc-num">11</span><span class="toc-icon">✦</span>BIRD AI Assistant</a>
+<a class="toc-link" href="#templates" onclick="setActive(this)"><span class="toc-num">12</span><span class="toc-icon">📚</span>Templates Library</a>
+<a class="toc-link" href="#collaboration" onclick="setActive(this)"><span class="toc-num">13</span><span class="toc-icon">👥</span>Team Collaboration</a>
+<a class="toc-link" href="#export" onclick="setActive(this)"><span class="toc-num">14</span><span class="toc-icon">📄</span>Plan Export</a>
+<a class="toc-link" href="#settings" onclick="setActive(this)"><span class="toc-num">15</span><span class="toc-icon">⚙️</span>Settings</a>
+<a class="toc-link" href="#troubleshooting" onclick="setActive(this)"><span class="toc-num">16</span><span class="toc-icon">🔧</span>Troubleshooting</a>
+</div>
+<div class="toc-section">
+<div class="toc-section-label">Quick Links</div>
+<a class="toc-link" href="https://asilvainnovations.github.io/barmm-investment-roadmap/" onclick="setActive(this)"><span class="toc-num">↗</span><span class="toc-icon">🏠</span>Open Platform</a>
+</div>
+<div class="progress-track">
+<div class="progress-label"><span>Reading Progress</span><span id="progressPct">0%</span></div>
+<div class="progress-bar"><div class="progress-fill" id="sidebarProgress" style="width:0%"></div></div>
+</div>
+</nav>
+
+<!-- CONTENT -->
+<main class="content">
+<!-- HERO -->
+<div class="hero">
+<div class="hero-inner">
+<div class="hero-eyebrow">📘 Official Documentation</div>
+<h1 class="hero-title">BIRD 2026–2035<br>User Manual</h1>
+<p class="hero-subtitle">The complete guide to the Bangsamoro Investment Roadmap Development platform — from strategic planning to AI-powered execution. Built for planners, policymakers, and investors shaping BARMM's economic future.</p>
+<div class="hero-meta">
+<div class="hero-meta-item"><div class="dot"></div> Platform v2026-2035</div>
+<div class="hero-meta-item"><div class="dot"></div> Published: May 2026</div>
+<div class="hero-meta-item"><div class="dot"></div> 16 Sections · 50+ Features</div>
+<div class="hero-meta-item"><div class="dot"></div> BOI-MTIT, BARMM</div>
+</div>
+</div>
+</div>
+
+<!-- ============================= SECTION 1: GETTING STARTED ============================= -->
+<section class="section" id="getting-started">
+<div class="section-header">
+<div class="section-num">1</div>
+<div>
+<div class="section-title">Getting Started</div>
+<div class="section-subtitle">What is BIRD 2026–2035 and how to access it</div>
+</div>
+</div>
+
+<div class="callout callout-success">
+<div class="callout-icon">✓</div>
+<div class="callout-body">
+<div class="callout-title">What You Can Accomplish</div>
+<div class="callout-text"><ul>
+<li><strong>Monitor</strong> real-time KPIs across the Bangsamoro Balanced Scorecard</li>
+<li><strong>Diagnose</strong> your environment with AI-assisted <span class="tip" data-tip="Strengths, Weaknesses, Opportunities, Threats — a framework for internal and external environmental analysis">SWOT analysis</span> using BIRD's Resilience Index methodology</li>
+<li><strong>Visualize</strong> complex systemic relationships using <span class="tip" data-tip="Causal Loop Diagrams map how variables influence each other, revealing reinforcing and balancing feedback loops">Causal Loop Diagrams</span> and Systems Archetypes</li>
+<li><strong>Formulate</strong> robust SO, ST, WO, and WT strategies via the <span class="tip" data-tip="TOWS Matrix cross-references Strengths/Weaknesses with Opportunities/Threats to generate four strategy types">TOWS Matrix</span></li>
+<li><strong>Track</strong> execution through <span class="tip" data-tip="Programs, Activities, and Projects — the execution layer of strategic planning">PAPs Management</span> with budget tracking</li>
+<li><strong>Consult</strong> BIRD AI — your embedded investment & strategy expert</li>
+<li><strong>Export</strong> print-ready strategic plan documents for boards and official submissions</li>
+</ul></div>
+</div>
+</div>
+
+<div class="coll-card open">
+<div class="coll-header" onclick="toggleColl(this.parentElement)">
+<div class="coll-header-icon">🚀</div>
+<div class="coll-header-text">
+<div class="coll-header-title">What is BIRD 2026–2035?</div>
+<div class="coll-header-sub">Platform overview and purpose</div>
+</div>
+<div class="coll-chevron">▾</div>
+</div>
+<div class="coll-body"><div class="coll-body-inner">
+<div class="prose" style="margin-top:8px;">
+<p>BIRD 2026–2035 is a strategic planning platform built for the <strong>Bangsamoro Investment Roadmap Development</strong> — the 10-year investment blueprint for the Bangsamoro Autonomous Region in Muslim Mindanao (BARMM). The platform integrates:</p>
+</div>
+<div class="grid-3" style="margin-top:12px;">
+<div style="padding:14px; background:rgba(37,99,235,0.08); border:1px solid rgba(37,99,235,0.2); border-radius:var(--radius-md);">
+<div style="font-weight:600; font-size:13px; margin-bottom:4px;">📊 Real-Time KPIs</div>
+<div style="font-size:12px; color:var(--text-secondary);">MEL Dashboard with live monitoring across BSC perspectives</div>
+</div>
+<div style="padding:14px; background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.2); border-radius:var(--radius-md);">
+<div style="font-weight:600; font-size:13px; margin-bottom:4px;">✦ AI-Powered Analysis</div>
+<div style="font-size:12px; color:var(--text-secondary);">SWOT generation, strategy formulation, and insights</div>
+</div>
+<div style="padding:14px; background:rgba(6,182,212,0.08); border:1px solid rgba(6,182,212,0.2); border-radius:var(--radius-md);">
+<div style="font-weight:600; font-size:13px; margin-bottom:4px;">🔄 Systems Thinking</div>
+<div style="font-size:12px; color:var(--text-secondary);">CLD builder, Meadows leverage points, archetypes</div>
+</div>
+<div style="padding:14px; background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.2); border-radius:var(--radius-md);">
+<div style="font-weight:600; font-size:13px; margin-bottom:4px;">🎯 Balanced Scorecard</div>
+<div style="font-size:12px; color:var(--text-secondary);">4-perspective tracking with calibrated targets</div>
+</div>
+<div style="padding:14px; background:rgba(99,102,241,0.08); border:1px solid rgba(99,102,241,0.2); border-radius:var(--radius-md);">
+<div style="font-weight:600; font-size:13px; margin-bottom:4px;">🏗 PAPs Management</div>
+<div style="font-size:12px; color:var(--text-secondary);">Programs, activities, projects with budget tracking</div>
+</div>
+<div style="padding:14px; background:rgba(192,38,211,0.08); border:1px solid rgba(192,38,211,0.2); border-radius:var(--radius-md);">
+<div style="font-weight:600; font-size:13px; margin-bottom:4px;">🤖 BIRD AI</div>
+<div style="font-size:12px; color:var(--text-secondary);">Expert AI consultant for BARMM investment strategy</div>
+</div>
+</div>
+</div></div>
+</div>
+
+<div class="coll-card">
+<div class="coll-header" onclick="toggleColl(this.parentElement)">
+<div class="coll-header-icon">💻</div>
+<div class="coll-header-text">
+<div class="coll-header-title">Minimum Requirements</div>
+<div class="coll-header-sub">Browser and device specifications</div>
+</div>
+<div class="coll-chevron">▾</div>
+</div>
+<div class="coll-body"><div class="coll-body-inner">
+<table class="data-table" style="margin-top:8px;">
+<thead><tr><th>Requirement</th><th>Specification</th></tr></thead>
+<tbody>
+<tr><td>Browser</td><td>Chrome 100+, Firefox 100+, Safari 16+, Edge 100+</td></tr>
+<tr><td>Internet</td><td>Required for AI features and cloud sync</td></tr>
+<tr><td>Screen</td><td>1024×768 minimum (1280×800+ recommended)</td></tr>
+<tr><td>Mobile</td><td>iOS 15+ / Android 10+ (PWA installable)</td></tr>
+</tbody>
+</table>
+<div class="example-box" style="margin-top:12px;">
+<strong>Access the Platform:</strong> Navigate to <a href="https://asilvainnovations.github.io/barmm-investment-roadmap/" style="color:var(--blue-300);">asilvainnovations.github.io/barmm-investment-roadmap/</a> or open the installed Progressive Web App (PWA) on your device.
+</div>
+</div></div>
+</div>
+</section>
+
+<!-- ============================= SECTION 2: NAVIGATION ============================= -->
+<section class="section" id="navigation">
+<div class="section-header">
+<div class="section-num">2</div>
+<div>
+<div class="section-title">Navigation Overview</div>
+<div class="section-subtitle">Platform layout, sidebar, and topbar controls</div>
+</div>
+</div>
+
+<div class="coll-card open">
+<div class="coll-header" onclick="toggleColl(this.parentElement)">
+<div class="coll-header-icon">🧭</div>
+<div class="coll-header-text">
+<div class="coll-header-title">Platform Layout</div>
+<div class="coll-header-sub">Sidebar, main content, and floating elements</div>
+</div>
+<div class="coll-chevron">▾</div>
+</div>
+<div class="coll-body"><div class="coll-body-inner">
+<div class="glass-card" style="margin-top:8px; font-family: var(--font-data); font-size: 12px; line-height: 1.8; color: var(--text-secondary); background: rgba(0,0,0,0.2);">
+<pre style="color: var(--cyan-400); font-size: 11px; line-height: 1.6; white-space: pre-wrap;">┌─────────────────────────────────────────────────────────────────┐
+│  [≡ Sidebar]  [BIRD 2026–2035 Logo]          [Topbar Controls] │
+├────────────┬────────────────────────────────────────────────────┤
+│            │                                                    │
+│  Sidebar   │            Main Content Area                      │
+│  ──────    │                                                    │
+│  • MEL     │    (Selected view renders here)                   │
+│  • SWOT    │                                                    │
+│  • Systems │                                                    │
+│  • Strategy│                                                    │
+│  • BSC     │                                                    │
+│  • PAPs    │                                           [✦ AI]  │
+│  • ...     │                                                    │
+└────────────┴────────────────────────────────────────────────────┘</pre>
+</div>
+</div></div>
+</div>
+
+<div class="coll-card">
+<div class="coll-header" onclick="toggleColl(this.parentElement)">
+<div class="coll-header-icon">📑</div>
+<div class="coll-header-text">
+<div class="coll-header-title">Sidebar Navigation</div>
+<div class="coll-header-sub">Menu items and keyboard shortcuts</div>
+</div>
+<div class="coll-chevron">▾</div>
+</div>
+<div class="coll-body"><div class="coll-body-inner">
+<table class="data-table" style="margin-top:8px;">
+<thead><tr><th>Menu Item</th><th>Function</th></tr></thead>
+<tbody>
+<tr><td>MEL Dashboard</td><td>Monitor KPIs and plan progress</td></tr>
+<tr><td>SWOT Analysis</td><td>Enter and score SWOT items with Resilience Index</td></tr>
+<tr><td>Systems Thinking</td><td>Build causal loop diagrams and apply archetypes</td></tr>
+<tr><td>Strategy Matrix</td><td>Generate TOWS strategic options</td></tr>
+<tr><td>Balanced Scorecard</td><td>Manage objectives and KPIs across 4 perspectives</td></tr>
+<tr><td>PAPs Management</td><td>Track programs, activities, and projects</td></tr>
+<tr><td>Templates Library</td><td>Browse and apply plan templates</td></tr>
+<tr><td>Team Collaboration</td><td>Invite members and collaborate in real-time</td></tr>
+<tr><td>Plan Generator</td><td>Export reports (PDF, Word, Excel)</td></tr>
+<tr><td>Settings</td><td>Account and preferences</td></tr>
+</tbody>
+</table>
+<div class="callout callout-info" style="margin-top:12px;">
+<div class="callout-icon">ℹ️</div>
+<div class="callout-body"><div class="callout-title">Collapse the Sidebar</div><div class="callout-text">Click the ← button at the bottom of the sidebar (desktop only). On mobile, use the ≡ hamburger button in the top bar.</div></div>
+</div>
+</div></div>
+</div>
+
+<div class="coll-card">
+<div class="coll-header" onclick="toggleColl(this.parentElement)">
+<div class="coll-header-icon">🔝</div>
+<div class="coll-header-text">
+<div class="coll-header-title">Topbar Controls</div>
+<div class="coll-header-sub">Plan selector, sync status, and actions</div>
+</div>
+<div class="coll-chevron">▾</div>
+</div>
+<div class="coll-body"><div class="coll-body-inner">
+<div class="grid-2" style="margin-top:8px; gap:12px;">
+<div style="padding:12px; background:rgba(37,99,235,0.07); border:1px solid rgba(37,99,235,0.18); border-radius:var(--radius-md);">
+<div style="font-weight:600; font-size:13px; color:var(--text-primary); margin-bottom:4px;">Plan Selector</div>
+<div style="font-size:12px; color:var(--text-secondary);">Dropdown to switch between multiple strategic plans</div>
+</div>
+<div style="padding:12px; background:rgba(16,185,129,0.07); border:1px solid rgba(16,185,129,0.18); border-radius:var(--radius-md);">
+<div style="font-weight:600; font-size:13px; color:var(--text-primary); margin-bottom:4px;">Sync Status</div>
+<div style="font-size:12px; color:var(--text-secondary);">Green = synced, Amber = offline, changes saved locally</div>
+</div>
+<div style="padding:12px; background:rgba(6,182,212,0.07); border:1px solid rgba(6,182,212,0.18); border-radius:var(--radius-md);">
+<div style="font-weight:600; font-size:13px; color:var(--text-primary); margin-bottom:4px;">Share Button</div>
+<div style="font-size:12px; color:var(--text-secondary);">Generate a public share link for your current plan</div>
+</div>
+<div style="padding:12px; background:rgba(192,38,211,0.07); border:1px solid rgba(192,38,211,0.18); border-radius:var(--radius-md);">
+<div style="font-weight:600; font-size:13px; color:var(--text-primary); margin-bottom:4px;">User Menu</div>
+<div style="font-size:12px; color:var(--text-secondary);">Profile, settings, and sign out</div>
+</div>
+</div>
+</div></div>
+</div>
+</section>
+
+<!-- ============================= SECTION 3: SIGN IN ============================= -->
+<section class="section" id="sign-in">
+<div class="section-header">
+<div class="section-num">3</div>
+<div>
+<div class="section-title">Sign In & Account Setup</div>
+<div class="section-subtitle">Creating accounts, logging in, and profile management</div>
+</div>
+</div>
+
+<div class="coll-card open">
+<div class="coll-header" onclick="toggleColl(this.parentElement)">
+<div class="coll-header-icon">🔐</div>
+<div class="coll-header-text">
+<div class="coll-header-title">Creating Your Account</div>
+<div class="coll-header-sub">Step-by-step registration</div>
+</div>
+<div class="coll-chevron">▾</div>
+</div>
+<div class="coll-body"><div class="coll-body-inner">
+<div class="flow-steps" style="margin-top:8px;">
+<div class="flow-step"><div class="flow-step-num">1</div><div class="flow-step-body"><div class="flow-step-title">Click Sign In</div><div class="flow-step-desc">Click the Sign In button in the top right or from the landing page.</div></div></div>
+<div class="flow-step"><div class="flow-step-num">2</div><div class="flow-step-body"><div class="flow-step-title">Select Sign Up</div><div class="flow-step-desc">Below the sign-in form, click "Sign up" to begin registration.</div></div></div>
+<div class="flow-step"><div class="flow-step-num">3</div><div class="flow-step-body"><div class="flow-step-title">Enter Your Details</div><div class="flow-step-desc">Enter your full name, email address, and a password (minimum 8 characters).</div></div></div>
+<div class="flow-step"><div class="flow-step-num">4</div><div class="flow-step-body"><div class="flow-step-title">Create Account</div><div class="flow-step-desc">Click "Create Account" and check your inbox for a verification email.</div></div></div>
+<div class="flow-step"><div class="flow-step-num">5</div><div class="flow-step-body"><div class="flow-step-title">Verify Email</div><div class="flow-step-desc">Click the verification link in the email to activate your account.</div></div></div>
+</div>
+<div class="callout callout-info" style="margin-top:12px;">
+<div class="callout-icon">✉️</div>
+<div class="callout-body"><div class="callout-title">Magic Link Option</div><div class="callout-text">Enter your email on the sign-in form and click "Send magic link to my email" for password-free access.</div></div>
+</div>
+</div></div>
+</div>
+
+<div class="coll-card">
+<div class="coll-header" onclick="toggleColl(this.parentElement)">
+<div class="coll-header-icon">👤</div>
+<div class="coll-header-text">
+<div class="coll-header-title">Completing Your Profile</div>
+<div class="coll-header-sub">Personalize your workspace</div>
+</div>
+<div class="coll-chevron">▾</div>
+</div>
+<div class="coll-body"><div class="coll-body-inner">
+<div class="prose" style="margin-top:8px;"><ol>
+<li>Click your initials/avatar in the top right</li>
+<li>Select <strong>My Profile</strong></li>
+<li>Fill in: Organization, Job Title, Phone Number</li>
+<li>Upload a profile photo (optional)</li>
+<li>Click <strong>Save Changes</strong></li>
+</ol></div>
+</div></div>
+</div>
+</section>
+
+<!-- ============================= SECTION 4: CREATING PLANS ============================= -->
+<section class="section" id="creating-plans">
+<div class="section-header">
+<div class="section-num">4</div>
+<div>
+<div class="section-title">Creating & Managing Plans</div>
+<div class="section-subtitle">Create, switch, import, and export strategic plans</div>
+</div>
+</div>
+
+<div class="coll-card open">
+<div class="coll-header" onclick="toggleColl(this.parentElement)">
+<div class="coll-header-icon">➕</div>
+<div class="coll-header-text">
+<div class="coll-header-title">Create a New Plan</div>
+<div class="coll-header-sub">Two methods to start planning</div>
+</div>
+<div class="coll-chevron">▾</div>
+</div>
+<div class="coll-body"><div class="coll-body-inner">
+<div class="grid-2" style="margin-top:8px; gap:12px;">
+<div style="padding:14px; background:rgba(37,99,235,0.08); border:1px solid rgba(37,99,235,0.2); border-radius:var(--radius-md);">
+<div style="font-weight:600; font-size:13px; color:var(--blue-300); margin-bottom:6px;">Method 1 — From Sidebar</div>
+<div style="font-size:12px; color:var(--text-secondary); line-height:1.6;">Click the plan name in the sidebar header → Select "+ New Plan" from the dropdown</div>
+</div>
+<div style="padding:14px; background:rgba(6,182,212,0.08); border:1px solid rgba(6,182,212,0.2); border-radius:var(--radius-md);">
+<div style="font-weight:600; font-size:13px; color:#67e8f9; margin-bottom:6px;">Method 2 — From Landing Page</div>
+<div style="font-size:12px; color:var(--text-secondary); line-height:1.6;">Click "Start Planning" on the landing page — a new plan is automatically created</div>
+</div>
+</div>
+</div></div>
+</div>
+
+<div class="coll-card">
+<div class="coll-header" onclick="toggleColl(this.parentElement)">
+<div class="coll-header-icon">📝</div>
+<div class="coll-header-text">
+<div class="coll-header-title">Plan Fields</div>
+<div class="coll-header-sub">Required and optional plan metadata</div>
+</div>
+<div class="coll-chevron">▾</div>
+</div>
+<div class="coll-body"><div class="coll-body-inner">
+<table class="data-table" style="margin-top:8px;">
+<thead><tr><th>Field</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td>Plan Name</td><td>Descriptive title (e.g., "BARMM Halal Sector Strategic Plan 2026")</td></tr>
+<tr><td>Organization</td><td>Your agency/department (e.g., "BOI-MTIT, BARMM")</td></tr>
+<tr><td>Vision Statement</td><td>Long-term aspirational goal</td></tr>
+<tr><td>Mission Statement</td><td>How you will achieve the vision</td></tr>
+<tr><td>Strategic Intent</td><td>One-sentence statement of strategic direction</td></tr>
+<tr><td>Planning Period</td><td>Start and end year (e.g., 2026–2035)</td></tr>
+</tbody>
+</table>
+</div></div>
+</div>
+
+<div class="coll-card">
+<div class="coll-header" onclick="toggleColl(this.parentElement)">
+<div class="coll-header-icon">📦</div>
+<div class="coll-header-text">
+<div class="coll-header-title">Importing / Exporting a Plan (JSON)</div>
+<div class="coll-header-sub">Backup and restore plan data</div>
+</div>
+<div class="coll-chevron">▾</div>
+</div>
+<div class="coll-body"><div class="coll-body-inner">
+<div class="grid-2" style="margin-top:8px; gap:12px;">
+<div style="padding:12px; background:rgba(16,185,129,0.07); border:1px solid rgba(16,185,129,0.18); border-radius:var(--radius-md);">
+<div style="font-weight:600; font-size:13px; color:#34D399; margin-bottom:4px;">Export</div>
+<div style="font-size:12px; color:var(--text-secondary);">Topbar → ⋮ → Export Plan Data (downloads JSON file)</div>
+</div>
+<div style="padding:12px; background:rgba(37,99,235,0.07); border:1px solid rgba(37,99,235,0.18); border-radius:var(--radius-md);">
+<div style="font-weight:600; font-size:13px; color:var(--blue-300); margin-bottom:4px;">Import</div>
+<div style="font-size:12px; color:var(--text-secondary);">Topbar → ⋮ → Import Plan Data (upload a previously exported JSON)</div>
+</div>
+</div>
+</div></div>
+</div>
+</section>
+
+<!-- ============================= SECTION 5: MEL DASHBOARD ============================= -->
+<section class="section" id="mel-dashboard">
+<div class="section-header">
+<div class="section-num">5</div>
+<div>
+<div class="section-title">MEL Dashboard</div>
+<div class="section-subtitle">Monitoring, Evaluation, and Learning — your real-time command center</div>
+</div>
+</div>
+
+<div class="callout callout-info">
+<div class="callout-icon">📊</div>
+<div class="callout-body">
+<div class="callout-title">Default Landing View</div>
+<div class="callout-text">The MEL Dashboard is the <strong>default view</strong> when you enter any strategic plan workspace. It provides "Total Clarity" — a unified monitoring, evaluation, and learning command center for your entire strategic plan.</div>
+</div>
+</div>
+
+<div class="coll-card open">
+<div class="coll-header" onclick="toggleColl(this.parentElement)">
+<div class="coll-header-icon">📊</div>
+<div class="coll-header-text">
+<div class="coll-header-title">Dashboard Panels</div>
+<div class="coll-header-sub">Five integrated monitoring panels</div>
+</div>
+<div class="coll-chevron">▾</div>
+</div>
+<div class="coll-body"><div class="coll-body-inner">
+<div style="display:flex; flex-direction:column; gap:10px; margin-top:8px;">
+<div style="padding:14px; background:rgba(37,99,235,0.07); border:1px solid rgba(37,99,235,0.18); border-radius:var(--radius-lg);">
+<div style="font-weight:600; font-size:13px; color:var(--text-primary); margin-bottom:4px;">Panel A — Pareto Vital Few KPIs</div>
+<div style="font-size:12.5px; color:var(--text-secondary); line-height:1.6;">Displays 6 headline KPIs derived from the BIRD BSC. Ring progress charts show current vs. target. Status badges: On Track (green), Watch (blue), Behind (amber), Critical (red). Tap/click any KPI for details.</div>
+</div>
+<div style="padding:14px; background:rgba(16,185,129,0.07); border:1px solid rgba(16,185,129,0.18); border-radius:var(--radius-lg);">
+<div style="font-weight:600; font-size:13px; color:var(--text-primary); margin-bottom:4px;">Panel B — BSC Leverage Points</div>
+<div style="font-size:12.5px; color:var(--text-secondary); line-height:1.6;">Shows critical leverage points across 4 BSC perspectives (Financial, Stakeholder, Internal Process, Learning & Growth). Each row displays current vs. 2030 and 2035 targets.</div>
+</div>
+<div style="padding:14px; background:rgba(6,182,212,0.07); border:1px solid rgba(6,182,212,0.18); border-radius:var(--radius-lg);">
+<div style="font-weight:600; font-size:13px; color:var(--text-primary); margin-bottom:4px;">Panel C — Priority Action Plan</div>
+<div style="font-size:12.5px; color:var(--text-secondary); line-height:1.6;">Lists the 10 priority actions for 2026 (Foundation Phase). Filter by Priority (Critical / High / Medium), Status (In Progress / Development / Not Started), and Quarter (Q1–Q4).</div>
+</div>
+<div style="padding:14px; background:rgba(245,158,11,0.07); border:1px solid rgba(245,158,11,0.18); border-radius:var(--radius-lg);">
+<div style="font-weight:600; font-size:13px; color:var(--text-primary); margin-bottom:4px;">Panel D — Feedback Loop Health Monitor</div>
+<div style="font-size:12.5px; color:var(--text-secondary); line-height:1.6;">Displays active Causal Loops (R1, R2, B1, B2…) from the Systems Thinking layer. Shows activation percentage and health status.</div>
+</div>
+<div style="padding:14px; background:rgba(99,102,241,0.07); border:1px solid rgba(99,102,241,0.18); border-radius:var(--radius-lg);">
+<div style="font-weight:600; font-size:13px; color:var(--text-primary); margin-bottom:4px;">Panel E — Phase Progress Tracker</div>
+<div style="font-size:12.5px; color:var(--text-secondary); line-height:1.6;">Timeline view of all 3 BIRD implementation phases with budget allocations.</div>
+</div>
+</div>
+
+<div class="grid-3" style="margin-top:16px; gap:12px;">
+<div style="padding:12px; background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.2); border-radius:var(--radius-md); text-align:center;">
+<div class="phase-badge phase-1">Phase 1</div>
+<div style="font-weight:600; font-size:13px; margin-bottom:4px;">Foundation Building</div>
+<div style="font-size:11px; color:var(--text-secondary);">2026–2028 · ₱35–45B</div>
+</div>
+<div style="padding:12px; background:rgba(37,99,235,0.08); border:1px solid rgba(37,99,235,0.2); border-radius:var(--radius-md); text-align:center;">
+<div class="phase-badge phase-2">Phase 2</div>
+<div style="font-weight:600; font-size:13px; margin-bottom:4px;">Acceleration</div>
+<div style="font-size:11px; color:var(--text-secondary);">2029–2032 · ₱50–65B</div>
+</div>
+<div style="padding:12px; background:rgba(6,182,212,0.08); border:1px solid rgba(6,182,212,0.2); border-radius:var(--radius-md); text-align:center;">
+<div class="phase-badge phase-3">Phase 3</div>
+<div style="font-weight:600; font-size:13px; margin-bottom:4px;">Consolidation</div>
+<div style="font-size:11px; color:var(--text-secondary);">2033–2035 · ₱35–50B</div>
+</div>
+</div>
+</div></div>
+</div>
+</section>
+
+<!-- ============================= SECTION 6: SWOT ============================= -->
+<section class="section" id="swot">
+<div class="section-header">
+<div class="section-num">6</div>
+<div>
+<div class="section-title">SWOT Analysis</div>
+<div class="section-subtitle">Phase 1 Diagnostics — guided environmental analysis with Resilience Index</div>
+</div>
+</div>
+
+<div class="coll-card open">
+<div class="coll-header" onclick="toggleColl(this.parentElement)">
+<div class="coll-header-icon">🔍</div>
+<div class="coll-header-text">
+<div class="coll-header-title">Adding SWOT Items</div>
+<div class="coll-header-sub">Manual entry with Impact and Likelihood scoring</div>
+</div>
+<div class="coll-chevron">▾</div>
+</div>
+<div class="coll-body"><div class="coll-body-inner">
+<div class="flow-steps" style="margin-top:8px;">
+<div class="flow-step"><div class="flow-step-num">1</div><div class="flow-step-body"><div class="flow-step-title">Navigate to SWOT Analysis</div><div class="flow-step-desc">Select from the sidebar navigation.</div></div></div>
+<div class="flow-step"><div class="flow-step-num">2</div><div class="flow-step-body"><div class="flow-step-title">Select the Quadrant Tab</div><div class="flow-step-desc">Choose: Strengths | Weaknesses | Opportunities | Threats</div></div></div>
+<div class="flow-step"><div class="flow-step-num">3</div><div class="flow-step-body"><div class="flow-step-title">Click + Add Item</div><div class="flow-step-desc">Enter a description of the SWOT item.</div></div></div>
+<div class="flow-step"><div class="flow-step-num">4</div><div class="flow-step-body"><div class="flow-step-title">Rate Impact Score (1–5) and Likelihood Score (1–5)</div><div class="flow-step-desc">Click Save. The platform automatically computes Resilience Index scores.</div></div></div>
+</div>
+</div></div>
+</div>
+
+<div class="coll-card">
+<div class="coll-header" onclick="toggleColl(this.parentElement)">
+<div class="coll-header-icon">✦</div>
+<div class="coll-header-text">
+<div class="coll-header-title">AI-Assisted SWOT Generation</div>
+<div class="coll-header-sub">Let BIRD AI draft contextually relevant SWOT items</div>
+</div>
+<div class="coll-chevron">▾</div>
+</div>
+<div class="coll-body"><div class="coll-body-inner">
+<div class="flow-steps" style="margin-top:8px;">
+<div class="flow-step"><div class="flow-step-num">1</div><div class="flow-step-body"><div class="flow-step-title">Click ✨ Generate with BIRD AI</div><div class="flow-step-desc">Optionally provide context about your sector or strategic intent.</div></div></div>
+<div class="flow-step"><div class="flow-step-num">2</div><div class="flow-step-body"><div class="flow-step-title">Review AI-Generated Items</div><div class="flow-step-desc">Each item appears with an "AI Generated" badge for easy identification.</div></div></div>
+<div class="flow-step"><div class="flow-step-num">3</div><div class="flow-step-body"><div class="flow-step-title">Accept, Edit, or Reject</div><div class="flow-step-desc">Accept items individually, edit descriptions, or reject irrelevant suggestions.</div></div></div>
+</div>
+</div></div>
+</div>
+
+<div class="coll-card">
+<div class="coll-header" onclick="toggleColl(this.parentElement)">
+<div class="coll-header-icon">📐</div>
+<div class="coll-header-text">
+<div class="coll-header-title">Resilience Index (RI) Scoring</div>
+<div class="coll-header-sub">BIRD's official mathematical methodology</div>
+</div>
+<div class="coll-chevron">▾</div>
+</div>
+<div class="coll-body"><div class="coll-body-inner">
+<table class="data-table" style="margin-top:8px;">
+<thead><tr><th>SWOT Factor</th><th>Formula</th><th>Meaning</th></tr></thead>
+<tbody>
+<tr><td>Strengths</td><td>RI = (Impact × Likelihood) / 5</td><td>Resilience capacity (1–5)</td></tr>
+<tr><td>Opportunities</td><td>RI = √(Impact × Likelihood)</td><td>Resilience via opportunity exploitation (1–5)</td></tr>
+<tr><td>Weaknesses</td><td>Risk Score = Impact × Likelihood</td><td>Internal risk exposure (1–25)</td></tr>
+<tr><td>Threats</td><td>VI = (Impact² × Likelihood) / 25</td><td>External vulnerability (1–5)</td></tr>
+</tbody>
+</table>
+<div class="callout callout-info" style="margin-top:12px;">
+<div class="callout-icon">ℹ️</div>
+<div class="callout-body"><div class="callout-title">Auto-Color Coding</div><div class="callout-text">Items are automatically color-coded by score for quick prioritization. Critical items (highest scores) appear at the top of the Impact view.</div></div>
+</div>
+</div></div>
+</div>
+</section>
+
+<!-- ============================= SECTION 7: SYSTEMS THINKING ============================= -->
+<section class="section" id="systems-thinking">
+<div class="section-header">
+<div class="section-num">7</div>
+<div>
+<div class="section-title">Systems Thinking</div>
+<div class="section-subtitle">Causal Loop Diagrams, Archetypes, and Leverage Points</div>
+</div>
+</div>
+
+<div class="callout callout-ai">
+<div class="callout-icon">💡</div>
+<div class="callout-body">
+<div class="callout-title">Key Insight</div>
+<div class="callout-text">Every strategic problem is embedded in a system. The Systems Thinking module helps you move beyond listing problems to understanding the causal structures that generate them — so your interventions address root causes, not just symptoms.</div>
+</div>
+</div>
+
+<div class="coll-card open">
+<div class="coll-header" onclick="toggleColl(this.parentElement)">
+<div class="coll-header-icon">🔗</div>
+<div class="coll-header-text">
+<div class="coll-header-title">Building a Causal Loop Diagram</div>
+<div class="coll-header-sub">Add nodes, create links, detect loops</div>
+</div>
+<div class="coll-chevron">▾</div>
+</div>
+<div class="coll-body"><div class="coll-body-inner">
+<div class="flow-steps" style="margin-top:8px;">
+<div class="flow-step"><div class="flow-step-num">1</div><div class="flow-step-body"><div class="flow-step-title">Add Nodes</div><div class="flow-step-desc">Click "+ Add Node" (or double-click the canvas). Enter the variable name (e.g., "Investment Approvals", "BHB Certification Quality"). Drag nodes to position them.</div></div></div>
+<div class="flow-step"><div class="flow-step-num">2</div><div class="flow-step-body"><div class="flow-step-title">Add Links</div><div class="flow-step-desc">Hover over a node until you see the connector point. Drag to another node to create a causal link. Set polarity: + (reinforcing) or – (counteracting).</div></div></div>
+<div class="flow-step"><div class="flow-step-num">3</div><div class="flow-step-body"><div class="flow-step-title">Detect Loops</div><div class="flow-step-desc">The system automatically detects Reinforcing (R) and Balancing (B) loops. Loops are highlighted with directional arrows.</div></div></div>
+</div>
+</div></div>
+</div>
+
+<div class="coll-card">
+<div class="coll-header" onclick="toggleColl(this.parentElement)">
+<div class="coll-header-icon">🧩</div>
+<div class="coll-header-text">
+<div class="coll-header-title">Systems Archetypes Library</div>
+<div class="coll-header-sub">7 pre-built archetypes from the BIRD framework</div>
+</div>
+<div class="coll-chevron">▾</div>
+</div>
+<div class="coll-body"><div class="coll-body-inner">
+<table class="data-table" style="margin-top:8px;">
+<thead><tr><th>Archetype</th><th>BARMM Context</th></tr></thead>
+<tbody>
+<tr><td>Fixes that Fail</td><td>Agricultural subsidy dependency suppresses market signals</td></tr>
+<tr><td>Shifting the Burden</td><td>Donor dependency undermines autonomous revenue generation</td></tr>
+<tr><td>Success to the Successful</td><td>Mainland vs. island province development disparity</td></tr>
+<tr><td>Growth & Underinvestment</td><td>Investment surge outpaces energy/skills/digital capacity</td></tr>
+<tr><td>Escalation</td><td>Rido/clan dynamics vs inter-provincial competition</td></tr>
+<tr><td>Big Man</td><td>Patronage politics undermines governance effectiveness</td></tr>
+<tr><td>Tragedy of the Commons</td><td>Fragmented watershed/fishery governance depletes resources</td></tr>
+</tbody>
+</table>
+<div class="callout callout-info" style="margin-top:12px;">
+<div class="callout-icon">ℹ️</div>
+<div class="callout-body"><div class="callout-title">Apply Archetype</div><div class="callout-text">Click "Apply Archetype" to add a template CLD to your canvas. Then rename nodes and adjust link strengths to match your specific context.</div></div>
+</div>
+</div></div>
+</div>
+
+<div class="coll-card">
+<div class="coll-header" onclick="toggleColl(this.parentElement)">
+<div class="coll-header-icon">⚡</div>
+<div class="coll-header-text">
+<div class="coll-header-title">Leverage Point Analysis</div>
+<div class="coll-header-sub">Meadows' 12 levels of system intervention</div>
+</div>
+<div class="coll-chevron">▾</div>
+</div>
+<div class="coll-body"><div class="coll-body-inner">
+<div class="prose" style="margin-top:8px;">
+<p>After building your CLD, click <strong>Analyze Leverage Points</strong>. BIRD AI ranks interventions using Meadows' 12 leverage levels (L1–L12) and maps results to TOWS quadrants for strategic action.</p>
+</div>
+<div class="grid-3" style="margin-top:12px; gap:12px;">
+<div style="padding:12px; background:rgba(99,102,241,0.08); border:1px solid rgba(99,102,241,0.2); border-radius:var(--radius-md); text-align:center;">
+<div style="font-family:var(--font-data); font-size:11px; font-weight:700; color:#a5b4fc; margin-bottom:4px;">L1–L3</div>
+<div style="font-size:13px; font-weight:600; color:var(--text-primary);">Paradigm & Goals</div>
+<div style="font-size:11px; color:var(--text-tertiary); margin-top:4px;">Highest leverage · Transformative</div>
+</div>
+<div style="padding:12px; background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.2); border-radius:var(--radius-md); text-align:center;">
+<div style="font-family:var(--font-data); font-size:11px; font-weight:700; color:#FC8181; margin-bottom:4px;">L4–L6</div>
+<div style="font-size:13px; font-weight:600; color:var(--text-primary);">Information & Rules</div>
+<div style="font-size:11px; color:var(--text-tertiary); margin-top:4px;">Medium-High · Systemic</div>
+</div>
+<div style="padding:12px; background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.2); border-radius:var(--radius-md); text-align:center;">
+<div style="font-family:var(--font-data); font-size:11px; font-weight:700; color:#FBBF24; margin-bottom:4px;">L7–L12</div>
+<div style="font-size:13px; font-weight:600; color:var(--text-primary);">Feedback & Parameters</div>
+<div style="font-size:11px; color:var(--text-tertiary); margin-top:4px;">Lower leverage · Incremental</div>
+</div>
+</div>
+</div></div>
+</div>
+</section>
+
+<!-- ============================= SECTION 8: STRATEGY MATRIX ============================= -->
+<section class="section" id="strategy-matrix">
+<div class="section-header">
+<div class="section-num">8</div>
+<div>
+<div class="section-title">Strategy Matrix (TOWS)</div>
+<div class="section-subtitle">Generate SO, ST, WO, WT strategic options from SWOT data</div>
+</div>
+</div>
+
+<div class="coll-card open">
+<div class="coll-header" onclick="toggleColl(this.parentElement)">
+<div class="coll-header-icon">⚡</div>
+<div class="coll-header-text">
+<div class="coll-header-title">The TOWS Quadrants</div>
+<div class="coll-header-sub">Four strategy types explained</div>
+</div>
+<div class="coll-chevron">▾</div>
+</div>
+<div class="coll-body"><div class="coll-body-inner">
+<table class="data-table" style="margin-top:8px;">
+<thead><tr><th>Quadrant</th><th>Meaning</th><th>Action</th></tr></thead>
+<tbody>
+<tr><td style="color:#34D399;">SO</td><td>Strengths + Opportunities</td><td>Use strengths to exploit opportunities</td></tr>
+<tr><td style="color:var(--blue-300);">ST</td><td>Strengths + Threats</td><td>Use strengths to mitigate threats</td></tr>
+<tr><td style="color:#67e8f9;">WO</td><td>Weaknesses + Opportunities</td><td>Overcome weaknesses via opportunities</td></tr>
+<tr><td style="color:#FBBF24;">WT</td><td>Weaknesses + Threats</td><td>Minimize weaknesses and avoid threats</td></tr>
+</tbody>
+</table>
+</div></div>
+</div>
+
+<div class="coll-card">
+<div class="coll-header" onclick="toggleColl(this.parentElement)">
+<div class="coll-header-icon">✦</div>
+<div class="coll-header-text">
+<div class="coll-header-title">Generating Strategies</div>
+<div class="coll-header-sub">Manual entry and AI-assisted generation</div>
+</div>
+<div class="coll-chevron">▾</div>
+</div>
+<div class="coll-body"><div class="coll-body-inner">
+<div class="grid-2" style="margin-top:8px; gap:12px;">
+<div style="padding:14px; background:rgba(37,99,235,0.08); border:1px solid rgba(37,99,235,0.2); border-radius:var(--radius-md);">
+<div style="font-weight:600; font-size:13px; color:var(--blue-300); margin-bottom:6px;">Manual Entry</div>
+<div style="font-size:12px; color:var(--text-secondary); line-height:1.6;">Click "+ Add Strategy" in any quadrant. Enter title, description, priority (1–5), and feasibility (1–5).</div>
+</div>
+<div style="padding:14px; background:rgba(192,38,211,0.08); border:1px solid rgba(192,38,211,0.2); border-radius:var(--radius-md);">
+<div style="font-weight:600; font-size:13px; color:var(--fuchsia-500); margin-bottom:6px;">AI-Assisted</div>
+<div style="font-size:12px; color:var(--text-secondary); line-height:1.6;">Ensure SWOT is populated (at least 2 items per quadrant). Click "✨ Generate Strategies with BIRD AI". Review and accept/edit generated options.</div>
+</div>
+</div>
+<div class="callout callout-info" style="margin-top:12px;">
+<div class="callout-icon">✓</div>
+<div class="callout-body"><div class="callout-title">Selecting Strategies</div><div class="callout-text">Check the ✓ box on strategies you want to include in your plan. Selected strategies flow into the Balanced Scorecard as linked objectives.</div></div>
+</div>
+</div></div>
+</div>
+</section>
+
+<!-- ============================= SECTION 9: BALANCED SCORECARD ============================= -->
+<section class="section" id="balanced-scorecard">
+<div class="section-header">
+<div class="section-num">9</div>
+<div>
+<div class="section-title">Balanced Scorecard</div>
+<div class="section-subtitle">Translate vision into measurable objectives across 4 perspectives</div>
+</div>
+</div>
+
+<div class="coll-card open">
+<div class="coll-header" onclick="toggleColl(this.parentElement)">
+<div class="coll-header-icon">🎯</div>
+<div class="coll-header-text">
+<div class="coll-header-title">The Four Perspectives</div>
+<div class="coll-header-sub">Financial, Stakeholder, Internal Process, Learning & Growth</div>
+</div>
+<div class="coll-chevron">▾</div>
+</div>
+<div class="coll-body"><div class="coll-body-inner">
+<div class="grid-2" style="margin-top:8px; gap:12px;">
+<div class="glass-card" style="border-left:3px solid var(--blue-500); margin-bottom:0;">
+<div class="card-h3">💰 Financial</div>
+<p style="font-size:13px; color:var(--text-secondary); margin-bottom:4px;"><strong>Question:</strong> How do we look to funders and investors?</p>
+<p style="font-size:12px; color:var(--text-tertiary);">Investment approvals, GRDP growth, export revenue, green economy revenue</p>
+</div>
+<div class="glass-card" style="border-left:3px solid var(--success); margin-bottom:0;">
+<div class="card-h3">👥 Stakeholder</div>
+<p style="font-size:13px; color:var(--text-secondary); margin-bottom:4px;"><strong>Question:</strong> How do communities and investors see us?</p>
+<p style="font-size:12px; color:var(--text-tertiary);">Poverty reduction, investor satisfaction, MSME empowerment, job creation</p>
+</div>
+<div class="glass-card" style="border-left:3px solid var(--cyan-500); margin-bottom:0;">
+<div class="card-h3">⚙️ Internal Process</div>
+<p style="font-size:13px; color:var(--text-secondary); margin-bottom:4px;"><strong>Question:</strong> What processes must we excel at?</p>
+<p style="font-size:12px; color:var(--text-tertiary);">Business registration time, halal certification, infrastructure delivery</p>
+</div>
+<div class="glass-card" style="border-left:3px solid var(--indigo-400); margin-bottom:0;">
+<div class="card-h3">🌱 Learning & Growth</div>
+<p style="font-size:13px; color:var(--text-secondary); margin-bottom:4px;"><strong>Question:</strong> How can we sustain improvement?</p>
+<p style="font-size:12px; color:var(--text-tertiary);">Functional literacy, halal expertise, digital innovation, IPA capacity</p>
+</div>
+</div>
+</div></div>
+</div>
+
+<div class="coll-card">
+<div class="coll-header" onclick="toggleColl(this.parentElement)">
+<div class="coll-header-icon">📋</div>
+<div class="coll-header-text">
+<div class="coll-header-title">Adding Objectives & KPIs</div>
+<div class="coll-header-sub">Step-by-step scorecard building</div>
+</div>
+<div class="coll-chevron">▾</div>
+</div>
+<div class="coll-body"><div class="coll-body-inner">
+<div class="prose" style="margin-top:8px;">
+<h3>Adding Objectives</h3>
+<ol>
+<li>Navigate to <strong>Balanced Scorecard</strong></li>
+<li>Click <strong>+ Add Objective</strong> in any perspective panel</li>
+<li>Fill in: Objective name, Description, Weight (1.0–2.0)</li>
+<li>Link to a strategic option (from Strategy Matrix) if applicable</li>
+</ol>
+<h3>Adding KPIs to an Objective</h3>
+<ol>
+<li>Expand an objective by clicking it</li>
+<li>Click <strong>+ Add KPI</strong></li>
+<li>Fill in: KPI name, Unit, Baseline value, 2030 target, 2035 target</li>
+<li>Set frequency (monthly / quarterly / annually)</li>
+</ol>
+</div>
+<div class="callout callout-ai" style="margin-top:12px;">
+<div class="callout-icon">✦</div>
+<div class="callout-body"><div class="callout-title">AI Suggest KPIs</div><div class="callout-text">Expand any objective and click <strong>"AI Suggest KPIs"</strong> — BIRD AI analyzes the objective text and suggests relevant, measurable indicators tailored to BARMM's investment context.</div></div>
+</div>
+</div></div>
+</div>
+
+<div class="coll-card">
+<div class="coll-header" onclick="toggleColl(this.parentElement)">
+<div class="coll-header-icon">🚦</div>
+<div class="coll-header-text">
+<div class="coll-header-title">KPI Status & Automated Alerts</div>
+<div class="coll-header-sub">Status definitions and notification triggers</div>
+</div>
+<div class="coll-chevron">▾</div>
+</div>
+<div class="coll-body"><div class="coll-body-inner">
+<div class="status-badges" style="margin-top:8px;">
+<span class="status-badge badge-green">🟢 On Track — ≥70% progress</span>
+<span class="status-badge badge-yellow">🟡 At Risk — 40–69%</span>
+<span class="status-badge badge-red">🔴 Delayed — &lt;40%</span>
+<span class="status-badge badge-blue">✅ Completed — 100%+ target</span>
+</div>
+</div></div>
+</div>
+</section>
+
+<!-- ============================= SECTION 10: PAPs ============================= -->
+<section class="section" id="paps">
+<div class="section-header">
+<div class="section-num">10</div>
+<div>
+<div class="section-title">PAPs Management</div>
+<div class="section-subtitle">Programs, Activities & Projects — the strategic execution layer</div>
+</div>
+</div>
+
+<div class="coll-card open">
+<div class="coll-header" onclick="toggleColl(this.parentElement)">
+<div class="coll-header-icon">🏗</div>
+<div class="coll-header-text">
+<div class="coll-header-title">Adding a PAP</div>
+<div class="coll-header-sub">Create and track execution items</div>
+</div>
+<div class="coll-chevron">▾</div>
+</div>
+<div class="coll-body"><div class="coll-body-inner">
+<div class="flow-steps" style="margin-top:8px;">
+<div class="flow-step"><div class="flow-step-num">1</div><div class="flow-step-body"><div class="flow-step-title">Navigate to PAPs Management</div><div class="flow-step-desc">Click "+ Add PAP" in the top-right corner.</div></div></div>
+<div class="flow-step"><div class="flow-step-num">2</div><div class="flow-step-body"><div class="flow-step-title">Fill in the Form</div><div class="flow-step-desc">Name, Type (Program / Activity / Project), Linked BSC Objective, Description, Budget estimate (₱PHP), Duration (months).</div></div></div>
+<div class="flow-step"><div class="flow-step-num">3</div><div class="flow-step-body"><div class="flow-step-title">Set BEIE Cluster & Phase</div><div class="flow-step-desc">Assign to Foundations / Transformers / Enablers / Connectors / Financiers and BIRD Phase (1, 2, or 3).</div></div></div>
+<div class="flow-step"><div class="flow-step-num">4</div><div class="flow-step-body"><div class="flow-step-title">Assign Agencies & Save</div><div class="flow-step-desc">Set lead and support agencies, then click Save.</div></div></div>
+</div>
+</div></div>
+</div>
+
+<div class="coll-card">
+<div class="coll-header" onclick="toggleColl(this.parentElement)">
+<div class="coll-header-icon">📊</div>
+<div class="coll-header-text">
+<div class="coll-header-title">Tracking Status & Budget</div>
+<div class="coll-header-sub">Kanban view and automated summaries</div>
+</div>
+<div class="coll-chevron">▾</div>
+</div>
+<div class="coll-body"><div class="coll-body-inner">
+<div class="prose" style="margin-top:8px;">
+<p>Update PAP status from the Kanban view:</p>
+</div>
+<div class="status-badges" style="margin-top:8px;">
+<span class="status-badge badge-blue">📋 Planned</span>
+<span class="status-badge badge-cyan">⚡ In Progress</span>
+<span class="status-badge badge-green">✅ Completed</span>
+<span class="status-badge badge-red">⚠️ Delayed</span>
+</div>
+<div class="callout callout-info" style="margin-top:12px;">
+<div class="callout-icon">💰</div>
+<div class="callout-body"><div class="callout-title">Budget Summary</div><div class="callout-text">The dashboard automatically totals: Budget by PAP type, Budget by BEIE cluster, and Budget by BIRD phase. Budget bars turn green under 90%, amber at 90–100%, and red with glow when over budget.</div></div>
+</div>
+</div></div>
+</div>
+</section>
+
+<!-- ============================= SECTION 11: BIRD AI ============================= -->
+<section class="section" id="bird-ai">
+<div class="section-header">
+<div class="section-num">11</div>
+<div>
+<div class="section-title">BIRD AI Strategy Assistant</div>
+<div class="section-subtitle">Your embedded investment & strategy consultant — available on every page</div>
+</div>
+</div>
+
+<div class="callout callout-ai">
+<div class="callout-icon">✦</div>
+<div class="callout-body">
+<div class="callout-title">BIRD AI — Powered by GPT-4o</div>
+<div class="callout-text">BIRD AI is your embedded investment and strategy consultant, available on every page via the floating button (bottom-right corner). It has deep knowledge of BARMM's economic context, the BEIE framework, BIRD KPIs, systems archetypes, and implementation phases. <strong>Click the ✦ BIRD AI button or the "Ask BIRD AI" button in the header to start a conversation.</strong></div>
+</div>
+</div>
+
+<div class="coll-card open">
+<div class="coll-header" onclick="toggleColl(this.parentElement)">
+<div class="coll-header-icon">💬</div>
+<div class="coll-header-text">
+<div class="coll-header-title">Example Queries by Workspace</div>
+<div class="coll-header-sub">Context-aware suggestions for each module</div>
+</div>
+<div class="coll-chevron">▾</div>
+</div>
+<div class="coll-body"><div class="coll-body-inner">
+<div class="grid-2" style="margin-top:8px; gap:12px;">
+<div style="padding:14px; background:rgba(37,99,235,0.07); border:1px solid rgba(37,99,235,0.18); border-radius:var(--radius-lg);">
+<div style="font-weight:600; font-size:13px; color:var(--blue-300); margin-bottom:8px;">📊 MEL Dashboard</div>
+<div style="font-size:12px; color:var(--text-secondary); line-height:1.7;">
+• "Why is BARMM's GRDP growing slower than the PDP 5% target?"<br>
+• "Which Phase 1 milestones are most time-critical in 2026?"<br>
+• "How does the ₱5.1B investment approval figure compare to BIMP-EAGA peers?"
+</div>
+</div>
+<div style="padding:14px; background:rgba(16,185,129,0.07); border:1px solid rgba(16,185,129,0.18); border-radius:var(--radius-lg);">
+<div style="font-weight:600; font-size:13px; color:#34D399; margin-bottom:8px;">🔍 SWOT Analysis</div>
+<div style="font-size:12px; color:var(--text-secondary); line-height:1.7;">
+• "Draft 3 SWOT strengths for BARMM's halal sector"<br>
+• "What is the Resilience Index (RI) formula used in BIRD scoring?"<br>
+• "What are the biggest threats to BARMM's investment climate?"
+</div>
+</div>
+<div style="padding:14px; background:rgba(6,182,212,0.07); border:1px solid rgba(6,182,212,0.18); border-radius:var(--radius-lg);">
+<div style="font-weight:600; font-size:13px; color:#67e8f9; margin-bottom:8px;">🔄 Systems Thinking</div>
+<div style="font-size:12px; color:var(--text-secondary); line-height:1.7;">
+• "Explain the 'Fixes that Fail' archetype in BARMM's agri sector"<br>
+• "Which Meadows leverage point has the highest impact for BARMM?"<br>
+• "How does the Big Man archetype constrain BARMM investment?"
+</div>
+</div>
+<div style="padding:14px; background:rgba(192,38,211,0.07); border:1px solid rgba(192,38,211,0.18); border-radius:var(--radius-lg);">
+<div style="font-weight:600; font-size:13px; color:var(--fuchsia-500); margin-bottom:8px;">⚡ Strategy Matrix</div>
+<div style="font-size:12px; color:var(--text-secondary); line-height:1.7;">
+• "Suggest 3 SO strategies for BARMM's halal tourism opportunity"<br>
+• "How should BARMM respond to Malaysia's halal hub competition?"<br>
+• "What WT strategies address poverty reduction through investment?"
+</div>
+</div>
+</div>
+</div></div>
+</div>
+
+<div class="coll-card">
+<div class="coll-header" onclick="toggleColl(this.parentElement)">
+<div class="coll-header-icon">💡</div>
+<div class="coll-header-text">
+<div class="coll-header-title">Tips for Better Results</div>
+<div class="coll-header-sub">How to get the most from BIRD AI</div>
+</div>
+<div class="coll-chevron">▾</div>
+</div>
+<div class="coll-body"><div class="coll-body-inner">
+<div class="prose" style="margin-top:8px;"><ul>
+<li><strong>Be specific:</strong> mention provinces, sectors, KPI codes (F1, LP2, etc.)</li>
+<li><strong>Use BIRD terminology:</strong> BEIE clusters, leverage points, archetypes, phases</li>
+<li><strong>Ask for drafts:</strong> "Draft a PAP for the Bangsamoro Halal Park"</li>
+<li><strong>Ask for analysis:</strong> "Analyze the Growth & Underinvestment archetype for BARMM's energy sector"</li>
+<li><strong>Request comparisons:</strong> "Compare BARMM's halal certification timeline with Malaysia's JAKIM"</li>
+</ul></div>
+</div></div>
+</div>
+</section>
+
+<!-- ============================= SECTION 12: TEMPLATES ============================= -->
+<section class="section" id="templates">
+<div class="section-header">
+<div class="section-num">12</div>
+<div>
+<div class="section-title">Templates Library</div>
+<div class="section-subtitle">Pre-built strategic frameworks by sector and context</div>
+</div>
+</div>
+
+<div class="coll-card open">
+<div class="coll-header" onclick="toggleColl(this.parentElement)">
+<div class="coll-header-icon">📚</div>
+<div class="coll-header-text">
+<div class="coll-header-title">Browsing & Applying Templates</div>
+<div class="coll-header-sub">Start faster with pre-built plan structures</div>
+</div>
+<div class="coll-chevron">▾</div>
+</div>
+<div class="coll-body"><div class="coll-body-inner">
+<div class="flow-steps" style="margin-top:8px;">
+<div class="flow-step"><div class="flow-step-num">1</div><div class="flow-step-body"><div class="flow-step-title">Navigate to Templates Library</div><div class="flow-step-desc">Browse by category: Investment Plan / Sector Plan / Monitoring Framework</div></div></div>
+<div class="flow-step"><div class="flow-step-num">2</div><div class="flow-step-body"><div class="flow-step-title">Click a Template Card</div><div class="flow-step-desc">Preview its contents including SWOT, strategies, objectives, and PAPs.</div></div></div>
+<div class="flow-step"><div class="flow-step-num">3</div><div class="flow-step-body"><div class="flow-step-title">Click "Use Template"</div><div class="flow-step-desc">The plan structure is applied to a new plan. Customize the content for your specific context.</div></div></div>
+</div>
+</div></div>
+</div>
+
+<div class="coll-card">
+<div class="coll-header" onclick="toggleColl(this.parentElement)">
+<div class="coll-header-icon">🔖</div>
+<div class="coll-header-text">
+<div class="coll-header-title">Creating Custom Templates</div>
+<div class="coll-header-sub">Save your plans for reuse (Admin/Owner roles)</div>
+</div>
+<div class="coll-chevron">▾</div>
+</div>
+<div class="coll-body"><div class="coll-body-inner">
+<div class="prose" style="margin-top:8px;">
+<p>Save your current plan as a template for reuse by other team members (Admin/Owner roles only). Set visibility as Private, Organization, or Public (subject to approval).</p>
+</div>
+</div></div>
+</div>
+</section>
+
+<!-- ============================= SECTION 13: COLLABORATION ============================= -->
+<section class="section" id="collaboration">
+<div class="section-header">
+<div class="section-num">13</div>
+<div>
+<div class="section-title">Team Collaboration</div>
+<div class="section-subtitle">Invite members, share plans, and collaborate in real-time</div>
+</div>
+</div>
+
+<div class="coll-card open">
+<div class="coll-header" onclick="toggleColl(this.parentElement)">
+<div class="coll-header-icon">👥</div>
+<div class="coll-header-text">
+<div class="coll-header-title">Roles & Permissions</div>
+<div class="coll-header-sub">Understanding access levels</div>
+</div>
+<div class="coll-chevron">▾</div>
+</div>
+<div class="coll-body"><div class="coll-body-inner">
+<table class="data-table" style="margin-top:8px;">
+<thead><tr><th>Role</th><th>Create Plans</th><th>Edit Plans</th><th>Invite Members</th><th>Delete Plans</th></tr></thead>
+<tbody>
+<tr><td>Owner</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+<tr><td>Admin</td><td>✓</td><td>✓</td><td>✓</td><td>—</td></tr>
+<tr><td>Editor</td><td>—</td><td>✓</td><td>—</td><td>—</td></tr>
+<tr><td>Viewer</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+</tbody>
+</table>
+</div></div>
+</div>
+
+<div class="coll-card">
+<div class="coll-header" onclick="toggleColl(this.parentElement)">
+<div class="coll-header-icon">🔗</div>
+<div class="coll-header-text">
+<div class="coll-header-title">Sharing a Plan (Public View)</div>
+<div class="coll-header-sub">Generate shareable links</div>
+</div>
+<div class="coll-chevron">▾</div>
+</div>
+<div class="coll-body"><div class="coll-body-inner">
+<div class="flow-steps" style="margin-top:8px;">
+<div class="flow-step"><div class="flow-step-num">1</div><div class="flow-step-body"><div class="flow-step-title">Click Share in the Topbar</div><div class="flow-step-desc">Opens the sharing dialog.</div></div></div>
+<div class="flow-step"><div class="flow-step-num">2</div><div class="flow-step-body"><div class="flow-step-title">Click Generate Share Link</div><div class="flow-step-desc">Creates a unique URL for your plan.</div></div></div>
+<div class="flow-step"><div class="flow-step-num">3</div><div class="flow-step-body"><div class="flow-step-title">Copy and Share</div><div class="flow-step-desc">Recipients can view (not edit) without an account. To revoke access, click "Revoke Link".</div></div></div>
+</div>
+</div></div>
+</div>
+</section>
+
+<!-- ============================= SECTION 14: EXPORT ============================= -->
+<section class="section" id="export">
+<div class="section-header">
+<div class="section-num">14</div>
+<div>
+<div class="section-title">Plan Export</div>
+<div class="section-subtitle">Export professional strategic plans in multiple formats</div>
+</div>
+</div>
+
+<div class="coll-card open">
+<div class="coll-header" onclick="toggleColl(this.parentElement)">
+<div class="coll-header-icon">📄</div>
+<div class="coll-header-text">
+<div class="coll-header-title">Export Formats</div>
+<div class="coll-header-sub">PDF, Word, and Excel</div>
+</div>
+<div class="coll-chevron">▾</div>
+</div>
+<div class="coll-body"><div class="coll-body-inner">
+<div class="grid-3" style="margin-top:8px; gap:12px;">
+<div style="padding:16px; background:linear-gradient(135deg,rgba(239,68,68,0.1),rgba(251,113,133,0.05)); border:1px solid rgba(239,68,68,0.25); border-radius:var(--radius-md); text-align:center;">
+<div style="font-size:24px; margin-bottom:8px;">📕</div>
+<div style="font-weight:700; font-size:14px; color:#FC8181; margin-bottom:4px;">PDF</div>
+<div style="font-size:11px; color:var(--text-secondary);">Board presentations, formal distribution</div>
+</div>
+<div style="padding:16px; background:linear-gradient(135deg,rgba(37,99,235,0.1),rgba(99,102,241,0.05)); border:1px solid rgba(37,99,235,0.25); border-radius:var(--radius-md); text-align:center;">
+<div style="font-size:24px; margin-bottom:8px;">📘</div>
+<div style="font-weight:700; font-size:14px; color:#93C5FD; margin-bottom:4px;">Word (.docx)</div>
+<div style="font-size:11px; color:var(--text-secondary);">Collaborative editing, stakeholder review</div>
+</div>
+<div style="padding:16px; background:linear-gradient(135deg,rgba(16,185,129,0.1),rgba(6,182,212,0.05)); border:1px solid rgba(16,185,129,0.25); border-radius:var(--radius-md); text-align:center;">
+<div style="font-size:24px; margin-bottom:8px;">📗</div>
+<div style="font-weight:700; font-size:14px; color:#34D399; margin-bottom:4px;">Excel (.xlsx)</div>
+<div style="font-size:11px; color:var(--text-secondary);">Data analysis, budget tracking</div>
+</div>
+</div>
+<div class="example-box" style="margin-top:14px;">
+<strong>How to Export:</strong> Navigate to Plan Generator (Export) → Select format → Choose sections to include → Click Generate. The download starts automatically.
+</div>
+</div></div>
+</div>
+</section>
+
+<!-- ============================= SECTION 15: SETTINGS ============================= -->
+<section class="section" id="settings">
+<div class="section-header">
+<div class="section-num">15</div>
+<div>
+<div class="section-title">Settings</div>
+<div class="section-subtitle">Account, notifications, theme, and data management</div>
+</div>
+</div>
+
+<div class="coll-card open">
+<div class="coll-header" onclick="toggleColl(this.parentElement)">
+<div class="coll-header-icon">⚙️</div>
+<div class="coll-header-text">
+<div class="coll-header-title">Settings Categories</div>
+<div class="coll-header-sub">Profile, security, notifications, and more</div>
+</div>
+<div class="coll-chevron">▾</div>
+</div>
+<div class="coll-body"><div class="coll-body-inner">
+<div class="grid-2" style="margin-top:8px; gap:12px;">
+<div style="padding:14px; background:rgba(37,99,235,0.07); border:1px solid rgba(37,99,235,0.18); border-radius:var(--radius-lg);">
+<div style="font-weight:600; font-size:13px; color:var(--text-primary); margin-bottom:4px;">👤 Profile Settings</div>
+<div style="font-size:12px; color:var(--text-secondary);">Update name, organization, job title, phone, avatar, and email</div>
+</div>
+<div style="padding:14px; background:rgba(245,158,11,0.07); border:1px solid rgba(245,158,11,0.18); border-radius:var(--radius-lg);">
+<div style="font-weight:600; font-size:13px; color:var(--text-primary); margin-bottom:4px;">🔒 Password & Security</div>
+<div style="font-size:12px; color:var(--text-secondary);">Change password and view active sessions</div>
+</div>
+<div style="padding:14px; background:rgba(16,185,129,0.07); border:1px solid rgba(16,185,129,0.18); border-radius:var(--radius-lg);">
+<div style="font-weight:600; font-size:13px; color:var(--text-primary); margin-bottom:4px;">🔔 Notification Preferences</div>
+<div style="font-size:12px; color:var(--text-secondary);">Toggle KPI alerts, weekly digest, stale plan reminders</div>
+</div>
+<div style="padding:14px; background:rgba(99,102,241,0.07); border:1px solid rgba(99,102,241,0.18); border-radius:var(--radius-lg);">
+<div style="font-weight:600; font-size:13px; color:var(--text-primary); margin-bottom:4px;">🎨 Theme</div>
+<div style="font-size:12px; color:var(--text-secondary);">Switch between Dark (default) and Light modes</div>
+</div>
+<div style="padding:14px; background:rgba(6,182,212,0.07); border:1px solid rgba(6,182,212,0.18); border-radius:var(--radius-lg);">
+<div style="font-weight:600; font-size:13px; color:var(--text-primary); margin-bottom:4px;">💾 Data Management</div>
+<div style="font-size:12px; color:var(--text-secondary);">Export all data (JSON backup), clear local cache, delete account</div>
+</div>
+</div>
+</div></div>
+</div>
+</section>
+
+<!-- ============================= SECTION 16: TROUBLESHOOTING ============================= -->
+<section class="section" id="troubleshooting">
+<div class="section-header">
+<div class="section-num">16</div>
+<div>
+<div class="section-title">Troubleshooting</div>
+<div class="section-subtitle">Common issues and solutions</div>
+</div>
+</div>
+
+<div class="faq-item" onclick="toggleFaq(this)">
+<div class="faq-q">Platform won't load <div class="faq-chevron">▾</div></div>
+<div class="faq-a"><ol>
+<li>Clear browser cache (Ctrl+Shift+Del / Cmd+Shift+Delete)</li>
+<li>Try a different browser</li>
+<li>Check your internet connection</li>
+<li>Disable browser extensions (especially ad blockers)</li>
+</ol></div>
+</div>
+<div class="faq-item" onclick="toggleFaq(this)">
+<div class="faq-q">Can't sign in <div class="faq-chevron">▾</div></div>
+<div class="faq-a"><ol>
+<li>Check that your email is verified (check inbox for verification link)</li>
+<li>Try "Forgot password?" to reset</li>
+<li>Try "Send magic link" for password-free access</li>
+<li>Contact BOI-MTIT if your account is locked</li>
+</ol></div>
+</div>
+<div class="faq-item" onclick="toggleFaq(this)">
+<div class="faq-q">AI Assistant not responding <div class="faq-chevron">▾</div></div>
+<div class="faq-a"><ol>
+<li>Ensure you have an active internet connection</li>
+<li>Try refreshing the page</li>
+<li>If the issue persists, the AI service may be temporarily unavailable — try again in a few minutes</li>
+</ol></div>
+</div>
+<div class="faq-item" onclick="toggleFaq(this)">
+<div class="faq-q">Plans not saving / sync issues <div class="faq-chevron">▾</div></div>
+<div class="faq-a"><ol>
+<li>Check the sync status indicator in the topbar (should be green)</li>
+<li>If offline, your changes are saved locally and will sync when you reconnect</li>
+<li>Click Force Sync in Settings → Data Management</li>
+</ol></div>
+</div>
+<div class="faq-item" onclick="toggleFaq(this)">
+<div class="faq-q">Data export fails <div class="faq-chevron">▾</div></div>
+<div class="faq-a"><ol>
+<li>Ensure you have selected at least one section for export</li>
+<li>Check that your plan has content (SWOT, objectives, PAPs)</li>
+<li>Try a different export format</li>
+</ol></div>
+</div>
+<div class="faq-item" onclick="toggleFaq(this)">
+<div class="faq-q">Error: "Session expired" <div class="faq-chevron">▾</div></div>
+<div class="faq-a">Your login session has timed out — click Sign In to re-authenticate. Your data is preserved locally.</div>
+</div>
+
+<!-- Quick Reference Card -->
+<div class="glass-card accent-top mt-4" style="--card-accent:linear-gradient(90deg,var(--indigo-500),var(--cyan-500))">
+<div class="card-h3"><div class="ch-icon" style="background:rgba(99,102,241,0.15);">⚡</div>Quick Reference Card</div>
+<div class="qr-grid">
+<div class="qr-card"><div class="qr-label" style="--card-color:#3B82F6">Create a Plan</div><div class="qr-value">Topbar → Plan selector → + New Plan</div></div>
+<div class="qr-card"><div class="qr-label" style="--card-color:#10B981">Generate SWOT</div><div class="qr-value">SWOT Analysis → ✨ Generate with BIRD AI</div></div>
+<div class="qr-card"><div class="qr-label" style="--card-color:#06B6D4">Build a CLD</div><div class="qr-value">Systems Thinking → + Add Node → Draw links</div></div>
+<div class="qr-card"><div class="qr-label" style="--card-color:#F59E0B">Add a Strategy</div><div class="qr-value">Strategy Matrix → + Add Strategy (or AI generate)</div></div>
+<div class="qr-card"><div class="qr-label" style="--card-color:#EF4444">Track a KPI</div><div class="qr-value">Balanced Scorecard → Expand objective → + Add KPI</div></div>
+<div class="qr-card"><div class="qr-label" style="--card-color:#6366F1">Ask BIRD AI</div><div class="qr-value">Click ✦ BIRD AI button (bottom right) → Type question</div></div>
+<div class="qr-card"><div class="qr-label" style="--card-color:#D946EF">Add a Project</div><div class="qr-value">PAPs Management → + Add PAP → Fill form</div></div>
+<div class="qr-card"><div class="qr-label" style="--card-color:#0EA5E9">Export Plan</div><div class="qr-value">Plan Generator → Select format → Generate</div></div>
+<div class="qr-card"><div class="qr-label" style="--card-color:#10B981">Invite Team</div><div class="qr-value">Team Collaboration → + Invite Member</div></div>
+</div>
+</div>
+</section>
+
+</main>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+<div class="footer-grid">
+<div class="footer-col">
+<div class="footer-col-title">Support</div>
+<a href="mailto:boi@bangsamoro.gov.ph">boi@bangsamoro.gov.ph</a>
+<p>Bureau of Investments – MTIT</p>
+<p>Bangsamoro Autonomous Region</p>
+<p>in Muslim Mindanao</p>
+</div>
+<div class="footer-col">
+<div class="footer-col-title">Resources</div>
+<a href="https://asilvainnovations.github.io/barmm-investment-roadmap/">Open BIRD Platform</a>
+<a href="https://bangsamoro.gov.ph">BARMM Official Website</a>
+<a href="https://asilvainnovations.github.io/strat-planner-pwa/user-manual.html">Strat Planner Pro Manual</a>
+</div>
+<div class="footer-col">
+<div class="footer-col-title">Document</div>
+<p>Manual Version: 2026-2035</p>
+<p>Last Updated: May 2026</p>
+<p>Platform: Web · PWA · Mobile</p>
+<p>License: CC BY-NC-SA 4.0</p>
+</div>
+</div>
+<div class="footer-bottom">
+<div class="footer-brand">BIRD 2026–2035</div>
+<div class="footer-copy">© 2026 Bureau of Investments — Ministry of Trade, Investments and Tourism, BARMM. All rights reserved.</div>
+</div>
+</footer>
+
+<!-- ============================================================
+BIRD AI STRATEGY ASSISTANT — FLOATING CHAT WIDGET
+Wired to Edge Function: ai-strategy-assistant
+============================================================ -->
+<button class="ai-fab" id="aiFab" onclick="toggleAIChat()">
+<span class="fab-icon">✦</span>
+<span>BIRD AI</span>
+</button>
+
+<div class="ai-chat" id="aiChat">
+<div class="ai-chat-header">
+<div class="ai-chat-header-left">
+<div class="ai-avatar">✦</div>
+<div>
+<div class="ai-chat-title">BIRD AI</div>
+<div class="ai-chat-subtitle">BARMM Investment & Strategy Expert</div>
+</div>
+</div>
+<div class="ai-chat-header-right">
+<button class="ai-chat-btn" onclick="minimizeAIChat()" title="Minimize">─</button>
+<button class="ai-chat-btn" onclick="toggleAIChat()" title="Close">✕</button>
+</div>
+</div>
+<div class="ai-chat-body" id="aiChatBody">
+<!-- Messages will be injected here -->
+</div>
+<div class="ai-chat-input-area">
+<input type="text" class="ai-chat-input" id="aiChatInput" placeholder="Ask about BIRD strategy, BARMM context…" onkeydown="handleAIKey(event)">
+<button class="ai-send-btn" id="aiSendBtn" onclick="sendAIMessage()" disabled>➤</button>
+</div>
+<div class="ai-chat-footer">
+<p>BIRD AI · BOI-MTIT, BARMM · Powered by GPT-4o</p>
+</div>
+</div>
+
+<script>
+// ─── Collapsible cards ──────────────────────────────────────────────
+function toggleColl(card) { card.classList.toggle('open'); }
+// ─── FAQ accordion ──────────────────────────────────────────────────
+function toggleFaq(el) { el.classList.toggle('open'); }
+// ─── TOC active link ────────────────────────────────────────────────
+function setActive(link) {
+document.querySelectorAll('.toc-link').forEach(l => l.classList.remove('active'));
+link.classList.add('active');
+}
+// ─── Scroll-driven behaviors ────────────────────────────────────────
+const scrollProgress  = document.getElementById('scrollProgress');
+const sidebarProgress = document.getElementById('sidebarProgress');
+const progressPct     = document.getElementById('progressPct');
+const backTop         = document.getElementById('backTop');
+const sections        = document.querySelectorAll('.section');
+const tocLinks        = document.querySelectorAll('.toc-link');
+function onScroll() {
+const scrollTop = window.scrollY;
+const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+const pct       = Math.min(100, Math.round((scrollTop / docHeight) * 100));
+scrollProgress.style.transform = `scaleX(${pct / 100})`;
+sidebarProgress.style.width = pct + '%';
+progressPct.textContent = pct + '%';
+backTop.classList.toggle('visible', scrollTop > 400);
+let currentId = '';
+sections.forEach(sec => {
+if (window.scrollY >= sec.offsetTop - 100) currentId = sec.id;
+});
+tocLinks.forEach(link => {
+link.classList.toggle('active', link.getAttribute('href') === '#' + currentId);
+});
+}
+window.addEventListener('scroll', onScroll, { passive: true });
+onScroll();
+// ─── Smooth anchor scroll ───────────────────────────────────────────
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+a.addEventListener('click', e => {
+e.preventDefault();
+const target = document.querySelector(a.getAttribute('href'));
+if (target) window.scrollTo({ top: target.offsetTop - 80, behavior: 'smooth' });
+document.querySelectorAll('.toc-link').forEach(l => l.classList.remove('active'));
+if (a.classList.contains('toc-link')) a.classList.add('active');
+});
+});
+// ─── Section entrance observer ──────────────────────────────────────
+const observer = new IntersectionObserver((entries) => {
+entries.forEach(entry => {
+if (entry.isIntersecting) entry.target.style.animationPlayState = 'running';
+});
+}, { threshold: 0.06 });
+sections.forEach(sec => {
+sec.style.animationPlayState = 'paused';
+observer.observe(sec);
+});
+
+// ═══════════════════════════════════════════════════════════════════
+// BIRD AI STRATEGY ASSISTANT — CHAT LOGIC
+// Edge Function URL: https://rgvteytgkugdqdodedxq.databasepad.com/functions/v1/ai-strategy-assistant
+// ═══════════════════════════════════════════════════════════════════
+const AI_EDGE_URL = 'https://rgvteytgkugdqdodedxq.databasepad.com/functions/v1/ai-strategy-assistant';
+const aiChat      = document.getElementById('aiChat');
+const aiFab       = document.getElementById('aiFab');
+const aiChatBody  = document.getElementById('aiChatBody');
+const aiChatInput = document.getElementById('aiChatInput');
+const aiSendBtn   = document.getElementById('aiSendBtn');
+
+let aiMessages = [];
+let aiLoading  = false;
+
+// Contextual suggestions based on current section
+const AI_SUGGESTIONS = {
+'getting-started': [
+{ icon: '📘', text: 'What is the BIRD 2026-2035 strategic vision?' },
+{ icon: '🎯', text: 'What are the 5 BEIE investment clusters?' },
+{ icon: '📊', text: 'What are BARMM\'s key economic indicators?' },
+],
+'mel-dashboard': [
+{ icon: '📊', text: 'Why is BARMM\'s GRDP growing slower than the PDP 5% target?' },
+{ icon: '🎯', text: 'Which Phase 1 milestones are most time-critical in 2026?' },
+{ icon: '💰', text: 'Explain the F1-F5 Financial perspective KPIs.' },
+],
+'swot': [
+{ icon: '🔍', text: 'Draft 3 SWOT strengths for BARMM\'s halal sector.' },
+{ icon: '📐', text: 'What is the Resilience Index (RI) formula used in BIRD scoring?' },
+{ icon: '⚠️', text: 'What are the biggest threats to BARMM\'s investment climate?' },
+],
+'systems-thinking': [
+{ icon: '🔄', text: 'Explain the "Fixes that Fail" archetype in BARMM\'s agri sector.' },
+{ icon: '⚡', text: 'Which Meadows leverage point has the highest impact for BARMM?' },
+{ icon: '🧩', text: 'How does the Big Man archetype constrain BARMM investment?' },
+],
+'strategy-matrix': [
+{ icon: '⚡', text: 'Suggest 3 SO strategies for BARMM\'s halal tourism opportunity.' },
+{ icon: '🛡️', text: 'How should BARMM respond to Malaysia\'s halal hub competition?' },
+{ icon: '🎯', text: 'What WT strategies address poverty reduction through investment?' },
+],
+'balanced-scorecard': [
+{ icon: '📊', text: 'What are the 4 BSC perspectives applied in BIRD 2026-2035?' },
+{ icon: '🎯', text: 'Explain the F4 Green Economy Revenue objective.' },
+{ icon: '💰', text: 'How does OIC/SMIIC accreditation connect to the ₱40B export target?' },
+],
+'paps': [
+{ icon: '🏗', text: 'What is the budget for ZBIP and why is it strategically critical?' },
+{ icon: '📊', text: 'Which PAPs address the "Limits to Growth" archetype?' },
+{ icon: '🌱', text: 'Which 2026 actions target the green economy revenue stream?' },
+],
+'bird-ai': [
+{ icon: '✦', text: 'What can BIRD AI help me with?' },
+{ icon: '🎯', text: 'How do I get the best results from BIRD AI?' },
+],
+'default': [
+{ icon: '✦', text: 'What is the BIRD 2026-2035 and its strategic vision?' },
+{ icon: '🎯', text: 'Why is halal certification a key leverage point for BARMM?' },
+{ icon: '🌏', text: 'How do I attract Islamic finance investors to BARMM?' },
+{ icon: '🧩', text: 'Explain the 5 BEIE investment clusters.' },
+],
+};
+
+function getCurrentSection() {
+let currentId = 'default';
+sections.forEach(sec => {
+if (window.scrollY >= sec.offsetTop - 100) currentId = sec.id;
+});
+return currentId;
+}
+
+function renderSuggestions() {
+const section = getCurrentSection();
+const suggestions = AI_SUGGESTIONS[section] || AI_SUGGESTIONS['default'];
+let html = '<div class="ai-suggestions">';
+html += '<div class="ai-suggestions-label">Suggested for ' + section.replace('-', ' ') + '</div>';
+suggestions.forEach(s => {
+html += `<button class="ai-suggestion-btn" onclick="sendAIMessage('${s.text.replace(/'/g, "\\'")}')">
+<span class="sug-icon">${s.icon}</span>
+<span>${s.text}</span>
+</button>`;
+});
+html += '</div>';
+return html;
+}
+
+function renderMessages() {
+let html = '';
+if (aiMessages.length === 0) {
+// Welcome message
+html += `<div class="ai-msg assistant">
+<div class="ai-msg-avatar">✦</div>
+<div class="ai-msg-bubble">As-salamu alaykum! I'm BIRD AI — your investment, strategy & systems-thinking consultant for the Bangsamoro Investment Roadmap 2026–2035.
+
+I can help you analyze SWOT data, explain causal loops, identify leverage points, draft strategic options, and interpret BARMM's economic context.
+
+What would you like to explore?</div>
+</div>`;
+html += renderSuggestions();
+} else {
+aiMessages.forEach(m => {
+if (m.role === 'user') {
+html += `<div class="ai-msg user">
+<div class="ai-msg-avatar">👤</div>
+<div class="ai-msg-bubble">${escapeHtml(m.content)}</div>
+</div>`;
+} else {
+html += `<div class="ai-msg assistant">
+<div class="ai-msg-avatar">✦</div>
+<div class="ai-msg-bubble">${escapeHtml(m.content)}</div>
+</div>`;
+}
+});
+}
+if (aiLoading) {
+html += `<div class="ai-msg assistant">
+<div class="ai-msg-avatar">✦</div>
+<div class="ai-loading">
+<div class="ai-loading-dots"><span></span><span></span><span></span></div>
+<span class="ai-loading-text">Analyzing BIRD data…</span>
+</div>
+</div>`;
+}
+aiChatBody.innerHTML = html;
+aiChatBody.scrollTop = aiChatBody.scrollHeight;
+}
+
+function escapeHtml(text) {
+const div = document.createElement('div');
+div.textContent = text;
+return div.innerHTML;
+}
+
+function toggleAIChat() {
+const isOpen = aiChat.classList.contains('open');
+if (isOpen) {
+aiChat.classList.remove('open');
+aiFab.style.display = 'flex';
+} else {
+aiChat.classList.add('open');
+aiFab.style.display = 'none';
+renderMessages();
+setTimeout(() => aiChatInput.focus(), 300);
+}
+}
+
+function minimizeAIChat() {
+aiChat.classList.remove('open');
+aiFab.style.display = 'flex';
+}
+
+function handleAIKey(e) {
+if (e.key === 'Enter' && !e.shiftKey) {
+e.preventDefault();
+sendAIMessage();
+}
+}
+
+aiChatInput.addEventListener('input', () => {
+aiSendBtn.disabled = !aiChatInput.value.trim() || aiLoading;
+});
+
+async function sendAIMessage(presetText) {
+const text = presetText || aiChatInput.value.trim();
+if (!text || aiLoading) return;
+
+aiMessages.push({ role: 'user', content: text });
+aiChatInput.value = '';
+aiSendBtn.disabled = true;
+aiLoading = true;
+renderMessages();
+
+try {
+const history = aiMessages.slice(-12).map(m => ({ role: m.role, content: m.content }));
+
+const response = await fetch(AI_EDGE_URL, {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({
+action: 'chat',
+data: {
+message: text,
+activeView: getCurrentSection(),
+messages: history,
+},
+})
+});
+
+if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+const result = await response.json();
+let reply = '';
+
+if (result.success && result.data) {
+reply = result.data.reply || result.data.markdown || result.data.content || '';
+if (!reply && typeof result.data === 'string') reply = result.data;
+}
+
+if (!reply) {
+reply = result.error || 'I could not generate a response. Please try again.';
+}
+
+aiMessages.push({ role: 'assistant', content: reply });
+} catch (err) {
+console.error('BIRD AI Error:', err);
+aiMessages.push({
+role: 'assistant',
+content: 'I had trouble reaching the AI service. Please check your connection and try again. If the issue persists, the edge function may need to be redeployed.'
+});
+} finally {
+aiLoading = false;
+aiSendBtn.disabled = !aiChatInput.value.trim();
+renderMessages();
+}
+}
+</script>
+</body>
+</html>
