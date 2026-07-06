@@ -44,7 +44,7 @@ const NAV_TARGETS = [
   { id: 'nav-templates', label: 'Templates Library',    view: 'templates', section: 'Navigation' },
   { id: 'nav-team',      label: 'Team Collaboration',   view: 'team',      section: 'Navigation' },
   { id: 'nav-export',    label: 'Plan Generator',       view: 'export',    section: 'Navigation' },
-  { id: 'nav-validation',label: 'Validation Survey',    view: 'validation',section: 'Navigation' }, // ✅ Added
+  { id: 'nav-validation',label: 'Validation Survey',    view: 'survey',section: 'Navigation' }, // ✅ Added
   { id: 'nav-settings',  label: 'Settings',             view: 'settings',  section: 'Navigation' },
 ];
 
