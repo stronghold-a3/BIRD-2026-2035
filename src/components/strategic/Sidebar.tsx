@@ -16,12 +16,11 @@ import {
   X,
   Bell,
   User,
-  Cpu,
   HelpCircle,
-  ChevronDown,
-  ClipboardCheck
+  ClipboardCheck,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { StratLogo } from '@/components/branding/Logo';
 
 interface SidebarProps {
   activeView: string;
@@ -51,13 +50,13 @@ const mainMenuItems = [
 
 // ✅ Special item for Validation Survey (highlighted)
 const specialItems = [
-  { 
-    id: 'validation', 
-    label: 'Validation Survey', 
-    icon: ClipboardCheck, 
+  {
+    id: 'validation',
+    label: 'Validation Survey',
+    icon: ClipboardCheck,
     description: 'BIRD 2026-2035 Feedback',
     badge: 'NEW',
-    highlight: true
+    highlight: true,
   },
 ];
 
@@ -72,17 +71,17 @@ const Sidebar: React.FC<SidebarProps> = ({
   isMobileMenuOpen,
   onCloseMobileMenu,
   onShowTutorial,
-  onShowProfile
+  onShowProfile,
 }) => {
-  const [settingsExpanded, setSettingsExpanded] = useState(false);
-
   const NavItem = ({ item, isSubItem = false }: { item: any, isSubItem?: boolean }) => {
     const Icon = item.icon;
     const isActive = activeView === item.id;
     const isHighlighted = item.highlight;
-    
+
     return (
       <button
+        // ✅ Added Unique ID for Navigation Tutorial Spotlight
+        id={`nav-item-${item.id}`} 
         onClick={() => {
           onViewChange(item.id);
           if (window.innerWidth < 1024) onCloseMobileMenu();
@@ -98,6 +97,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               : "text-slate-400 hover:bg-slate-800 hover:text-slate-100",
           isSubItem && !isCollapsed ? "pl-9 py-2" : ""
         )}
+        aria-current={isActive ? 'page' : undefined}
       >
         <Icon className={cn(
           "w-5 h-5 flex-shrink-0 transition-colors",
@@ -107,7 +107,6 @@ const Sidebar: React.FC<SidebarProps> = ({
               ? "group-hover:text-emerald-300"
               : "group-hover:text-cyan-400"
         )} />
-        
         {(!isCollapsed || isMobileMenuOpen) && (
           <div className="text-left overflow-hidden flex-1">
             <div className="flex items-center gap-2">
@@ -130,7 +129,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             )}
           </div>
         )}
-
+        {/* Tooltip for collapsed state */}
         {isCollapsed && !isMobileMenuOpen && (
           <div className="absolute left-full ml-4 px-3 py-2 bg-slate-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 border border-slate-700 shadow-xl">
             <div className="flex items-center gap-2">
@@ -152,28 +151,25 @@ const Sidebar: React.FC<SidebarProps> = ({
     <>
       {/* Mobile Overlay */}
       {isMobileMenuOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 lg:hidden"
           onClick={onCloseMobileMenu}
         />
       )}
-
-      <aside className={cn(
-        "fixed left-0 top-0 h-full bg-slate-900 text-white transition-all duration-300 z-50 flex flex-col border-r border-slate-800",
-        isCollapsed ? "w-16" : "w-64",
-        isMobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
-      )}>
-        
+      
+      {/* ✅ Added Unique ID for Main Aside Container */}
+      <aside 
+        id="app-sidebar" 
+        className={cn(
+           "fixed left-0 top-0 h-full bg-slate-900 text-white transition-all duration-300 z-50 flex flex-col border-r border-slate-800",
+           isCollapsed ? "w-16" : "w-64",
+           isMobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+         )}
+      >
         {/* Header/Logo */}
         <div className="p-4 border-b border-slate-800 flex items-center justify-between">
           <div className="flex items-center gap-3 cursor-pointer" onClick={() => onViewChange('dashboard')}>
-            <div className="w-9 h-9 rounded-full overflow-hidden ring-2 ring-cyan-400/40 flex-shrink-0 shadow-lg">
-              <img
-                src="https://rgvteytgkugdqdodedxq.databasepad.com/storage/v1/object/public/bird-images/public/MTIT%20Logo.webp"
-                alt="BIRD 2026-2035" 
-                className="w-full h-full object-cover" 
-              />
-            </div>
+            <StratLogo size="md" className="w-8 h-8 ring-2 ring-cyan-400/40" />
             {(!isCollapsed || isMobileMenuOpen) && (
               <h1 className="font-bold text-sm tracking-tight text-white whitespace-nowrap">
                 BIRD <span className="text-cyan-400">2026-2035</span>
@@ -220,18 +216,17 @@ const Sidebar: React.FC<SidebarProps> = ({
 
           {/* Settings & Tutorial */}
           <div className="my-4 border-t border-slate-800/50 pt-4">
-            <NavItem item={{ id: 'settings', label: 'Settings', icon: Settings, description: 'Profile, AI, Integrations' }} />
-
-            {/* Tutorial Button Integration */}
-            <button 
-              onClick={onShowTutorial}
-              className="w-full flex items-center gap-3 px-3 py-2.5 mt-1 rounded-xl text-slate-400 hover:bg-cyan-900/20 hover:text-cyan-400 transition-all"
-            >
-              <HelpCircle className="w-5 h-5 flex-shrink-0" />
-              {(!isCollapsed || isMobileMenuOpen) && (
-                <span className="text-sm font-semibold">Guided Tour</span>
-              )}
-            </button>
+             {/* Tutorial Button Integration */}
+             <button 
+               onClick={onShowTutorial}
+               id="sidebar-btn-tutorial"
+               className="w-full flex items-center gap-3 px-3 py-2.5 mt-1 rounded-xl text-slate-400 hover:bg-cyan-900/20 hover:text-cyan-400 transition-all"
+             >
+               <HelpCircle className="w-5 h-5 flex-shrink-0" />
+               {(!isCollapsed || isMobileMenuOpen) && (
+                 <span className="text-sm font-semibold">Guided Tour</span>
+               )}
+             </button>
           </div>
         </nav>
 
@@ -249,7 +244,6 @@ const Sidebar: React.FC<SidebarProps> = ({
                 </div>
               )}
             </div>
-            
             <button 
               onClick={onToggleCollapse}
               className="hidden lg:flex w-full items-center gap-3 px-2 py-2 rounded-lg hover:bg-slate-800 text-slate-500 hover:text-white transition-colors"
@@ -268,4 +262,4 @@ const Sidebar: React.FC<SidebarProps> = ({
   );
 };
 
-export default Sidebar;
+export default React.memo(Sidebar);
