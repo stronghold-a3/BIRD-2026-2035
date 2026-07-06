@@ -13,22 +13,23 @@ import HeroSection from './strategic/HeroSection';
 // ─── LAZY LOADED COMPONENTS ───────────────────────────────────────────────────
 // Sidebar & Topbar load first (shell), content components load after
 const Sidebar = lazy(() => import('./strategic/Sidebar'));
+const Validation = lazy(() => import('./strategic/SurveyWizard'));
 const Topbar  = lazy(() => import('./strategic/Topbar'));
-const AuthModal        = lazy(() => import('./auth/AuthModal'));
+const AuthModal       = lazy(() => import('./auth/AuthModal'));
 const UserProfileModal = lazy(() => import('./auth/UserProfileModal'));
-const SettingsPage     = lazy(() => import('./settings/SettingsPage'));
+const SettingsPage    = lazy(() => import('./settings/SettingsPage'));
 
 // ─── BIRD Validation Survey Wizard
 const SurveyWizard = lazy(() => import('./strategic/SurveyWizard'));
 
 // ─── Content views — each chunk is a separate JS bundle loaded on demand
-const MELDashboard     = lazy(() => import('./strategic/MELDashboard'));
-const SWOTAnalysis     = lazy(() => import('./strategic/SWOTAnalysis'));
-const SystemsThinking  = lazy(() => import('./strategic/SystemsThinking'));
-const StrategyMatrix   = lazy(() => import('./strategic/StrategyMatrix'));
+const MELDashboard      = lazy(() => import('./strategic/MELDashboard'));
+const SWOTAnalysis      = lazy(() => import('./strategic/SWOTAnalysis'));
+const SystemsThinking   = lazy(() => import('./strategic/SystemsThinking'));
+const StrategyMatrix    = lazy(() => import('./strategic/StrategyMatrix'));
 const BalancedScorecard = lazy(() => import('./strategic/BalancedScorecard'));
-const PAPsManagement   = lazy(() => import('./strategic/PAPsManagement'));
-const PlanExport       = lazy(() => import('./strategic/PlanExport'));
+const PAPsManagement    = lazy(() => import('./strategic/PAPsManagement'));
+const PlanExport        = lazy(() => import('./strategic/PlanExport'));
 const TeamCollaboration = lazy(() => import('./strategic/TeamCollaboration'));
 const TemplatesLibrary  = lazy(() => import('./strategic/TemplatesLibrary'));
 const NavigationTutorial = lazy(() => import('./strategic/NavigationTutorial'));
