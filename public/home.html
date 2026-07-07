@@ -304,38 +304,6 @@ font-weight:700;
 .tabs-bar { flex-wrap:wrap; justify-content:center; padding:.75rem 1rem; margin:1.5rem auto 2rem; padding-left:2rem; padding-right:2rem; }
 .tab-btn { font-size:.79rem; padding:.6rem 1.1rem; }
 }
-/* CTA Buttons */
-.cta-btn {
-background: transparent;
-border: 1px solid var(--gold-border);
-color: var(--light-green);
-padding: 0.8rem 2rem;
-border-radius: 0.5rem;
-cursor: pointer;
-font-family: 'DM Sans', sans-serif;
-font-size: 1rem;
-font-weight: 600;
-transition: all 0.3s;
-text-decoration: none;
-display: inline-flex;
-align-items: center;
-gap: 0.5rem;
-}
-.cta-btn:hover {
-background: rgba(201,168,76,0.2);
-color: var(--gold);
-border-color: var(--gold);
-}
-.cta-btn.primary {
-background: var(--gold-grad);
-color: var(--dark-green);
-border-color: var(--gold);
-font-weight: 700;
-}
-.cta-btn.primary:hover {
-box-shadow: 0 4px 15px rgba(201,168,76,0.4);
-}
-
 /* TAB CONTENT */
 .tab-content{display:none;animation:fadeSlideIn .35s ease-out;}
 .tab-content.active{display:block;}
@@ -494,34 +462,100 @@ pointer-events:none;
 .bsc-title{font-size:1.3rem;}
 #bsc-table{font-size:.82rem;}
 }
-/* ---- METRICS & BENCHMARKS ---- */
-.metrics-section-wrap{display:flex;flex-direction:column;gap:2rem;}
-.metrics-card{background:rgba(2,44,34,.5);border:1px solid var(--gold-border);border-radius:1rem;padding:1.5rem;position:relative;overflow:hidden;}
-.metrics-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--gold-grad);}
-.metrics-card-title{font-family:'Cinzel',serif;color:var(--gold);font-size:1rem;font-weight:700;margin-bottom:1rem;}
-.metrics-table{width:100%;border-collapse:collapse;font-size:.8rem;}
-.metrics-table thead th{padding:.65rem .85rem;text-align:left;color:var(--gold);font-family:'Cinzel',serif;font-size:.75rem;letter-spacing:.05em;background:rgba(201,168,76,.1);border-bottom:2px solid var(--gold-border);}
-.metrics-table tbody tr{border-bottom:1px solid rgba(201,168,76,.1);}
-.metrics-table tbody tr:hover{background:rgba(201,168,76,.05);}
-.metrics-table tbody td{padding:.65rem .85rem;vertical-align:top;line-height:1.45;color:rgba(209,250,229,.85);}
-.metrics-table tbody td:first-child{color:white;font-weight:500;}
-.target-2028{color:var(--gold)!important;font-weight:600!important;}
-.target-2035{color:var(--light-green)!important;font-weight:600!important;}
-.smiic-standards-grid{display:grid;grid-template-columns:1fr;gap:.75rem;margin-top:.5rem;}
-.smiic-standard{background:rgba(0,0,0,.25);border:1px solid var(--gold-border);border-radius:.6rem;padding:.85rem;font-size:.82rem;color:rgba(209,250,229,.85);}
-.smiic-standard .std-code{font-family:'Cinzel',serif;color:var(--gold);font-size:.75rem;font-weight:700;margin-bottom:.25rem;}
-.benchmark-highlights{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;margin-bottom:1.5rem;}
-.bh-card{background:rgba(0,0,0,.3);border:1px solid var(--gold-border);border-radius:.75rem;padding:1rem;text-align:center;transition:transform .3s,border-color .3s;}
-.bh-card:hover{transform:translateY(-3px);border-color:var(--gold);}
-.bh-num{font-family:'Cinzel',serif;font-size:1.4rem;font-weight:700;color:var(--gold);line-height:1;margin-bottom:.3rem;}
-.bh-label{font-size:.75rem;color:rgba(167,243,208,.8);line-height:1.4;}
-.bh-note{font-size:.68rem;color:rgba(255,255,255,.4);margin-top:.2rem;}
+/* ---- ACTION PLAN SECTION ---- */
+.action-plan-section {
+background:linear-gradient(135deg,var(--dark-green),#011a12);
+color:white;
+padding:2rem 1rem;
+border-radius:1rem;
+margin-top:2rem;
+}
+.action-plan-table {
+width:100%;
+border-collapse:collapse;
+font-size:.75rem;
+margin-top:1rem;
+background:rgba(2,44,34,.7);
+border:1px solid var(--gold-border);
+border-radius:.75rem;
+overflow:hidden;
+}
+.action-plan-table th {
+background:rgba(201,168,76,.15);
+color:var(--gold);
+font-family:'Cinzel',serif;
+font-size:.7rem;
+padding:.75rem .5rem;
+text-align:left;
+border-bottom:2px solid var(--gold-border);
+}
+.action-plan-table td {
+padding:.75rem .5rem;
+border-bottom:1px solid rgba(201,168,76,.1);
+color:rgba(255,255,255,.9);
+vertical-align:top;
+}
+.action-plan-table tr:hover {
+background:rgba(201,168,76,.05);
+}
+.priority-critical {
+background:rgba(239,68,68,.2);
+color:#fca5a5;
+padding:.25rem .6rem;
+border-radius:.25rem;
+font-size:.75rem;
+font-weight:700;
+border:1px solid rgba(239,68,68,.4);
+display:inline-block;
+}
+.priority-high {
+background:rgba(201,168,76,.2);
+color:var(--gold);
+padding:.25rem .6rem;
+border-radius:.25rem;
+font-size:.75rem;
+font-weight:700;
+border:1px solid var(--gold-border);
+display:inline-block;
+}
+.priority-medium {
+background:rgba(59,130,246,.2);
+color:#93c5fd;
+padding:.25rem .6rem;
+border-radius:.25rem;
+font-size:.75rem;
+font-weight:700;
+border:1px solid rgba(59,130,246,.4);
+display:inline-block;
+}
+.systems-box {
+background:rgba(201,168,76,.08);
+border-left:4px solid var(--gold);
+padding:1rem;
+margin-bottom:1.5rem;
+border-radius:0 .5rem .5rem 0;
+font-size:.9rem;
+line-height:1.6;
+}
+.quarter-grid {
+display:grid;
+grid-template-columns:repeat(2,1fr);
+gap:1rem;
+margin-top:1.5rem;
+}
+.quarter-item {
+background:rgba(201,168,76,.1);
+border:1px solid var(--gold-border);
+border-radius:.75rem;
+padding:1rem;
+text-align:center;
+}
 @media (min-width: 640px) {
-.metrics-card{padding:1.8rem;}
-.metrics-card-title{font-size:1.1rem;}
-.smiic-standards-grid{grid-template-columns:repeat(auto-fit,minmax(240px,1fr));}
-.benchmark-highlights{grid-template-columns:repeat(auto-fit,minmax(180px,1fr));}
-.bh-num{font-size:1.6rem;}
+.action-plan-section { padding:3rem 2rem; }
+.action-plan-table { font-size:.8rem; }
+.action-plan-table th,
+.action-plan-table td { padding:.85rem .75rem; }
+.quarter-grid { grid-template-columns:repeat(4,1fr); }
 }
 /* MODALS */
 .modal{display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.82);animation:modalFadeIn .25s ease;backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:1rem;}
@@ -654,6 +688,7 @@ body { background:white; color:black; }
 </div>
 <div class="tabs-bar" role="tablist" aria-label="Strategy sections">
 <button class="tab-btn active" role="tab" aria-selected="true" aria-controls="roadmap-tab" onclick="switchTab('roadmap-tab',this)" data-tooltip="Strategic perspectives and leverage points overview">📊 Roadmap</button>
+<button class="tab-btn" role="tab" aria-selected="false" aria-controls="action-plan-tab" onclick="switchTab('action-plan-tab',this)" data-tooltip="Detailed 2026 Action Plan with budget and timelines">📋 Action Plan 2026</button>
 <button class="tab-btn" role="tab" aria-selected="false" aria-controls="swot-tab" onclick="switchTab('swot-tab',this)" data-tooltip="Strategic SWOT Analysis">🔍 SWOT</button>
 <button class="tab-btn" role="tab" aria-selected="false" aria-controls="cld-tab" onclick="switchTab('cld-tab',this)" data-tooltip="Causal Loop Diagrams showing feedback systems">🔄 CLDs</button>
 <button class="tab-btn" role="tab" aria-selected="false" aria-controls="archetypes-tab" onclick="switchTab('archetypes-tab',this)" data-tooltip="System archetypes and leverage points">⚙️ Archetypes</button>
@@ -709,6 +744,609 @@ body { background:white; color:black; }
 <p class="instructions-bar">Hover over strategies for detailed KPIs • Click to expand perspectives • Use tabs to explore all sections</p>
 </div>
 
+<!-- ======= ACTION PLAN 2026 TAB ======= -->
+<div id="action-plan-tab" class="tab-content fade-in-section" role="tabpanel">
+<div class="action-plan-section">
+<div class="section-header" style="text-align:center;margin-bottom:2rem;">
+<span class="section-label" style="color:var(--gold);font-size:.8rem;text-transform:uppercase;letter-spacing:.1em;">Phase 1: Foundation Building</span>
+<h2 style="font-family:'Cinzel',serif;color:white;margin:.5rem 0;">One Year Action Plan 2026</h2>
+<div class="gold-divider"></div>
+<p style="color:rgba(255,255,255,.7);max-width:800px;margin:0 auto;font-size:.9rem;">
+Initiating the <strong style="color:var(--gold);">Investment–Development Virtuous Cycle (R1)</strong> and
+<strong style="color:var(--gold);">Governance–Investor Confidence Loop (R2)</strong> through targeted interventions
+at the four Critical Leverage Points.
+</p>
+</div>
+<div class="systems-box">
+<strong style="color:var(--gold);">Strategic Architecture:</strong> The 2026 Action Plan operationalizes the
+<strong>Integrated Halal-Driven Investment Strategy</strong> across three interconnected pillars: (1) Halal Industry
+Ecosystem Excellence, (2) Enabling Infrastructure Development, and (3) Governance & Institutional Strengthening.
+Each action targets specific variables within the Causal Loop Diagrams to trigger positive feedback while dismantling
+the <em>Security–Investment Tensions</em> balancing loop (B2).
+</div>
+<div class="bsc-wrapper" style="margin-bottom:2rem;">
+<h3 style="font-family:'Cinzel',serif;color:var(--gold);font-size:1.1rem;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem;">
+<span>📋</span> 2026 Priority Actions & Resource Allocation
+<span style="margin-left:auto;font-size:.75rem;color:var(--gold);">Total Budget: ₱1.08 Billion</span>
+</h3>
+<div style="overflow-x:auto;">
+<table class="action-plan-table" id="actionPlanTable">
+<thead>
+<tr>
+<th scope="col" style="width:18%;">Strategic Objective</th>
+<th scope="col" style="width:28%;">Program / Action / Project</th>
+<th scope="col" style="width:10%;text-align:center;">Priority</th>
+<th scope="col" style="width:10%;text-align:center;">Due Date</th>
+<th scope="col" style="width:15%;">Resources Required</th>
+<th scope="col" style="width:10%;text-align:right;">Budget</th>
+<th scope="col" style="width:14%;">Lead Unit</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<strong style="color:var(--gold);display:block;margin-bottom:.25rem;">LP1: Halal Certification</strong>
+<span style="font-size:.75rem;color:var(--light-green);">Breaking "Fixes that Fail" archetype</span>
+</td>
+<td>
+<strong>Operationalization of BHB</strong>
+<span style="display:block;margin-top:.4rem;font-size:.78rem;color:var(--light-green);line-height:1.5;">
+Aligning certification with OIC/SMIIC standards; establishing audit protocols; initial certification of 50 enterprises.
+</span>
+</td>
+<td style="text-align:center;"><span class="priority-critical">CRITICAL</span></td>
+<td style="text-align:center;color:var(--light-green);font-weight:600;">Q2 2026</td>
+<td style="font-size:.78rem;color:rgba(209,250,229,.8);line-height:1.5;">
+Technical experts, SMIIC standards, laboratory equipment, accreditation consultants
+</td>
+<td style="text-align:right;color:var(--gold);font-weight:700;font-family:'Cinzel',serif;">₱200M</td>
+<td style="font-size:.78rem;color:var(--light-green);">
+<strong style="color:white;">BHB</strong><br>MTIT (Support)
+</td>
+</tr>
+<tr style="background:rgba(0,0,0,.15);">
+<td rowspan="2">
+<strong style="color:var(--gold);display:block;margin-bottom:.25rem;">LP3: Governance</strong>
+<span style="font-size:.75rem;color:var(--light-green);">Activating R2 reinforcing loop</span>
+</td>
+<td>
+<strong>Digital BIFOSS Full Rollout</strong>
+<span style="display:block;margin-top:.4rem;font-size:.78rem;color:var(--light-green);line-height:1.5;">
+Complete deployment of Bangsamoro Integrated Financial & Operations System; 1-day business registration capability.
+</span>
+</td>
+<td style="text-align:center;"><span class="priority-high">HIGH</span></td>
+<td style="text-align:center;color:var(--light-green);font-weight:600;">Q3 2026</td>
+<td style="font-size:.78rem;color:rgba(209,250,229,.8);line-height:1.5;">
+BDTA ICT infrastructure, server hubs, digital training modules, cybersecurity frameworks
+</td>
+<td style="text-align:right;color:var(--gold);font-weight:700;font-family:'Cinzel',serif;">₱150M</td>
+<td style="font-size:.78rem;color:var(--light-green);">
+<strong style="color:white;">BDTA</strong><br>BBOI, MTIT
+</td>
+</tr>
+<tr style="background:rgba(0,0,0,.15);">
+<td>
+<strong>BIIC Implementing Rules (IRR)</strong>
+<span style="display:block;margin-top:.4rem;font-size:.78rem;color:var(--light-green);line-height:1.5;">
+Finalization of Bangsamoro Investment and Incentives Code IRR; streamlined tax incentives; regulatory clarity.
+</span>
+</td>
+<td style="text-align:center;"><span class="priority-critical">CRITICAL</span></td>
+<td style="text-align:center;color:var(--light-green);font-weight:600;">Q2 2026</td>
+<td style="font-size:.78rem;color:rgba(209,250,229,.8);line-height:1.5;">
+Legal consultants, parliamentary technical staff, stakeholder consultations
+</td>
+<td style="text-align:right;color:var(--gold);font-weight:700;font-family:'Cinzel',serif;">₱30M</td>
+<td style="font-size:.78rem;color:var(--light-green);">
+<strong style="color:white;">BTA Parliament</strong><br>MTIT-BoI
+</td>
+</tr>
+<tr>
+<td>
+<strong style="color:var(--gold);display:block;margin-bottom:.25rem;">LP2: Infrastructure</strong>
+<span style="font-size:.75rem;color:var(--light-green);">Raising the B1 Growth Ceiling</span>
+</td>
+<td>
+<strong>WOW Matanog SEZ Launch</strong>
+<span style="display:block;margin-top:.4rem;font-size:.78rem;color:var(--light-green);line-height:1.5;">
+Ground-breaking and master-planned site development; anchor tenant pre-qualification; utility infrastructure.
+</span>
+</td>
+<td style="text-align:center;"><span class="priority-high">HIGH</span></td>
+<td style="text-align:center;color:var(--light-green);font-weight:600;">Q4 2026</td>
+<td style="font-size:.78rem;color:rgba(209,250,229,.8);line-height:1.5;">
+Engineering teams, land surveys, PPP legal frameworks, environmental assessments
+</td>
+<td style="text-align:right;color:var(--gold);font-weight:700;font-family:'Cinzel',serif;">₱500M</td>
+<td style="font-size:.78rem;color:var(--light-green);">
+<strong style="color:white;">BEZA</strong><br>MTIT, Private Sector
+</td>
+</tr>
+<tr style="background:rgba(0,0,0,.15);">
+<td>
+<strong style="color:var(--gold);display:block;margin-bottom:.25rem;">LP4: Islamic Finance</strong>
+<span style="font-size:.75rem;color:var(--light-green);">Capital engine for sustainable growth</span>
+</td>
+<td>
+<strong>Islamic Finance Foundation Building</strong>
+<span style="display:block;margin-top:.4rem;font-size:.78rem;color:var(--light-green);line-height:1.5;">
+Regulatory base for Shariah-compliant microfinance; Takaful framework; Sukuk readiness assessment.
+</span>
+</td>
+<td style="text-align:center;"><span class="priority-high">HIGH</span></td>
+<td style="text-align:center;color:var(--light-green);font-weight:600;">Q4 2026</td>
+<td style="font-size:.78rem;color:rgba(209,250,229,.8);line-height:1.5;">
+Shariah scholars, banking consultants, finance legislation drafting, AAOIFI standards
+</td>
+<td style="text-align:right;color:var(--gold);font-weight:700;font-family:'Cinzel',serif;">₱100M</td>
+<td style="font-size:.78rem;color:var(--light-green);">
+<strong style="color:white;">Min. of Finance</strong><br>BPDA
+</td>
+</tr>
+<tr>
+<td>
+<strong style="color:var(--gold);display:block;margin-bottom:.25rem;">Human Capital</strong>
+<span style="font-size:.75rem;color:var(--light-green);">Addressing Skills Constraints</span>
+</td>
+<td>
+<strong>Halal Expert Training Program</strong>
+<span style="display:block;margin-top:.4rem;font-size:.78rem;color:var(--light-green);line-height:1.5;">
+First cadre of 50 halal certification officers; international mentorship; laboratory competency certification.
+</span>
+</td>
+<td style="text-align:center;"><span class="priority-medium">MEDIUM</span></td>
+<td style="text-align:center;color:var(--light-green);font-weight:600;">Q4 2026</td>
+<td style="font-size:.78rem;color:rgba(209,250,229,.8);line-height:1.5;">
+Training modules, academic partnerships (MSU), certification labs, SMIIC materials
+</td>
+<td style="text-align:right;color:var(--gold);font-weight:700;font-family:'Cinzel',serif;">₱100M</td>
+<td style="font-size:.78rem;color:var(--light-green);">
+<strong style="color:white;">BHB</strong><br>MOLE, MOST
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<h3 style="font-family:'Cinzel',serif;color:var(--gold);text-align:center;margin-bottom:1rem;">Systems Thinking Integration</h3>
+<div class="archetypes-grid" style="margin-bottom:2rem;">
+<div class="archetype-card" style="background:rgba(6,24,16,.9);">
+<div class="arch-desc" style="border-top:none;">
+<h4 style="display:flex;align-items:center;gap:.5rem;font-family:'Cinzel',serif;color:var(--gold);margin-bottom:.5rem;">
+<span>🎯</span> Addressing "Limits to Growth"
+</h4>
+<p style="font-size:.85rem;line-height:1.6;color:rgba(209,250,229,.85);">
+The ₱500M WOW Matanog investment and ₱150M BIFOSS deployment directly raise the infrastructure and governance
+ceilings that would otherwise constrain the <strong>R1 Investment-Development Virtuous Cycle</strong>.
+</p>
+</div>
+</div>
+<div class="archetype-card" style="background:rgba(6,24,16,.9);">
+<div class="arch-desc" style="border-top:none;">
+<h4 style="display:flex;align-items:center;gap:.5rem;font-family:'Cinzel',serif;color:var(--gold);margin-bottom:.5rem;">
+<span>⚖️</span> Avoiding "Success to the Successful"
+</h4>
+<p style="font-size:.85rem;line-height:1.6;color:rgba(209,250,229,.85);">
+Dual focus on Halal Park (₱500M) and Islamic Finance (₱100M) ensures resources flow to both manufacturing
+and financial services, preventing sector imbalance.
+</p>
+</div>
+</div>
+<div class="archetype-card" style="background:rgba(6,24,16,.9);">
+<div class="arch-desc" style="border-top:none;">
+<h4 style="display:flex;align-items:center;gap:.5rem;font-family:'Cinzel',serif;color:var(--gold);margin-bottom:.5rem;">
+<span>🛡️</span> Preventing "Fixes that Fail"
+</h4>
+<p style="font-size:.85rem;line-height:1.6;color:rgba(209,250,229,.85);">
+Rather than ad-hoc tax incentives, the plan invests ₱30M in BIIC IRR and ₱200M in BHB operationalization—
+<strong>systemic governance reforms</strong> that address root causes through institutional integrity.
+</p>
+</div>
+</div>
+</div>
+<div class="priorities-section" style="margin-top:0;background:rgba(6,78,59,.25);">
+<h3 class="section-title-bar">Plan Rationale: Feasibility, Viability & Desirability</h3>
+<div class="priorities-grid">
+<div class="priority-item">
+<h4 class="priority-title">💰 Financial Feasibility</h4>
+<p class="priority-desc">The 2026 budget of <strong style="color:var(--gold);">₱1.08 Billion</strong> represents ~7% of the Phase 1 three-year envelope (₱15B), front-loading critical institutional investments.</p>
+</div>
+<div class="priority-item">
+<h4 class="priority-title">🏛️ Institutional Viability</h4>
+<p class="priority-desc">Leverages existing BOL-established units: <strong>MTIT, BBOI, BDTA, BEZA</strong>—minimizing institutional startup costs.</p>
+</div>
+<div class="priority-item">
+<h4 class="priority-title">☪️ Cultural Desirability</h4>
+<p class="priority-desc">Alignment with <strong>Moral Governance</strong> through Shariah-compliant frameworks ensures cultural legitimacy and community ownership.</p>
+</div>
+<div class="priority-item">
+<h4 class="priority-title">🎯 Strategic Coherence</h4>
+<p class="priority-desc">Each action targets specific binding constraints identified in <strong>SWOT and CLD analysis</strong>—activating R1/R2 reinforcing loops.</p>
+</div>
+</div>
+<div class="quarter-grid">
+<div class="quarter-item">
+<div style="font-family:'Cinzel',serif;color:var(--gold);font-weight:700;">Q1</div>
+<div style="font-size:.78rem;color:var(--light-green);">Brand Launch & Legal Frameworks</div>
+</div>
+<div class="quarter-item">
+<div style="font-family:'Cinzel',serif;color:var(--gold);font-weight:700;">Q2</div>
+<div style="font-size:.78rem;color:var(--light-green);">BHB Operationalization & BIIC IRR</div>
+</div>
+<div class="quarter-item">
+<div style="font-family:'Cinzel',serif;color:var(--gold);font-weight:700;">Q3</div>
+<div style="font-size:.78rem;color:var(--light-green);">Digital BIFOSS & Polloc Research</div>
+</div>
+<div class="quarter-item">
+<div style="font-family:'Cinzel',serif;color:var(--gold);font-weight:700;">Q4</div>
+<div style="font-size:.78rem;color:var(--light-green);">Halal Park Groundbreaking & Global Missions</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- ======= SWOT ANALYSIS TAB ======= -->
+<div id="swot-tab" class="tab-content fade-in-section" role="tabpanel">
+<div class="section-intro-box">
+<p>The SWOT analysis synthesizes internal and external factors. <strong>Hover over each entry to see strategic implications.</strong></p>
+</div>
+<div class="swot-grid">
+<div class="swot-card strength">
+<div class="swot-header"><span aria-hidden="true">💪</span><span>Strengths — Internal Assets</span></div>
+<div class="swot-list">
+<div class="swot-entry" data-tooltip="Non-replicable competitive advantage from Islamic heritage and Moral Governance framework">
+<strong>Halal Legitimacy & Cultural Credibility</strong>Inherent authenticity derived from the region's Islamic heritage and Moral Governance framework — a non-replicable competitive advantage in halal industry development.
+</div>
+<div class="swot-entry" data-tooltip="Permanent geographic asset serving 70M+ ASEAN consumers">
+<strong>Strategic Location in BIMP-EAGA</strong>A permanent geographic asset serving as a gateway to 70 million+ ASEAN consumers within the Brunei-Indonesia-Malaysia-Philippines corridor.
+</div>
+<div class="swot-entry" data-tooltip="Agriculture contributes 32.4% of GRDP (PHP 97.2B)">
+<strong>Strong Agriculture Base</strong>Vast agricultural lands and fisheries contributing approximately 32.4% of GRDP (PHP 97.2B), forming the backbone of the current economy and halal value chains.
+</div>
+<div class="swot-entry" data-tooltip="BOL grants 55 distinct autonomous powers for policy innovation">
+<strong>Growing Policy Recognition</strong>Increasing legislative momentum and authority under the Bangsamoro Organic Law (BOL / RA 11054), granting 55 distinct autonomous powers.
+</div>
+<div class="swot-entry" data-tooltip="5.69 million consumers with specific religious consumption needs">
+<strong>Domestic Halal Demand</strong>Rapidly expanding internal consumer base of 5.69 million with specific religious consumption needs, supporting a natural captive market for halal goods and services.
+</div>
+<div class="swot-entry" data-tooltip="Aligns with ESG criteria valued by global investors">
+<strong>Moral Governance Framework</strong>Emphasis on transparency, integrity, and accountability grounded in Islamic principles — aligns with ESG criteria increasingly valued by global investors.
+</div>
+</div>
+</div>
+<div class="swot-card weakness">
+<div class="swot-header"><span aria-hidden="true">⚠️</span><span>Weaknesses — Internal Deficits</span></div>
+<div class="swot-list">
+<div class="swot-entry" data-tooltip="BHB has yet to achieve OIC/SMIIC recognition - LP1 addresses this">
+<strong>Weak Certification System</strong>A deficit in standardised halal certification infrastructure currently limits international market access. The Bangsamoro Halal Board (BHB) has yet to achieve OIC/SMIIC recognition.
+</div>
+<div class="swot-entry" data-tooltip="Coordination gaps between 15 ministries slow implementation">
+<strong>Fragmented Policy Frameworks</strong>Coordination gaps between 15 ministries slow down investment facilitation and create inconsistent implementation of development programmes.
+</div>
+<div class="swot-entry" data-tooltip="~75% electrification rate (2024); <30% broadband in rural/island areas">
+<strong>Limited Infrastructure</strong>Deficits in electrification (~75% rate as of 2024), digital connectivity — <30% broadband in rural/island areas — and transport hubs constrain economic activity.
+</div>
+<div class="swot-entry" data-tooltip="Shortage of technical personnel and auditors for certification">
+<strong>Lack of Halal Experts</strong>A shortage of technical personnel, auditors, and skilled labour for modern agri-processing and halal certification represents a significant human capital gap.
+</div>
+<div class="swot-entry" data-tooltip="High dependency on imports for industrial inputs">
+<strong>Insufficient Local Raw Materials</strong>High dependency on imports for industrial inputs due to gaps in the local value chain limits the competitiveness of halal manufacturing.
+</div>
+<div class="swot-entry" data-tooltip="59.3% functional literacy rate (lowest nationally)">
+<strong>Skills Mismatch</strong>Educational attainment gaps — 59.3% functional literacy rate (lowest nationally) — create mismatches between training programmes and industry requirements.
+</div>
+</div>
+</div>
+<div class="swot-card opportunity">
+<div class="swot-header"><span aria-hidden="true">🌟</span><span>Opportunities — External Potentials</span></div>
+<div class="swot-list">
+<div class="swot-entry" data-tooltip="USD 2 trillion market across food, cosmetics, pharmaceuticals, finance">
+<strong>Global Halal Market (USD 2T+)</strong>Massive external demand for halal-compliant goods and services worldwide, with the global halal economy valued at over USD 2 trillion across food, cosmetics, pharmaceuticals, and finance.
+</div>
+<div class="swot-entry" data-tooltip="Regional standards alignment through BIMP-EAGA and ASEAN frameworks">
+<strong>ASEAN Integration</strong>Regional standards alignment allowing for seamless cross-border trade through BIMP-EAGA and ASEAN frameworks, reducing trade barriers for certified producers.
+</div>
+<div class="swot-entry" data-tooltip="Target: Functional Islamic finance system by 2028">
+<strong>Islamic Finance Ecosystem</strong>Development of Shariah-compliant capital sources including Islamic banking, Takaful (insurance), and Sukuk (bonds) targeting a functional system by 2028.
+</div>
+<div class="swot-entry" data-tooltip="Bangsamoro's location unmatched among Philippine regions">
+<strong>BIMP-EAGA Market Access</strong>Subregional economic cooperation targeting 70M+ consumers — Bangsamoro's strategic location as a trade corridor is unmatched among Philippine regions.
+</div>
+<div class="swot-entry" data-tooltip="BEGMP 2024–2033 targeting 85% broadband penetration by 2035">
+<strong>Digital Transformation</strong>Phased ICT infrastructure expansion under BEGMP 2024–2033, targeting 85% broadband penetration by 2035 and e-government platform rollouts.
+</div>
+<div class="swot-entry" data-tooltip="ODA funding for post-conflict recovery and institution-building">
+<strong>Post-Conflict Reconstruction Funding</strong>Access to Official Development Assistance (ODA) and international development funding specifically targeting post-conflict recovery and institution-building.
+</div>
+</div>
+</div>
+<div class="swot-card threat">
+<div class="swot-header"><span aria-hidden="true">🔥</span><span>Threats — External Risks</span></div>
+<div class="swot-list">
+<div class="swot-entry" data-tooltip="Malaysia, Indonesia, Thailand have first-mover advantages">
+<strong>Competition from Established Halal Hubs</strong>Malaysia, Indonesia, and Thailand have significant first-mover advantages in halal certification, manufacturing, and tourism — capturing resources before BARMM can scale.
+</div>
+<div class="swot-entry" data-tooltip="Risk of non-acceptance by OIC/SMIIC undermines export access">
+<strong>Standards Recognition Risks</strong>Risk of non-acceptance of BARMM certifications by OIC/SMIIC and international bodies undermines export market access and investor confidence in the halal value proposition.
+</div>
+<div class="swot-entry" data-tooltip="Historical conflict reputation deters cautious investors">
+<strong>Investment Perception Risks</strong>Residual negative reputation from historical conflict deters cautious investors despite significant recent improvements in stability and governance.
+</div>
+<div class="swot-entry" data-tooltip="Typhoons, flooding, sea-level rise threaten agriculture">
+<strong>Climate Vulnerabilities</strong>Environmental shocks — typhoons, flooding, and sea-level rise — threaten the agriculture-dependent economy and coastal communities that form the base of halal value chains.
+</div>
+<div class="swot-entry" data-tooltip="Transition from BTA to elected parliament may disrupt continuity">
+<strong>Political Transition Uncertainty</strong>Instability risks associated with the shift from the Bangsamoro Transition Authority to a fully elected parliament may disrupt institutional continuity and investor confidence.
+</div>
+<div class="swot-entry" data-tooltip="Security events trigger rapid investor caution (B2 Loop)">
+<strong>Security Incidents</strong>Sporadic security events and proliferation of illicit weapons can trigger rapid investor caution, activating the Security-Investment Tensions balancing loop (B2).
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- ======= CLD TAB ======= -->
+<div id="cld-tab" class="tab-content fade-in-section" role="tabpanel">
+<div class="section-intro-box">
+<p>Causal Loop Diagrams (CLDs) map cause-and-effect relationships. <strong style="color:#10b981;">Reinforcing loops (R)</strong> amplify change. <strong style="color:var(--gold);">Balancing loops (B)</strong> seek equilibrium.
+<strong>Click on diagrams to view full explanations.</strong></p>
+</div>
+<h3 class="cld-section-title">Reinforcing Loops — Virtuous Cycles</h3>
+<p class="cld-section-sub">These amplifying loops create self-sustaining momentum when activated.</p>
+<div class="cld-grid">
+<!-- R1 -->
+<div class="cld-card" onclick="openArchetypeModal(1)" role="button" tabindex="0" aria-label="View Investment-Development Virtuous Cycle details" data-tooltip="Click to expand details on R1 loop">
+<svg viewBox="0 0 500 390" xmlns="http://www.w3.org/2000/svg" style="background:#061810;">
+<defs><marker id="r1arr" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L10,4 L0,8 Z" fill="#10b981"/></marker></defs>
+<rect width="500" height="390" fill="#061810"/>
+<path d="M 291 99 Q 340 80 333 128" fill="none" stroke="#10b981" stroke-width="2" marker-end="url(#r1arr)"/>
+<path d="M 362 197 Q 393 243 342 257" fill="none" stroke="#10b981" stroke-width="2" marker-end="url(#r1arr)"/>
+<path d="M 277 305 Q 250 348 223 305" fill="none" stroke="#10b981" stroke-width="2" marker-end="url(#r1arr)"/>
+<path d="M 158 257 Q 107 243 141 197" fill="none" stroke="#10b981" stroke-width="2" marker-end="url(#r1arr)"/>
+<path d="M 167 128 Q 160 80 209 99" fill="none" stroke="#10b981" stroke-width="2" marker-end="url(#r1arr)"/>
+<text x="336" y="79" fill="#10b981" font-size="15" font-weight="bold" text-anchor="middle">+</text>
+<text x="398" y="240" fill="#10b981" font-size="15" font-weight="bold" text-anchor="middle">+</text>
+<text x="250" y="363" fill="#10b981" font-size="15" font-weight="bold" text-anchor="middle">+</text>
+<text x="102" y="240" fill="#10b981" font-size="15" font-weight="bold" text-anchor="middle">+</text>
+<text x="164" y="79" fill="#10b981" font-size="15" font-weight="bold" text-anchor="middle">+</text>
+<circle cx="250" cy="193" r="34" fill="#0a2218" stroke="#10b981" stroke-width="1.5"/>
+<path d="M234,182 A16,16 0 1,1 266,182" fill="none" stroke="#10b981" stroke-width="1.4" marker-end="url(#r1arr)"/>
+<text x="250" y="200" text-anchor="middle" font-size="17" font-weight="bold" fill="#10b981" font-family="Georgia,serif">R1</text>
+<circle cx="250" cy="70" r="42" fill="#064e3b" stroke="#10b981" stroke-width="1.5"/><text x="250" y="66" text-anchor="middle" font-size="9.5" fill="white" font-family="DM Sans,sans-serif">Investment</text><text x="250" y="79" text-anchor="middle" font-size="9.5" fill="white" font-family="DM Sans,sans-serif">Inflows</text>
+<circle cx="374" cy="157" r="42" fill="#064e3b" stroke="#10b981" stroke-width="1.5"/><text x="374" y="153" text-anchor="middle" font-size="9.5" fill="white" font-family="DM Sans,sans-serif">Employment</text><text x="374" y="166" text-anchor="middle" font-size="9.5" fill="white" font-family="DM Sans,sans-serif">Growth</text>
+<circle cx="327" cy="305" r="42" fill="#064e3b" stroke="#10b981" stroke-width="1.5"/><text x="327" y="301" text-anchor="middle" font-size="9.5" fill="white" font-family="DM Sans,sans-serif">Income</text><text x="327" y="314" text-anchor="middle" font-size="9.5" fill="white" font-family="DM Sans,sans-serif">Growth</text>
+<circle cx="173" cy="305" r="42" fill="#064e3b" stroke="#10b981" stroke-width="1.5"/><text x="173" y="301" text-anchor="middle" font-size="9.5" fill="white" font-family="DM Sans,sans-serif">Domestic</text><text x="173" y="314" text-anchor="middle" font-size="9.5" fill="white" font-family="DM Sans,sans-serif">Market</text>
+<circle cx="126" cy="157" r="42" fill="#064e3b" stroke="#10b981" stroke-width="1.5"/><text x="126" y="153" text-anchor="middle" font-size="9.5" fill="white" font-family="DM Sans,sans-serif">Business</text><text x="126" y="166" text-anchor="middle" font-size="9.5" fill="white" font-family="DM Sans,sans-serif">Climate</text>
+<text x="250" y="378" text-anchor="middle" font-size="10.5" fill="#6ee7b7" font-family="DM Sans,sans-serif" font-style="italic">R1: Investment-Development Virtuous Cycle</text>
+</svg>
+<div class="cld-explanation">
+<span class="cld-loop-type loop-reinforcing">Reinforcing Loop R1</span>
+<h4>Investment–Development Virtuous Cycle</h4>
+<p>Investments generate employment and income growth, expanding domestic markets and improving business climate, attracting further investment.</p>
+</div>
+</div>
+<!-- R2 -->
+<div class="cld-card" onclick="openArchetypeModal(2)" role="button" tabindex="0" aria-label="View Governance-Investor Confidence Loop details" data-tooltip="Click to expand details on R2 loop">
+<svg viewBox="0 0 500 390" xmlns="http://www.w3.org/2000/svg" style="background:#061810;">
+<defs><marker id="r2arr" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L10,4 L0,8 Z" fill="#10b981"/></marker></defs>
+<rect width="500" height="390" fill="#061810"/>
+<path d="M 291 99 Q 340 80 333 128" fill="none" stroke="#10b981" stroke-width="2" marker-end="url(#r2arr)"/>
+<path d="M 362 197 Q 393 243 342 257" fill="none" stroke="#10b981" stroke-width="2" marker-end="url(#r2arr)"/>
+<path d="M 277 305 Q 250 348 223 305" fill="none" stroke="#10b981" stroke-width="2" marker-end="url(#r2arr)"/>
+<path d="M 158 257 Q 107 243 141 197" fill="none" stroke="#10b981" stroke-width="2" marker-end="url(#r2arr)"/>
+<path d="M 167 128 Q 160 80 209 99" fill="none" stroke="#10b981" stroke-width="2" marker-end="url(#r2arr)"/>
+<text x="336" y="79" fill="#10b981" font-size="15" font-weight="bold" text-anchor="middle">+</text>
+<text x="398" y="240" fill="#10b981" font-size="15" font-weight="bold" text-anchor="middle">+</text>
+<text x="250" y="363" fill="#10b981" font-size="15" font-weight="bold" text-anchor="middle">+</text>
+<text x="102" y="240" fill="#10b981" font-size="15" font-weight="bold" text-anchor="middle">+</text>
+<text x="164" y="79" fill="#10b981" font-size="15" font-weight="bold" text-anchor="middle">+</text>
+<circle cx="250" cy="193" r="34" fill="#0a2218" stroke="#10b981" stroke-width="1.5"/>
+<path d="M234,182 A16,16 0 1,1 266,182" fill="none" stroke="#10b981" stroke-width="1.4" marker-end="url(#r2arr)"/>
+<text x="250" y="200" text-anchor="middle" font-size="17" font-weight="bold" fill="#10b981" font-family="Georgia,serif">R2</text>
+<circle cx="250" cy="70" r="42" fill="#064e3b" stroke="#10b981" stroke-width="1.5"/><text x="250" y="66" text-anchor="middle" font-size="9.5" fill="white" font-family="DM Sans,sans-serif">Governance</text><text x="250" y="79" text-anchor="middle" font-size="9.5" fill="white" font-family="DM Sans,sans-serif">Capacity</text>
+<circle cx="374" cy="157" r="42" fill="#064e3b" stroke="#10b981" stroke-width="1.5"/><text x="374" y="153" text-anchor="middle" font-size="9.5" fill="white" font-family="DM Sans,sans-serif">Policy</text><text x="374" y="166" text-anchor="middle" font-size="9.5" fill="white" font-family="DM Sans,sans-serif">Clarity</text>
+<circle cx="327" cy="305" r="42" fill="#064e3b" stroke="#10b981" stroke-width="1.5"/><text x="327" y="301" text-anchor="middle" font-size="9.5" fill="white" font-family="DM Sans,sans-serif">Investor</text><text x="327" y="314" text-anchor="middle" font-size="9.5" fill="white" font-family="DM Sans,sans-serif">Confidence</text>
+<circle cx="173" cy="305" r="42" fill="#064e3b" stroke="#10b981" stroke-width="1.5"/><text x="173" y="301" text-anchor="middle" font-size="9.5" fill="white" font-family="DM Sans,sans-serif">Investment</text><text x="173" y="314" text-anchor="middle" font-size="9.5" fill="white" font-family="DM Sans,sans-serif">Inflows</text>
+<circle cx="126" cy="157" r="42" fill="#064e3b" stroke="#10b981" stroke-width="1.5"/><text x="126" y="153" text-anchor="middle" font-size="9.5" fill="white" font-family="DM Sans,sans-serif">Tax</text><text x="126" y="166" text-anchor="middle" font-size="9.5" fill="white" font-family="DM Sans,sans-serif">Revenues</text>
+<text x="250" y="378" text-anchor="middle" font-size="10.5" fill="#6ee7b7" font-family="DM Sans,sans-serif" font-style="italic">R2: Governance–Investor Confidence Loop</text>
+</svg>
+<div class="cld-explanation">
+<span class="cld-loop-type loop-reinforcing">Reinforcing Loop R2</span>
+<h4>Governance–Investor Confidence Feedback</h4>
+<p>Improved governance enhances investor confidence, attracting capital that generates tax revenues to strengthen governance further.</p>
+</div>
+</div>
+<!-- B1 -->
+<div class="cld-card" data-tooltip="Balancing loop: Growth triggers resource constraints that limit further expansion">
+<svg viewBox="0 0 500 390" xmlns="http://www.w3.org/2000/svg" style="background:#061810;">
+<defs>
+<marker id="b1p" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L10,4 L0,8 Z" fill="#C9A84C"/></marker>
+<marker id="b1n" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L10,4 L0,8 Z" fill="#ef4444"/></marker>
+</defs>
+<rect width="500" height="390" fill="#061810"/>
+<path d="M 291 99 Q 340 80 333 128" fill="none" stroke="#C9A84C" stroke-width="2" marker-end="url(#b1p)"/>
+<path d="M 362 197 Q 393 243 342 257" fill="none" stroke="#C9A84C" stroke-width="2" marker-end="url(#b1p)"/>
+<path d="M 277 305 Q 250 348 223 305" fill="none" stroke="#C9A84C" stroke-width="2" marker-end="url(#b1p)"/>
+<path d="M 158 257 Q 107 243 141 197" fill="none" stroke="#C9A84C" stroke-width="2" marker-end="url(#b1p)"/>
+<path d="M 167 128 Q 160 80 209 99" fill="none" stroke="#ef4444" stroke-width="2" stroke-dasharray="6,3" marker-end="url(#b1n)"/>
+<text x="336" y="79" fill="#C9A84C" font-size="15" font-weight="bold" text-anchor="middle">+</text>
+<text x="398" y="240" fill="#C9A84C" font-size="15" font-weight="bold" text-anchor="middle">+</text>
+<text x="250" y="363" fill="#C9A84C" font-size="15" font-weight="bold" text-anchor="middle">+</text>
+<text x="102" y="240" fill="#C9A84C" font-size="15" font-weight="bold" text-anchor="middle">+</text>
+<text x="164" y="76" fill="#ef4444" font-size="15" font-weight="bold" text-anchor="middle">−</text>
+<circle cx="250" cy="193" r="34" fill="#0a1a14" stroke="#C9A84C" stroke-width="1.5"/>
+<path d="M234,182 A16,16 0 1,0 266,182" fill="none" stroke="#C9A84C" stroke-width="1.4" marker-end="url(#b1p)"/>
+<text x="250" y="200" text-anchor="middle" font-size="17" font-weight="bold" fill="#C9A84C" font-family="Georgia,serif">B1</text>
+<circle cx="250" cy="70" r="42" fill="#2a1a05" stroke="#C9A84C" stroke-width="1.5"/><text x="250" y="66" text-anchor="middle" font-size="9.5" fill="white" font-family="DM Sans,sans-serif">Investment</text><text x="250" y="79" text-anchor="middle" font-size="9.5" fill="white" font-family="DM Sans,sans-serif">Growth</text>
+<circle cx="374" cy="157" r="42" fill="#2a1a05" stroke="#C9A84C" stroke-width="1.5"/><text x="374" y="153" text-anchor="middle" font-size="9.5" fill="white" font-family="DM Sans,sans-serif">Economic</text><text x="374" y="166" text-anchor="middle" font-size="9.5" fill="white" font-family="DM Sans,sans-serif">Expansion</text>
+<circle cx="327" cy="305" r="42" fill="#2a1a05" stroke="#C9A84C" stroke-width="1.5"/><text x="327" y="301" text-anchor="middle" font-size="9.5" fill="white" font-family="DM Sans,sans-serif">Resource</text><text x="327" y="314" text-anchor="middle" font-size="9.5" fill="white" font-family="DM Sans,sans-serif">Demand</text>
+<circle cx="173" cy="305" r="42" fill="#2a1a05" stroke="#C9A84C" stroke-width="1.5"/><text x="173" y="301" text-anchor="middle" font-size="9.5" fill="white" font-family="DM Sans,sans-serif">Infra</text><text x="173" y="314" text-anchor="middle" font-size="9.5" fill="white" font-family="DM Sans,sans-serif">Bottlenecks</text>
+<circle cx="126" cy="157" r="42" fill="#2a1a05" stroke="#C9A84C" stroke-width="1.5"/><text x="126" y="153" text-anchor="middle" font-size="9.5" fill="white" font-family="DM Sans,sans-serif">Skills</text><text x="126" y="166" text-anchor="middle" font-size="9.5" fill="white" font-family="DM Sans,sans-serif">Shortages</text>
+<text x="250" y="378" text-anchor="middle" font-size="10.5" fill="#C9A84C" font-family="DM Sans,sans-serif" font-style="italic">B1: Growth–Resource Constraints</text>
+</svg>
+<div class="cld-explanation">
+<span class="cld-loop-type loop-balancing">Balancing Loop B1</span>
+<h4>Growth–Resource Constraints</h4>
+<p>Rapid growth increases resource demand. Without infrastructure investment, bottlenecks constrain further growth.</p>
+</div>
+</div>
+<!-- B2 -->
+<div class="cld-card" data-tooltip="Balancing loop: Security incidents reduce investment, slowing development and increasing tensions">
+<svg viewBox="0 0 500 390" xmlns="http://www.w3.org/2000/svg" style="background:#061810;">
+<defs>
+<marker id="b2p" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L10,4 L0,8 Z" fill="#C9A84C"/></marker>
+<marker id="b2n" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L10,4 L0,8 Z" fill="#ef4444"/></marker>
+</defs>
+<rect width="500" height="390" fill="#061810"/>
+<path d="M 291 99 Q 340 80 333 128" fill="none" stroke="#C9A84C" stroke-width="2" marker-end="url(#b2p)"/>
+<path d="M 362 197 Q 393 243 342 257" fill="none" stroke="#C9A84C" stroke-width="2" marker-end="url(#b2p)"/>
+<path d="M 277 305 Q 250 348 223 305" fill="none" stroke="#C9A84C" stroke-width="2" marker-end="url(#b2p)"/>
+<path d="M 158 257 Q 107 243 141 197" fill="none" stroke="#C9A84C" stroke-width="2" marker-end="url(#b2p)"/>
+<path d="M 167 128 Q 160 80 209 99" fill="none" stroke="#ef4444" stroke-width="2" stroke-dasharray="6,3" marker-end="url(#b2n)"/>
+<text x="336" y="79" fill="#C9A84C" font-size="15" font-weight="bold" text-anchor="middle">+</text>
+<text x="398" y="240" fill="#C9A84C" font-size="15" font-weight="bold" text-anchor="middle">+</text>
+<text x="250" y="363" fill="#C9A84C" font-size="15" font-weight="bold" text-anchor="middle">+</text>
+<text x="102" y="240" fill="#C9A84C" font-size="15" font-weight="bold" text-anchor="middle">+</text>
+<text x="164" y="76" fill="#ef4444" font-size="15" font-weight="bold" text-anchor="middle">−</text>
+<circle cx="250" cy="193" r="34" fill="#0a1a14" stroke="#C9A84C" stroke-width="1.5"/>
+<path d="M234,182 A16,16 0 1,0 266,182" fill="none" stroke="#C9A84C" stroke-width="1.4" marker-end="url(#b2p)"/>
+<text x="250" y="200" text-anchor="middle" font-size="17" font-weight="bold" fill="#C9A84C" font-family="Georgia,serif">B2</text>
+<circle cx="250" cy="70" r="42" fill="#2a1a05" stroke="#C9A84C" stroke-width="1.5"/><text x="250" y="66" text-anchor="middle" font-size="9.5" fill="white" font-family="DM Sans,sans-serif">Security</text><text x="250" y="79" text-anchor="middle" font-size="9.5" fill="white" font-family="DM Sans,sans-serif">Incidents</text>
+<circle cx="374" cy="157" r="42" fill="#2a1a05" stroke="#C9A84C" stroke-width="1.5"/><text x="374" y="153" text-anchor="middle" font-size="9.5" fill="white" font-family="DM Sans,sans-serif">Investor</text><text x="374" y="166" text-anchor="middle" font-size="9.5" fill="white" font-family="DM Sans,sans-serif">Caution</text>
+<circle cx="327" cy="305" r="42" fill="#2a1a05" stroke="#C9A84C" stroke-width="1.5"/><text x="327" y="301" text-anchor="middle" font-size="9.5" fill="white" font-family="DM Sans,sans-serif">Reduced</text><text x="327" y="314" text-anchor="middle" font-size="9.5" fill="white" font-family="DM Sans,sans-serif">Investment</text>
+<circle cx="173" cy="305" r="42" fill="#2a1a05" stroke="#C9A84C" stroke-width="1.5"/><text x="173" y="301" text-anchor="middle" font-size="9.5" fill="white" font-family="DM Sans,sans-serif">Slower</text><text x="173" y="314" text-anchor="middle" font-size="9.5" fill="white" font-family="DM Sans,sans-serif">Development</text>
+<circle cx="126" cy="157" r="42" fill="#2a1a05" stroke="#C9A84C" stroke-width="1.5"/><text x="126" y="153" text-anchor="middle" font-size="9.5" fill="white" font-family="DM Sans,sans-serif">Social</text><text x="126" y="166" text-anchor="middle" font-size="9.5" fill="white" font-family="DM Sans,sans-serif">Tensions</text>
+<text x="250" y="378" text-anchor="middle" font-size="10.5" fill="#C9A84C" font-family="DM Sans,sans-serif" font-style="italic">B2: Security–Investment Tensions</text>
+</svg>
+<div class="cld-explanation">
+<span class="cld-loop-type loop-balancing">Balancing Loop B2</span>
+<h4>Security–Investment Tensions</h4>
+<p>Security incidents trigger investor caution, reducing investment. Slower development increases social tensions, worsening security.</p>
+</div>
+</div>
+</div>
+<div class="cld-legend">
+<div class="legend-item"><div class="legend-dot" style="background:#10b981;"></div>Reinforcing Loop (R) — amplifies change</div>
+<div class="legend-item"><div class="legend-dot" style="background:#C9A84C;"></div>Balancing Loop (B) — seeks equilibrium</div>
+<div class="legend-item"><span style="color:#10b981;font-weight:700;font-size:1rem;">+</span>&nbsp;Same-direction polarity</div>
+<div class="legend-item"><span style="color:#ef4444;font-weight:700;font-size:1rem;">−</span>&nbsp;Opposite-direction polarity</div>
+<div class="legend-item"><svg width="30" height="8"><line x1="0" y1="4" x2="24" y2="4" stroke="#ef4444" stroke-width="2" stroke-dasharray="5,3"/></svg>&nbsp;Constraining link</div>
+</div>
+</div>
+
+<!-- ======= ARCHETYPES TAB ======= -->
+<div id="archetypes-tab" class="tab-content fade-in-section" role="tabpanel">
+<div class="section-intro-box">
+<p>Systems archetypes are recurring structural patterns. <strong>Click on any archetype card to view detailed interventions.</strong> These patterns reveal root causes of behavior and guide leverage point design.</p>
+</div>
+<div class="archetypes-grid">
+<!-- Limits to Growth -->
+<div class="archetype-card" onclick="openArchetypeModal(1)" role="button" tabindex="0" aria-label="View Limits to Growth archetype details" data-tooltip="Click to see interventions for the Limits to Growth pattern">
+<svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg" style="background:#061810;">
+<defs>
+<marker id="aG" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L9,3.5 L0,7 Z" fill="#10b981"/></marker>
+<marker id="aB" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L9,3.5 L0,7 Z" fill="#C9A84C"/></marker>
+<marker id="aN" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L9,3.5 L0,7 Z" fill="#ef4444"/></marker>
+</defs>
+<rect width="400" height="240" fill="#061810"/>
+<path d="M 136 100 Q 168 55 175 80" fill="none" stroke="#10b981" stroke-width="1.8" marker-end="url(#aG)"/>
+<path d="M 225 80 Q 232 55 264 100" fill="none" stroke="#10b981" stroke-width="1.8" marker-end="url(#aG)"/>
+<path d="M 232 83 Q 270 75 270 118" fill="none" stroke="#C9A84C" stroke-width="1.8" marker-end="url(#aB)"/>
+<path d="M 270 142 Q 200 210 130 142" fill="none" stroke="#ef4444" stroke-width="1.8" stroke-dasharray="5,3" marker-end="url(#aN)"/>
+<line x1="256" y1="83" x2="260" y2="95" stroke="#C9A84C" stroke-width="3"/>
+<circle cx="168" cy="130" r="18" fill="#0a1810" stroke="#10b981" stroke-width="1.2"/><text x="168" y="136" text-anchor="middle" font-size="13" font-weight="bold" fill="#10b981" font-family="Georgia,serif">R</text>
+<circle cx="232" cy="170" r="18" fill="#0a1810" stroke="#C9A84C" stroke-width="1.2"/><text x="232" y="176" text-anchor="middle" font-size="13" font-weight="bold" fill="#C9A84C" font-family="Georgia,serif">B</text>
+<text x="147" y="66" fill="#10b981" font-size="12" font-weight="bold">+</text>
+<text x="253" y="66" fill="#10b981" font-size="12" font-weight="bold">+</text>
+<text x="281" y="110" fill="#C9A84C" font-size="12" font-weight="bold">+</text>
+<text x="188" y="218" fill="#ef4444" font-size="12" font-weight="bold">−</text>
+<text x="256" y="73" fill="#C9A84C" font-size="9">delay</text>
+<ellipse cx="100" cy="120" rx="50" ry="24" fill="#064e3b" stroke="#10b981" stroke-width="1.4"/><text x="100" y="117" text-anchor="middle" font-size="8.5" fill="white" font-family="DM Sans,sans-serif">Investment</text><text x="100" y="128" text-anchor="middle" font-size="8.5" fill="white" font-family="DM Sans,sans-serif">Activity</text>
+<ellipse cx="200" cy="55" rx="50" ry="24" fill="#064e3b" stroke="#10b981" stroke-width="1.4"/><text x="200" y="52" text-anchor="middle" font-size="8.5" fill="white" font-family="DM Sans,sans-serif">Economic</text><text x="200" y="63" text-anchor="middle" font-size="8.5" fill="white" font-family="DM Sans,sans-serif">Growth</text>
+<ellipse cx="300" cy="120" rx="52" ry="24" fill="#2a1a05" stroke="#C9A84C" stroke-width="1.4"/><text x="300" y="117" text-anchor="middle" font-size="8.5" fill="white" font-family="DM Sans,sans-serif">Infrastructure</text><text x="300" y="128" text-anchor="middle" font-size="8.5" fill="white" font-family="DM Sans,sans-serif">Gap</text>
+</svg>
+<div class="arch-desc">
+<h4>1. Limits to Growth</h4>
+<p>The reinforcing loop (R) drives initial growth. However, as growth accelerates, it triggers a balancing loop (B) through infrastructure deficits — causing growth to plateau.</p>
+<div class="arch-leverage">
+<strong>Leverage Point LP2:</strong> Invest in energy (90% electrification by 2030) and digital connectivity (85% broadband by 2035) while growth is accelerating — not after it has plateaued.
+</div>
+</div>
+</div>
+<!-- Success to the Successful -->
+<div class="archetype-card" onclick="openArchetypeModal(2)" role="button" tabindex="0" aria-label="View Success to the Successful archetype details" data-tooltip="Click to see interventions for resource competition patterns">
+<svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg" style="background:#061810;">
+<defs>
+<marker id="aRA" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L9,3.5 L0,7 Z" fill="#10b981"/></marker>
+<marker id="aRB" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L9,3.5 L0,7 Z" fill="#C9A84C"/></marker>
+<marker id="aRN" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L9,3.5 L0,7 Z" fill="#ef4444"/></marker>
+</defs>
+<rect width="400" height="240" fill="#061810"/>
+<ellipse cx="200" cy="120" rx="44" ry="20" fill="#1a1a2e" stroke="#9ca3af" stroke-width="1.2"/><text x="200" y="117" text-anchor="middle" font-size="8" fill="#9ca3af" font-family="DM Sans,sans-serif">Limited</text><text x="200" y="128" text-anchor="middle" font-size="8" fill="#9ca3af" font-family="DM Sans,sans-serif">Resources</text>
+<ellipse cx="80" cy="70" rx="48" ry="22" fill="#064e3b" stroke="#10b981" stroke-width="1.3"/><text x="80" y="67" text-anchor="middle" font-size="8" fill="white" font-family="DM Sans,sans-serif">Halal</text><text x="80" y="78" text-anchor="middle" font-size="8" fill="white" font-family="DM Sans,sans-serif">Industry</text>
+<ellipse cx="80" cy="185" rx="48" ry="22" fill="#064e3b" stroke="#10b981" stroke-width="1.3"/><text x="80" y="181" text-anchor="middle" font-size="8" fill="white" font-family="DM Sans,sans-serif">Halal</text><text x="80" y="192" text-anchor="middle" font-size="8" fill="white" font-family="DM Sans,sans-serif">Success</text>
+<ellipse cx="320" cy="70" rx="52" ry="22" fill="#2a1a05" stroke="#C9A84C" stroke-width="1.3"/><text x="320" y="67" text-anchor="middle" font-size="8" fill="white" font-family="DM Sans,sans-serif">Other</text><text x="320" y="78" text-anchor="middle" font-size="8" fill="white" font-family="DM Sans,sans-serif">Sectors</text>
+<ellipse cx="320" cy="185" rx="52" ry="22" fill="#2a1a05" stroke="#C9A84C" stroke-width="1.3"/><text x="320" y="181" text-anchor="middle" font-size="8" fill="white" font-family="DM Sans,sans-serif">Sector</text><text x="320" y="192" text-anchor="middle" font-size="8" fill="white" font-family="DM Sans,sans-serif">Performance</text>
+<path d="M 80 92 L 80 163" fill="none" stroke="#10b981" stroke-width="1.6" marker-end="url(#aRA)"/>
+<path d="M 60 178 Q 30 128 60 82" fill="none" stroke="#10b981" stroke-width="1.6" marker-end="url(#aRA)"/>
+<path d="M 320 92 L 320 163" fill="none" stroke="#C9A84C" stroke-width="1.6" marker-end="url(#aRB)"/>
+<path d="M 340 178 Q 370 128 340 82" fill="none" stroke="#C9A84C" stroke-width="1.6" marker-end="url(#aRB)"/>
+<path d="M 160 112 L 116 90" fill="none" stroke="#10b981" stroke-width="1.5" marker-end="url(#aRA)"/>
+<path d="M 244 112 L 278 90" fill="none" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#aRN)"/>
+<text x="68" y="132" fill="#10b981" font-size="11" font-weight="bold">+</text><text x="25" y="132" fill="#10b981" font-size="11" font-weight="bold">+</text>
+<text x="376" y="132" fill="#C9A84C" font-size="11" font-weight="bold">+</text><text x="332" y="132" fill="#C9A84C" font-size="11" font-weight="bold">+</text>
+<text x="128" y="96" fill="#10b981" font-size="11" font-weight="bold">+</text><text x="262" y="96" fill="#ef4444" font-size="11" font-weight="bold">−</text>
+<circle cx="42" cy="128" r="14" fill="#0a1810" stroke="#10b981" stroke-width="1"/><text x="42" y="133" text-anchor="middle" font-size="11" font-weight="bold" fill="#10b981" font-family="Georgia,serif">R</text>
+<circle cx="358" cy="128" r="14" fill="#0a1810" stroke="#C9A84C" stroke-width="1"/><text x="358" y="133" text-anchor="middle" font-size="11" font-weight="bold" fill="#C9A84C" font-family="Georgia,serif">R</text>
+</svg>
+<div class="arch-desc">
+<h4>2. Success to the Successful</h4>
+<p>As halal industry gains early success, it attracts disproportionate resources from the shared pool — starving tourism, agribusiness, and renewable energy of investment.</p>
+<div class="arch-leverage">
+<strong>Leverage:</strong> Establish sectoral balance criteria and periodic resource reallocation reviews.
+</div>
+</div>
+</div>
+<!-- Fixes that Fail -->
+<div class="archetype-card" onclick="openArchetypeModal(3)" role="button" tabindex="0" aria-label="View Fixes that Fail archetype details" data-tooltip="Click to see why quick fixes create long-term problems">
+<svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg" style="background:#061810;">
+<defs>
+<marker id="aFp" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L9,3.5 L0,7 Z" fill="#10b981"/></marker>
+<marker id="aFb" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L9,3.5 L0,7 Z" fill="#C9A84C"/></marker>
+<marker id="aFn" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L9,3.5 L0,7 Z" fill="#ef4444"/></marker>
+<marker id="aFr" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L9,3.5 L0,7 Z" fill="#9333ea"/></marker>
+</defs>
+<rect width="400" height="240" fill="#061810"/>
+<ellipse cx="100" cy="120" rx="55" ry="26" fill="#3b0a0a" stroke="#ef4444" stroke-width="1.4"/><text x="100" y="115" text-anchor="middle" font-size="8" fill="white" font-family="DM Sans,sans-serif">Problem:</text><text x="100" y="125" text-anchor="middle" font-size="8" fill="white" font-family="DM Sans,sans-serif">Low Investor</text><text x="100" y="135" text-anchor="middle" font-size="8" fill="white" font-family="DM Sans,sans-serif">Confidence</text>
+<ellipse cx="290" cy="65" rx="60" ry="26" fill="#2a1a05" stroke="#C9A84C" stroke-width="1.4"/><text x="290" y="60" text-anchor="middle" font-size="8" fill="white" font-family="DM Sans,sans-serif">Quick Fix:</text><text x="290" y="70" text-anchor="middle" font-size="8" fill="white" font-family="DM Sans,sans-serif">Ad-hoc</text><text x="290" y="80" text-anchor="middle" font-size="8" fill="white" font-family="DM Sans,sans-serif">Incentives</text>
+<ellipse cx="290" cy="185" rx="64" ry="26" fill="#1a0820" stroke="#9333ea" stroke-width="1.4"/><text x="290" y="180" text-anchor="middle" font-size="8" fill="white" font-family="DM Sans,sans-serif">Side Effects:</text><text x="290" y="190" text-anchor="middle" font-size="8" fill="white" font-family="DM Sans,sans-serif">Revenue Loss &amp;</text><text x="290" y="200" text-anchor="middle" font-size="8" fill="white" font-family="DM Sans,sans-serif">Weak Institutions</text>
+<path d="M 148 102 Q 200 55 230 68" fill="none" stroke="#C9A84C" stroke-width="1.7" marker-end="url(#aFb)"/>
+<path d="M 235 80 Q 190 130 155 120" fill="none" stroke="#C9A84C" stroke-width="1.7" marker-end="url(#aFb)"/>
+<path d="M 290 91 L 290 159" fill="none" stroke="#9333ea" stroke-width="1.7" stroke-dasharray="5,3" marker-end="url(#aFr)"/>
+<line x1="284" y1="122" x2="296" y2="122" stroke="#9333ea" stroke-width="3"/>
+<text x="300" y="122" fill="#9333ea" font-size="8">delay</text>
+<path d="M 228 185 Q 160 200 152 135" fill="none" stroke="#ef4444" stroke-width="1.7" marker-end="url(#aFn)"/>
+<text x="188" y="58" fill="#C9A84C" font-size="11" font-weight="bold">+</text>
+<text x="195" y="125" fill="#C9A84C" font-size="11" font-weight="bold">−</text>
+<text x="296" y="133" fill="#9333ea" font-size="11" font-weight="bold">+</text>
+<text x="173" y="192" fill="#ef4444" font-size="11" font-weight="bold">+</text>
+<circle cx="214" cy="80" r="14" fill="#0a1810" stroke="#C9A84C" stroke-width="1"/><text x="214" y="85" text-anchor="middle" font-size="11" font-weight="bold" fill="#C9A84C" font-family="Georgia,serif">B</text>
+<circle cx="160" cy="175" r="14" fill="#0a1810" stroke="#ef4444" stroke-width="1"/><text x="160" y="180" text-anchor="middle" font-size="11" font-weight="bold" fill="#ef4444" font-family="Georgia,serif">R</text>
+</svg>
+<div class="arch-desc">
+<h4>3. Fixes that Fail</h4>
+<p>Ad-hoc tax incentives provide temporary relief but generate unintended side effects: revenue loss and institutional weakness. The "solution" becomes the disease.</p>
+<div class="arch-leverage">
+<strong>Leverage Point LP3:</strong> Address root causes through systemic governance reforms rather than symptomatic patches.
+</div>
+</div>
+</div>
+</div>
+</div>
+
 <!-- ======= BALANCED SCORECARD TAB ======= -->
 <div id="bsc-matrix" class="tab-content fade-in-section" role="tabpanel">
 <div class="bsc-wrapper">
@@ -718,10 +1356,9 @@ body { background:white; color:black; }
 </div>
 </div>
 </div>
+</main> <!-- END MAIN CONTENT -->
 
-</main>
-
-<!-- ======= STRATEGIC OPTIONS VIDEO & CTA SECTION ======= -->
+<!-- ======= NEW SECTIONS REPLACING METRICS & PHASES ======= -->
 <section class="page-container" style="padding-top: 2rem; padding-bottom: 2rem;">
     <div class="section-intro-box" style="text-align: center; margin-bottom: 2rem;">
         <h2 style="font-family:'Cinzel',serif; color:var(--gold); font-size: 1.5rem; margin-bottom: 1rem;">Strategic Options and the Investment Roadmap</h2>
@@ -738,15 +1375,9 @@ body { background:white; color:black; }
             Your insights are critical to validating the strategic direction of the BIRD 2026–2035 Roadmap. Participate in our official Validation Survey to ensure the investment ecosystem reflects the needs and aspirations of the Bangsamoro people.
         </p>
         <div style="display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center;">
-            <a href="https://bird-survey.asilvainnovations.com" class="cta-btn primary">
-                📋 Participate in Validation Survey
-            </a>
-            <a href="https://bird-resources.asilvainnovations.com" class="cta-btn">
-                📚 Explore Resources
-            </a>
-            <a href="https://bird-contact.asilvainnovations.com" class="cta-btn">
-                ✉️ Contact Us
-            </a>
+            <a href="https://bird-survey.asilvainnovations.com" class="cta-btn" style="background: var(--gold-grad); color: var(--dark-green); padding: 0.8rem 2rem; border-radius: 0.5rem; text-decoration: none; font-weight: 700; border: 1px solid var(--gold);">📋 Participate in Validation Survey</a>
+            <a href="https://bird-resources.asilvainnovations.com" class="cta-btn" style="border: 1px solid var(--gold-border); color: var(--light-green); padding: 0.8rem 2rem; border-radius: 0.5rem; text-decoration: none; font-weight: 600;">📚 Explore Resources</a>
+            <a href="https://bird-contact.asilvainnovations.com" class="cta-btn" style="border: 1px solid var(--gold-border); color: var(--light-green); padding: 0.8rem 2rem; border-radius: 0.5rem; text-decoration: none; font-weight: 600;">✉️ Contact Us</a>
         </div>
     </div>
 </section>
@@ -795,7 +1426,6 @@ body { background:white; color:black; }
 <a href="https://bird-roadmap.asilvainnovations.com" style="color:var(--gold);text-decoration:none;font-size:.8rem;font-weight:600;">Roadmap</a>
 <a href="https://bird-resources.asilvainnovations.com" style="color:rgba(255,255,255,.5);text-decoration:none;font-size:.8rem;">Resources</a>
 <a href="https://bird-contact.asilvainnovations.com" style="color:rgba(255,255,255,.5);text-decoration:none;font-size:.8rem;">Contact Us</a>
-<a href="https://asilvainnovations.github.io/BIRD-2026-2035/public/privacy-policy.html" style="color:rgba(255,255,255,.5);text-decoration:none;font-size:.8rem;">Privacy Policy</a>
 </div>
 <p style="font-size:.75rem;color:rgba(255,255,255,.3);">© 2026 BARMM · Ministry of Trade, Investments and Tourism · <span style="color:var(--gold);">The Emerging Bangsamoro</span> · Investment Roadmap 2026–2035</p>
 <p style="font-size:.68rem;color:rgba(255,255,255,.2);margin-top:.3rem;">Data sources: PSA, BBOI, BEZA, MTIT, MENRE (2024 baselines). Targets per BIRD 2026–2035 Roadmap & BDP 2023–2028.</p>
@@ -874,6 +1504,7 @@ chevronUp:'<svg class="chevron-icon" fill="none" stroke="currentColor" viewBox="
 trending:'<svg width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>'
 };
 let state={expandedPerspective:null,selectedStrategy:null,viewMode:'all'};
+
 /* ======================== MOBILE MENU ======================== */
 const mobileMenuToggle = document.getElementById('mobileMenuToggle');
 const navLinks = document.getElementById('navLinks');
@@ -881,13 +1512,13 @@ mobileMenuToggle.addEventListener('click', () => {
 const isExpanded = navLinks.classList.toggle('active');
 mobileMenuToggle.setAttribute('aria-expanded', isExpanded);
 });
-// Close menu when clicking outside
 document.addEventListener('click', (e) => {
 if (!mobileMenuToggle.contains(e.target) && !navLinks.contains(e.target)) {
 navLinks.classList.remove('active');
 mobileMenuToggle.setAttribute('aria-expanded', 'false');
 }
 });
+
 /* ======================== TABS ======================== */
 function switchTab(tabName,btn){
 document.querySelectorAll('.tab-btn').forEach(b=>{b.classList.remove('active');b.setAttribute('aria-selected','false');});
@@ -900,7 +1531,6 @@ requestAnimationFrame(()=>target.classList.add('visible'));
 }
 if(tabName==='bsc-matrix')renderBSC();
 if(tabName==='roadmap-tab' && !document.getElementById('strategyMapContainer').innerHTML) render();
-// Close mobile menu after selection
 navLinks.classList.remove('active');
 mobileMenuToggle.setAttribute('aria-expanded', 'false');
 }
@@ -914,18 +1544,17 @@ const sm=document.getElementById('roadmap-tab');
 sm.classList.add('active');
 render();
 }
+
 /* ======================== MODALS ======================== */
 function openArchetypeModal(id){
 const m=document.getElementById(`archetypeModal${id}`);
 m.classList.add('active');
 m.focus();
-// Trap focus
 trapFocus(m);
 }
 function closeArchetypeModal(id){
 document.getElementById(`archetypeModal${id}`).classList.remove('active');
 }
-// Focus trap for accessibility
 function trapFocus(element) {
 const focusableElements = element.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
 const firstFocusable = focusableElements[0];
@@ -948,7 +1577,6 @@ e.preventDefault();
 }
 document.querySelectorAll('.modal').forEach(m=>{
 m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('active');});
-// Allow keyboard activation of cards
 m.addEventListener('keydown', e => {
 if (e.key === 'Enter' || e.key === ' ') {
 e.preventDefault();
@@ -957,10 +1585,12 @@ m.classList.remove('active');
 });
 });
 document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.modal.active').forEach(m=>m.classList.remove('active'));});
+
 /* ======================== RENDER VISION ======================== */
 function renderVisionItems(items){
 return items.map(i=>`<div class="vision-item"><h3 class="vision-title">${i.title}</h3><p class="vision-desc">${i.desc}</p><div class="vision-goals">${i.goals.map(g=>`<div class="vision-goal">${icons.trending}${g}</div>`).join('')}</div></div>`).join('');
 }
+
 /* ======================== RENDER STRATEGIES ======================== */
 function renderStrategies(strategies,pid){
 const filtered=state.viewMode==='core'?strategies.filter(s=>s.kpi.includes('⭐')):strategies;
@@ -978,6 +1608,7 @@ ${sel?`<div class="strategy-contributes"><p class="contributes-title">Strategic 
 </div>`;
 }).join('');
 }
+
 /* ======================== RENDER PERSPECTIVE ======================== */
 function renderPerspective(p,idx){
 const expanded=state.expandedPerspective===p.id;
@@ -994,6 +1625,7 @@ ${hasStrategies&&expanded?`<div id="pd-${p.id}" class="strategy-details"><div cl
 </div>
 </div>`;
 }
+
 /* ======================== FULL RENDER ======================== */
 function render(){
 const c=document.getElementById('strategyMapContainer');
@@ -1010,6 +1642,7 @@ item.addEventListener('click',e=>{if(e.target.closest('.tooltip'))return;const s
 item.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();item.click();}});
 });
 }
+
 /* ======================== BSC RENDER ======================== */
 function renderBSC(){
 const table=document.getElementById('bsc-table');
@@ -1025,22 +1658,21 @@ html+=`<tr class="${core?'bsc-row-core':i%2===0?'bsc-row-alt':''}">
 });
 table.innerHTML=html+'</tbody>';
 }
+
 /* ======================== PERSIST STATE ======================== */
 function saveState(){try{localStorage.setItem('barmmState',JSON.stringify(state));}catch(e){}}
 function loadState(){try{const s=localStorage.getItem('barmmState');if(s){const p=JSON.parse(s);state.expandedPerspective=p.expandedPerspective;state.selectedStrategy=p.selectedStrategy;}}catch(e){}}
+
 /* ======================== SCROLL & ANIMATION ======================== */
 const fadeObs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');fadeObs.unobserve(e.target);}});},{threshold:.06});
 document.querySelectorAll('.fade-in-section').forEach(el=>fadeObs.observe(el));
 window.addEventListener('scroll',()=>{document.getElementById('siteNav').classList.toggle('scrolled',window.scrollY>40);},{passive:true});
+
 /* ======================== PWA ======================== */
 let deferredPrompt;
 const installBtn=document.getElementById('installBtn');
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;installBtn.classList.remove('hidden');});
 installBtn.addEventListener('click',async()=>{if(!deferredPrompt)return;deferredPrompt.prompt();const r=await deferredPrompt.userChoice;deferredPrompt=null;installBtn.classList.add('hidden');});
-/* ======================== INIT ======================== */
-loadState();
-render();
-renderBSC();
 
 /* ======================== CONSENT BANNER ======================== */
 document.addEventListener('DOMContentLoaded', function() {
@@ -1062,6 +1694,11 @@ document.addEventListener('DOMContentLoaded', function() {
         banner.style.display = 'none';
     });
 });
+
+/* ======================== INIT ======================== */
+loadState();
+render();
+renderBSC();
 </script>
 </body>
 </html>
