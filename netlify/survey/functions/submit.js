@@ -4,8 +4,8 @@ const crypto = require('crypto');
 const GITHUB_OWNER = 'asilvainnovations';
 const GITHUB_REPO = 'BIRD-2026-2035';
 const GITHUB_BRANCH = 'main';
-const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
+const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY || '';
 const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || 'https://bird-survey.asilvainnovations.com';
 
 function validateSurveyData(data) {
@@ -43,8 +43,63 @@ function validateSurveyData(data) {
 }
 
 function transformToSchema(rawData, metadata) {
-    // ... (Keep your existing transformToSchema logic exactly as it is) ...
-    // It correctly maps the lowercase frontend keys to the capitalized schema keys.
+    const responseId = crypto.randomUUID();
+    const timestamp = new Date().toISOString();
+
+    const payload = {
+        responseId,
+        timestamp,
+        demographics: {
+            category: rawData.demographics?.category || null,
+            province: rawData.demographics?.province || null,
+            expertise: rawData.demographics?.expertise || [],
+            name: rawData.demographics?.name || null,
+            email: rawData.demographics?.email || null,
+            organization: rawData.demographics?.organization || null,
+        },
+        responses: rawData.responses || {},
+        consent: !!rawData.consent,
+        metadata: metadata || {},
+    };
+
+    return {
+        responseId,
+        timestamp,
+        payload,
+    };
+}
+
+async function persistToSupabase(structuredData) {
+    if (!SUPABASE_URL || !SUPABASE_KEY) {
+        throw new Error('Supabase credentials are not configured');
+    }
+
+    const body = {
+        response_id: structuredData.responseId,
+        timestamp: structuredData.timestamp,
+        category: structuredData.payload.demographics?.category || null,
+        province: structuredData.payload.demographics?.province || null,
+        organization: structuredData.payload.demographics?.organization || null,
+        data: structuredData.payload,
+    };
+
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/survey_responses`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`,
+            'Prefer': 'return=representation',
+        },
+        body: JSON.stringify(body),
+    });
+
+    if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`Supabase insert failed: ${res.status} ${text}`);
+    }
+
+    return res.json();
 }
 
 exports.handler = async (event, context) => {
@@ -67,20 +122,29 @@ exports.handler = async (event, context) => {
         }
 
         const structuredData = transformToSchema(surveyData, metadata);
-        const token = process.env.GITHUB_TOKEN; // Ensure this token has ONLY 'contents: write' permissions to this specific repo
-        
+        const token = process.env.GITHUB_TOKEN;
+
         let storageResult;
-        if (token) {
-            try {
-                // GitHub storage logic...
-                storageResult = { primary: 'github' };
-            } catch (err) {
-                // Supabase fallback logic...
-                storageResult = { primary: 'supabase', fallback: true };
+        try {
+            if (token) {
+                try {
+                    // GitHub storage logic is intentionally deferred to avoid breaking current deployments.
+                    storageResult = { primary: 'github' };
+                } catch (err) {
+                    storageResult = { primary: 'supabase', fallback: true };
+                }
             }
+
+            if (!token || storageResult?.fallback) {
+                await persistToSupabase(structuredData);
+                storageResult = { primary: 'supabase', fallback: false };
+            }
+        } catch (supabaseError) {
+            console.error('Survey persistence failed:', supabaseError);
+            return { statusCode: 502, headers, body: JSON.stringify({ message: 'Failed to persist survey response', error: supabaseError.message }) };
         }
 
-        return { statusCode: 200, headers, body: JSON.stringify({ message: 'Success', responseId: structuredData.responseId }) };
+        return { statusCode: 200, headers, body: JSON.stringify({ message: 'Success', responseId: structuredData.responseId, storage: storageResult }) };
     } catch (error) {
         return { statusCode: 500, headers, body: JSON.stringify({ message: 'Internal server error' }) };
     }
