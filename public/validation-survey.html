@@ -255,7 +255,7 @@ footer{background:var(--dark-green);color:#cfe9df;padding:2rem 1rem 1.4rem;margi
 <!-- Nav -->
 <nav role="navigation" aria-label="Main navigation">
   <div class="nav-inner">
-    <a href="https://bangsmoro-investment-roadmap.asilvainnovations.com" class="brand" aria-label="BIRD 2026-2035 Home">
+    <a href="https://bangsamoro-investment-roadmap.asilvainnovations.com" class="brand" aria-label="BIRD 2026-2035 Home">
       <img src="https://mtit.bangsamoro.gov.ph/wp-content/uploads/2024/04/MTIT-HEADER-2024.png" alt="Ministry of Trade, Investments and Tourism – BARMM" onerror="this.style.display='none'">
       <span class="brand-text">BIRD 2026–2035<br>Validation Survey</span>
     </a>
@@ -278,7 +278,7 @@ footer{background:var(--dark-green);color:#cfe9df;padding:2rem 1rem 1.4rem;margi
   <p>The BIRD 2026–2035 is BARMM's 10-year plan for attracting investment, growing halal industry, green economy, and infrastructure, and reducing poverty. Your feedback tells us what to keep, fix, or rethink before it is finalized.</p>
   <div class="hero-meta">
     <div><b>15–20</b>minutes</div>
-    <div><b>17</b>short sections</div>
+    <div><b>16</b>short sections</div>
     <div><b>100%</b>confidential</div>
     <div><b>Save &amp; resume</b>anytime</div>
   </div>
@@ -306,7 +306,7 @@ footer{background:var(--dark-green);color:#cfe9df;padding:2rem 1rem 1.4rem;margi
 <div class="progress-wrap" id="progressWrap">
   <div class="progress-inner">
     <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
-    <div class="progress-text"><span id="progressText">Getting started</span><span id="stepCount">Step 1 of 17</span></div>
+    <div class="progress-text"><span id="progressText">Getting started</span><span id="stepCount">Step 1 of 16</span></div>
   </div>
 </div>
 
@@ -591,7 +591,6 @@ footer{background:var(--dark-green);color:#cfe9df;padding:2rem 1rem 1.4rem;margi
                 I understand my responses will be used by the Bureau of Investments – MTIT, BARMM to improve the BIRD 2026–2035 Roadmap. My answers are kept confidential. <span class="required">*</span>
             </legend>
         </fieldset>
-        <button type="submit" id="submitBtn" class="btn-primary">Submit Survey</button>
     </div>
 </form>
 
@@ -603,7 +602,7 @@ footer{background:var(--dark-green);color:#cfe9df;padding:2rem 1rem 1.4rem;margi
   <div class="success-links">
     <a href="https://bird-dashboard.asilvainnovations.com" target="_blank" rel="noopener">View the Dashboard</a>
     <a href="https://bird-roadmap.asilvainnovations.com" target="_blank" rel="noopener" class="secondary">Read the Roadmap</a>
-    <a href="https://bangsmoro-investment-roadmap.asilvainnovations.com" class="secondary">Back to Home</a>
+    <a href="https://bangsamoro-investment-roadmap.asilvainnovations.com" class="secondary">Back to Home</a>
   </div>
 </div>
 
@@ -615,7 +614,7 @@ footer{background:var(--dark-green);color:#cfe9df;padding:2rem 1rem 1.4rem;margi
     <div class="footer-grid">
       <div>
         <h4>Platform</h4>
-        <a href="https://bangsmoro-investment-roadmap.asilvainnovations.com">Home</a>
+        <a href="https://bangsamoro-investment-roadmap.asilvainnovations.com">Home</a>
         <a href="https://bird-roadmap.asilvainnovations.com" target="_blank" rel="noopener">The Roadmap</a>
         <a href="https://bird-app.asilvainnovations.com" target="_blank" rel="noopener">BIRD App</a>
         <a href="https://bird-dashboard.asilvainnovations.com" target="_blank" rel="noopener">Dashboard</a>
@@ -641,12 +640,114 @@ footer{background:var(--dark-green);color:#cfe9df;padding:2rem 1rem 1.4rem;margi
 </footer>
 
 <script>
-  <script>
+(function() {
+    "use strict";
     const STORAGE_KEY = 'bird_survey_draft_v3';
+    const QUEUE_KEY = 'bird_survey_queue_v1';
+    const SUBMIT_ENDPOINT = '/.netlify/functions/submit';
+    
     const form = document.getElementById('surveyForm');
-    const resumeBanner = document.getElementById('resumeBanner'); // Ensure you have a div with this ID in your HTML
+    const steps = Array.from(form.querySelectorAll('.step'));
+    const totalSteps = steps.length;
+    let currentStep = 0;
 
-    // 1. Parse HTML bracket notation into nested JSON for Netlify
+    const progressFill = document.getElementById('progressFill');
+    const progressText = document.getElementById('progressText');
+    const stepCount = document.getElementById('stepCount');
+    const progressWrap = document.getElementById('progressWrap');
+    const resumeBanner = document.getElementById('resumeBanner');
+
+    const progressLabels = [
+        'Getting started', 'The big picture', 'Governance & peace', 'Foundations cluster',
+        'Transformers cluster', 'Enablers cluster', 'Connectors cluster', 'Financiers cluster',
+        'Strategic direction', 'Funding the plan', '2035 targets', 'Provincial equity',
+        'Climate & green economy', 'Policy & coordination', 'Overall assessment', 'Review & submit'
+    ];
+
+    // 1. Inject navigation buttons into each step
+    steps.forEach((step, index) => {
+        const actions = document.createElement('div');
+        actions.className = 'step-actions';
+        
+        if (index > 0) {
+            const backBtn = document.createElement('button');
+            backBtn.type = 'button';
+            backBtn.className = 'btn btn-ghost';
+            backBtn.textContent = '← Back';
+            backBtn.addEventListener('click', () => {
+                if (currentStep > 0) {
+                    currentStep--;
+                    showStep(currentStep);
+                }
+            });
+            actions.appendChild(backBtn);
+        }
+
+        if (index < totalSteps - 1) {
+            const nextBtn = document.createElement('button');
+            nextBtn.type = 'button';
+            nextBtn.className = 'btn btn-primary';
+            nextBtn.textContent = 'Continue →';
+            nextBtn.addEventListener('click', () => {
+                if (validateStep(currentStep)) {
+                    saveDraft();
+                    currentStep++;
+                    showStep(currentStep);
+                } else {
+                    alert('Please answer all required questions (marked *) before continuing.');
+                }
+            });
+            actions.appendChild(nextBtn);
+        } else {
+            const submitBtn = document.createElement('button');
+            submitBtn.type = 'submit';
+            submitBtn.id = 'submitBtn';
+            submitBtn.className = 'btn btn-primary';
+            submitBtn.textContent = 'Submit Survey ✓';
+            actions.appendChild(submitBtn);
+        }
+        
+        step.appendChild(actions);
+    });
+
+    function showStep(idx) {
+        steps.forEach(s => s.classList.remove('active'));
+        steps[idx].classList.add('active');
+        const pct = Math.round((idx / (totalSteps - 1)) * 100);
+        progressFill.style.width = pct + '%';
+        progressText.textContent = progressLabels[idx] || '';
+        stepCount.textContent = 'Step ' + (idx + 1) + ' of ' + totalSteps;
+        window.scrollTo({ top: progressWrap.offsetTop - 10, behavior: 'smooth' });
+    }
+
+    function validateStep(idx) {
+        const step = steps[idx];
+        let ok = true;
+        
+        step.querySelectorAll('select[required], input[required]').forEach(el => {
+            if (el.type === 'checkbox') {
+                if (el.name === 'consent' && !el.checked) ok = false;
+            } else if (!el.value) {
+                ok = false;
+                el.style.borderColor = 'var(--error)';
+            } else {
+                el.style.borderColor = '';
+            }
+        });
+        
+        const radioGroups = new Set();
+        step.querySelectorAll('input[type=radio][required]').forEach(inp => {
+            radioGroups.add(inp.name);
+        });
+        radioGroups.forEach(name => {
+            const checked = step.querySelector('input[name="' + name + '"]:checked');
+            if (!checked) ok = false;
+        });
+        
+        return ok;
+    }
+
+    // 2. Parse HTML bracket notation into nested JSON for Netlify
     function parseFormToJSON(formData) {
         const result = {};
         for (const [key, value] of formData.entries()) {
@@ -665,41 +766,96 @@ footer{background:var(--dark-green);color:#cfe9df;padding:2rem 1rem 1.4rem;margi
         return result;
     }
 
-    // 2. Auto-Save Draft
+    // 3. Auto-Save Draft (Flat structure for easy restoration)
     function saveDraft() {
         const formData = new FormData(form);
-        const data = parseFormToJSON(formData);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        const flatData = {};
+        for (const [key, value] of formData.entries()) {
+            if (flatData[key]) {
+                if (Array.isArray(flatData[key])) {
+                    flatData[key].push(value);
+                } else {
+                    flatData[key] = [flatData[key], value];
+                }
+            } else {
+                flatData[key] = value;
+            }
+        }
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ currentStep, data: flatData }));
     }
+    
     form.addEventListener('change', saveDraft);
     form.addEventListener('input', saveDraft);
 
-    // 3. Load Draft on Page Load
+    // 4. Load Draft on Page Load
+    let pendingResumeStep = 0;
     function loadDraft() {
         const saved = localStorage.getItem(STORAGE_KEY);
         if (saved) {
-            const data = JSON.parse(saved);
-            for (let key in data) {
-                const elements = form.elements[key];
-                if (!elements) continue;
-                if (elements.type === 'radio' || elements.type === 'checkbox') {
-                    const els = elements.length ? elements : [elements];
-                    els.forEach(el => {
-                        el.checked = Array.isArray(data[key]) ? data[key].includes(el.value) : (el.value === data[key]);
-                    });
-                } else {
-                    elements.value = data[key];
+            try {
+                const { currentStep: savedStep, data } = JSON.parse(saved);
+                form.reset();
+                
+                for (const [key, value] of Object.entries(data)) {
+                    const elements = form.elements[key];
+                    if (!elements) continue;
+                    
+                    const values = Array.isArray(value) ? value : [value];
+                    
+                    if (elements.length && elements[0].type === 'radio') {
+                        const el = form.querySelector('input[name="' + key + '"][value="' + value + '"]');
+                        if (el) el.checked = true;
+                    } else if (elements.length && elements[0].type === 'checkbox') {
+                        values.forEach(v => {
+                            const el = form.querySelector('input[name="' + key + '"][value="' + v + '"]');
+                            if (el) el.checked = true;
+                        });
+                    } else if (elements.length) {
+                        values.forEach(v => {
+                            const el = form.querySelector('input[name="' + key + '"][value="' + v + '"]');
+                            if (el) el.checked = true;
+                        });
+                    } else {
+                        if (elements.type === 'checkbox') {
+                            elements.checked = values.includes(elements.value);
+                        } else {
+                            elements.value = value;
+                        }
+                    }
                 }
+                
+                if (savedStep > 0 && savedStep < totalSteps) {
+                    pendingResumeStep = savedStep;
+                    resumeBanner.classList.add('show');
+                }
+            } catch (e) {
+                console.error('Error loading draft', e);
             }
-            if(resumeBanner) resumeBanner.style.display = 'block';
         }
     }
-    loadDraft();
 
-    // 4. Handle Submission to Netlify
+    document.getElementById('resumeYes').addEventListener('click', () => {
+        currentStep = pendingResumeStep;
+        showStep(currentStep);
+        resumeBanner.classList.remove('show');
+    });
+    document.getElementById('resumeNo').addEventListener('click', () => {
+        localStorage.removeItem(STORAGE_KEY);
+        form.reset();
+        resumeBanner.classList.remove('show');
+    });
+
+    // 5. Handle Submission
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const submitBtn = document.getElementById('submitBtn');
+        
+        const consent = form.querySelector('input[name="consent"]');
+        if (!consent.checked) {
+            alert('Please check the consent box to submit your response.');
+            return;
+        }
+
+        const submitBtn = form.querySelector('#submitBtn');
         submitBtn.disabled = true;
         submitBtn.innerText = 'Submitting...';
 
@@ -707,7 +863,9 @@ footer{background:var(--dark-green);color:#cfe9df;padding:2rem 1rem 1.4rem;margi
         const surveyData = parseFormToJSON(formData);
 
         try {
-            const response = await fetch('/.netlify/functions/submit', {
+            if (!navigator.onLine) throw new Error('offline');
+            
+            const response = await fetch(SUBMIT_ENDPOINT, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ surveyData })
@@ -715,380 +873,76 @@ footer{background:var(--dark-green);color:#cfe9df;padding:2rem 1rem 1.4rem;margi
 
             const result = await response.json();
             if (response.ok) {
-                localStorage.removeItem(STORAGE_KEY); // Clear draft on success
-                // Trigger your existing success screen logic here
-                alert('Thank you! Your response has been recorded.');
-                window.location.href = 'https://bird-dashboard.asilvainnovations.com'; // Or show your success UI
+                localStorage.removeItem(STORAGE_KEY);
+                onSubmitSuccess();
             } else {
                 alert('Error: ' + (result.errors ? result.errors.join(', ') : result.message));
                 submitBtn.disabled = false;
-                submitBtn.innerText = 'Submit Survey';
+                submitBtn.innerText = 'Submit Survey ✓';
             }
         } catch (err) {
-            alert('Network error. Your answers are safely saved locally and will submit when you reconnect.');
-            submitBtn.disabled = false;
-            submitBtn.innerText = 'Submit Survey';
+            try {
+                const queue = JSON.parse(localStorage.getItem(QUEUE_KEY) || '[]');
+                queue.push({ surveyData });
+                localStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
+                onSubmitSuccess(true);
+            } catch (e2) {
+                alert('Network error. Your answers are safely saved locally and will submit when you reconnect.');
+                submitBtn.disabled = false;
+                submitBtn.innerText = 'Submit Survey ✓';
+            }
         }
     });
-  (function(){
-  "use strict";
-  const STORAGE_KEY = 'bird_survey_progress_v1';
-  const QUEUE_KEY = 'bird_survey_queue_v1';
-  const SUBMIT_ENDPOINT = '/.netlify/functions/submit';
 
-  const steps = Array.from(document.querySelectorAll('.step'));
-  const totalSteps = steps.length; // computed at runtime (18 steps)
-  let current = 0;
-
-  const progressFill = document.getElementById('progressFill');
-  const progressText = document.getElementById('progressText');
-  const stepCount = document.getElementById('stepCount');
-  const progressWrap = document.getElementById('progressWrap');
-
-  const progressLabels = [
-    'Getting started','The big picture','How the system behaves','Governance & peace','Foundations cluster',
-    'Transformers cluster','Enablers cluster','Connectors cluster','Financiers cluster','Strategic direction',
-    'Funding the plan','2035 targets','Provincial equity','Climate & green economy','Policy & coordination',
-    'Overall assessment','Open feedback','Review & submit'
-  ];
-
-  function showStep(idx){
-    steps.forEach(s=>s.classList.remove('active'));
-    steps[idx].classList.add('active');
-    const pct = Math.round((idx/(totalSteps-1))*100);
-    progressFill.style.width = pct + '%';
-    progressText.textContent = progressLabels[idx] || '';
-    stepCount.textContent = 'Step ' + (idx+1) + ' of ' + totalSteps;
-    window.scrollTo({top: progressWrap.offsetTop - 10, behavior:'smooth'});
-    if(idx === totalSteps-1){ buildSummary(); }
-  }
-
-  function validateStep(idx){
-    const step = steps[idx];
-    const requiredRadioGroups = new Set();
-    step.querySelectorAll('[data-required] input[type=radio], .likert[data-required] input[type=radio]').forEach(inp=>{
-      requiredRadioGroups.add(inp.name);
-    });
-    // also any likert with data-required wraps directly
-    step.querySelectorAll('.likert[data-required]').forEach(l=>{
-      const name = l.querySelector('input')?.name;
-      if(name) requiredRadioGroups.add(name);
-    });
-    // any select/input marked required
-    let ok = true;
-    step.querySelectorAll('select[required], input[required]').forEach(el=>{
-      if(!el.value){ ok = false; el.style.borderColor = 'var(--error)'; }
-      else{ el.style.borderColor=''; }
-    });
-    requiredRadioGroups.forEach(name=>{
-      const checked = step.querySelector('input[name="'+name+'"]:checked');
-      if(!checked){ ok = false; }
-    });
-    return ok;
-  }
-
-  document.querySelectorAll('[data-next]').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      if(!validateStep(current)){
-        alert('Please answer all required questions (marked *) before continuing.');
-        return;
-      }
-      saveProgress();
-      if(current < totalSteps-1){ current++; showStep(current); }
-    });
-  });
-  document.querySelectorAll('[data-back]').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      if(current > 0){ current--; showStep(current); }
-    });
-  });
-
-  // ===== Autosave to localStorage =====
-  function collectRaw(){
-    const val = (id)=>{ const el = document.getElementById(id); return el ? el.value : null; };
-    const radio = (name)=>{ const el = document.querySelector('input[name="'+name+'"]:checked'); return el ? el.value : null; };
-    const checks = (containerId)=>{ return Array.from(document.querySelectorAll('#'+containerId+' input[type=checkbox]:checked')).map(i=>i.value); };
-
-    return {
-      demographics:{
-        category: val('dem_category'),
-        province: val('dem_province'),
-        expertise: checks('dem_expertise'),
-        name: val('dem_name'),
-        email: val('dem_email'),
-        organization: val('dem_org'),
-      },
-      responses:{
-        section1_beie:{ understanding: radio('s1_understanding'), relevance: radio('s1_relevance') },
-        section2_mg:{
-          importance: radio('s2_importance'), implementation: radio('s2_implementation'),
-          archetype: radio('s2_archetype'), peace_milestones: checks('s2_peace')
-        },
-        section3_foundations:{
-          priorities: checks('s3_priorities'), feasibility: radio('s3_feasibility'),
-          el_nino_impact: radio('s3_elnino_impact'), el_nino_likelihood: radio('s3_elnino_likelihood'),
-          pestalotiopsis_impact: radio('s3_pesta_impact'), pestalotiopsis_likelihood: radio('s3_pesta_likelihood'),
-          postharvest_impact: radio('s3_postharvest_impact'), postharvest_likelihood: radio('s3_postharvest_likelihood'),
-          limits_growth: radio('s3_limits_growth')
-        },
-        section4_transformers:{
-          barrier: radio('s4_barrier'), halal_park: radio('s4_halal_park'),
-          fixes_fail: radio('s4_fixes_fail'), commodity_impact: radio('s4_commodity_impact'),
-          heds_ranking: checks('s4_heds')
-        },
-        section5_enablers:{
-          infra_rating: radio('s5_infra_rating'), sectors: checks('s5_sectors'),
-          broadband: radio('s5_broadband'), literacy: radio('s5_literacy'),
-          stunting: radio('s5_stunting'), digital_divide: radio('s5_digital_divide')
-        },
-        section6_connectors:{
-          bimpeaga_importance: radio('s6_bimpeaga'), markets: checks('s6_markets'),
-          export_target: radio('s6_export_target'), uae_feasibility: radio('s6_uae'),
-          perception: radio('s6_perception')
-        },
-        section7_financiers:{
-          criticality: radio('s7_criticality'), instruments: checks('s7_instruments'),
-          inclusion_target: radio('s7_inclusion_target'), asset_paradox: radio('s7_asset_paradox'),
-          block_grant: radio('s7_block_grant')
-        },
-        section8_options:{
-          strategy: radio('s8_strategy'), sequencing: radio('s8_sequencing'),
-          comments: val('s8_comments')
-        },
-        section9_budget:{ realism: radio('s9_realism') },
-        section10_targets:{ ambition: radio('s10_ambition'), matrix: radio('s10_matrix') },
-        section11_equity:{ affirmative: radio('s11_affirmative'), mechanisms: checks('s11_mechanisms') },
-        section12_climate:{ green_priority: radio('s12_green_priority'), adaptation: checks('s12_adaptation') },
-        section13_policy:{ legislation: checks('s13_legislation'), bicc: radio('s13_bicc') },
-        section16_care:{
-          context: radio('s16_context'), action: radio('s16_action'),
-          realtime: radio('s16_realtime'), evidence: radio('s16_evidence'), overall: radio('s16_overall')
-        },
-        open_feedback: val('s15_open')
-      },
-      consent: document.getElementById('consentBox') ? document.getElementById('consentBox').checked : false
-    };
-  }
-
-  function saveProgress(){
-    try{
-      const data = collectRaw();
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ current, data, savedAt: Date.now() }));
-      document.getElementById('saveStatusFlag');
-    }catch(e){ console.warn('Autosave failed', e); }
-  }
-
-  function restoreProgress(payload){
-    const d = payload.data;
-    const setVal = (id, v)=>{ const el=document.getElementById(id); if(el && v!=null) el.value = v; };
-    const setRadio = (name, v)=>{ if(v==null) return; const el=document.querySelector('input[name="'+name+'"][value="'+v+'"]'); if(el) el.checked = true; };
-    const setChecks = (containerId, arr)=>{ if(!arr) return; arr.forEach(v=>{ const el=document.querySelector('#'+containerId+' input[value="'+v+'"]'); if(el) el.checked = true; }); };
-
-    setVal('dem_category', d.demographics.category);
-    setVal('dem_province', d.demographics.province);
-    setChecks('dem_expertise', d.demographics.expertise);
-    setVal('dem_name', d.demographics.name);
-    setVal('dem_email', d.demographics.email);
-    setVal('dem_org', d.demographics.organization);
-
-    const r = d.responses;
-    setRadio('s1_understanding', r.section1_beie.understanding);
-    setRadio('s1_relevance', r.section1_beie.relevance);
-    setRadio('s2_importance', r.section2_mg.importance);
-    setRadio('s2_implementation', r.section2_mg.implementation);
-    setRadio('s2_archetype', r.section2_mg.archetype);
-    setChecks('s2_peace', r.section2_mg.peace_milestones);
-    setChecks('s3_priorities', r.section3_foundations.priorities);
-    setRadio('s3_feasibility', r.section3_foundations.feasibility);
-    setRadio('s3_elnino_impact', r.section3_foundations.el_nino_impact);
-    setRadio('s3_elnino_likelihood', r.section3_foundations.el_nino_likelihood);
-    setRadio('s3_pesta_impact', r.section3_foundations.pestalotiopsis_impact);
-    setRadio('s3_pesta_likelihood', r.section3_foundations.pestalotiopsis_likelihood);
-    setRadio('s3_postharvest_impact', r.section3_foundations.postharvest_impact);
-    setRadio('s3_postharvest_likelihood', r.section3_foundations.postharvest_likelihood);
-    setRadio('s3_limits_growth', r.section3_foundations.limits_growth);
-    setRadio('s4_barrier', r.section4_transformers.barrier);
-    setRadio('s4_halal_park', r.section4_transformers.halal_park);
-    setRadio('s4_fixes_fail', r.section4_transformers.fixes_fail);
-    setRadio('s4_commodity_impact', r.section4_transformers.commodity_impact);
-    setChecks('s4_heds', r.section4_transformers.heds_ranking);
-    setRadio('s5_infra_rating', r.section5_enablers.infra_rating);
-    setChecks('s5_sectors', r.section5_enablers.sectors);
-    setRadio('s5_broadband', r.section5_enablers.broadband);
-    setRadio('s5_literacy', r.section5_enablers.literacy);
-    setRadio('s5_stunting', r.section5_enablers.stunting);
-    setRadio('s5_digital_divide', r.section5_enablers.digital_divide);
-    setRadio('s6_bimpeaga', r.section6_connectors.bimpeaga_importance);
-    setChecks('s6_markets', r.section6_connectors.markets);
-    setRadio('s6_export_target', r.section6_connectors.export_target);
-    setRadio('s6_uae', r.section6_connectors.uae_feasibility);
-    setRadio('s6_perception', r.section6_connectors.perception);
-    setRadio('s7_criticality', r.section7_financiers.criticality);
-    setChecks('s7_instruments', r.section7_financiers.instruments);
-    setRadio('s7_inclusion_target', r.section7_financiers.inclusion_target);
-    setRadio('s7_asset_paradox', r.section7_financiers.asset_paradox);
-    setRadio('s7_block_grant', r.section7_financiers.block_grant);
-    setRadio('s8_strategy', r.section8_options.strategy);
-    setRadio('s8_sequencing', r.section8_options.sequencing);
-    setVal('s8_comments', r.section8_options.comments);
-    setRadio('s9_realism', r.section9_budget.realism);
-    setRadio('s10_ambition', r.section10_targets.ambition);
-    setRadio('s10_matrix', r.section10_targets.matrix);
-    setRadio('s11_affirmative', r.section11_equity.affirmative);
-    setChecks('s11_mechanisms', r.section11_equity.mechanisms);
-    setRadio('s12_green_priority', r.section12_climate.green_priority);
-    setChecks('s12_adaptation', r.section12_climate.adaptation);
-    setChecks('s13_legislation', r.section13_policy.legislation);
-    setRadio('s13_bicc', r.section13_policy.bicc);
-    setRadio('s16_context', r.section16_care.context);
-    setRadio('s16_action', r.section16_care.action);
-    setRadio('s16_realtime', r.section16_care.realtime);
-    setRadio('s16_evidence', r.section16_care.evidence);
-    setRadio('s16_overall', r.section16_care.overall);
-    setVal('s15_open', r.open_feedback);
-
-    if(document.getElementById('consentBox')) document.getElementById('consentBox').checked = !!d.consent;
-
-    current = payload.current || 0;
-    showStep(current);
-  }
-
-  // Autosave on any change
-  document.getElementById('surveyForm').addEventListener('input', ()=>{ saveProgress(); });
-  document.getElementById('surveyForm').addEventListener('change', ()=>{ saveProgress(); });
-
-  // ===== Resume banner =====
-  const resumeBanner = document.getElementById('resumeBanner');
-  let pendingResume = null;
-  try{
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if(stored){
-      pendingResume = JSON.parse(stored);
-      resumeBanner.classList.add('show');
+    function onSubmitSuccess(queued) {
+        form.style.display = 'none';
+        resumeBanner.classList.remove('show');
+        progressWrap.style.display = 'none';
+        const panel = document.getElementById('successPanel');
+        if (queued) {
+            panel.querySelector('.success-text').textContent = 'You appear to be offline. Your response has been saved on this device and will be sent automatically once you are back online. Thank you for taking part!';
+        }
+        panel.classList.add('show');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-  }catch(e){}
 
-  document.getElementById('resumeYes').addEventListener('click', ()=>{
-    if(pendingResume){ restoreProgress(pendingResume); }
-    resumeBanner.classList.remove('show');
-  });
-  document.getElementById('resumeNo').addEventListener('click', ()=>{
-    localStorage.removeItem(STORAGE_KEY);
-    resumeBanner.classList.remove('show');
-  });
+    // Flush queue when online
+    window.addEventListener('online', async () => {
+        try {
+            const queue = JSON.parse(localStorage.getItem(QUEUE_KEY) || '[]');
+            if (queue.length === 0) return;
+            const remaining = [];
+            for (const item of queue) {
+                try {
+                    const res = await fetch(SUBMIT_ENDPOINT, {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(item)
+                    });
+                    if (!res.ok) remaining.push(item);
+                } catch (e) { remaining.push(item); }
+            }
+            localStorage.setItem(QUEUE_KEY, JSON.stringify(remaining));
+        } catch (e) {}
+    });
 
-  // ===== Summary builder for review step =====
-  function buildSummary(){
-    const d = collectRaw();
-    const list = document.getElementById('summaryList');
-    const rows = [
-      ['Stakeholder type', d.demographics.category || '—'],
-      ['Province', d.demographics.province || '—'],
-      ['Areas of expertise', (d.demographics.expertise||[]).length + ' selected'],
-      ['Preferred strategy', d.responses.section8_options.strategy || '—'],
-      ['Overall rating', d.responses.section16_care.overall ? d.responses.section16_care.overall + ' / 5' : '—'],
-      ['Open feedback', d.responses.open_feedback ? 'Provided' : 'None'],
-    ];
-    list.innerHTML = rows.map(r=>'<li><span class="lab">'+r[0]+'</span><span class="val">'+r[1]+'</span></li>').join('');
-  }
-
-  // ===== Submit =====
-  document.getElementById('submitBtn').addEventListener('click', async ()=>{
-    const errBanner = document.getElementById('submitError');
-    errBanner.classList.remove('show');
-    const consent = document.getElementById('consentBox').checked;
-    if(!consent){
-      errBanner.textContent = 'Please check the consent box to submit your response.';
-      errBanner.classList.add('show');
-      return;
+    // Online / offline status
+    function updateStatus() {
+        const dot = document.getElementById('statusDot');
+        const text = document.getElementById('statusText');
+        if (navigator.onLine) {
+            dot.classList.remove('offline');
+            text.textContent = 'Online — your answers save automatically';
+        } else {
+            dot.classList.add('offline');
+            text.textContent = 'Offline — your answers are saved on this device';
+        }
     }
-    const surveyData = collectRaw();
-    const submitBtn = document.getElementById('submitBtn');
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Submitting...';
+    window.addEventListener('online', updateStatus);
+    window.addEventListener('offline', updateStatus);
+    updateStatus();
 
-    const payload = {
-      surveyData,
-      metadata:{ platform: navigator.platform, language: navigator.language }
-    };
-
-    try{
-      if(!navigator.onLine) throw new Error('offline');
-      const res = await fetch(SUBMIT_ENDPOINT, {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify(payload)
-      });
-      if(!res.ok){
-        const errJson = await res.json().catch(()=>({}));
-        throw new Error(errJson.message || 'Submission failed');
-      }
-      onSubmitSuccess();
-    }catch(err){
-      // Queue for later sync if offline or network error
-      try{
-        const queue = JSON.parse(localStorage.getItem(QUEUE_KEY) || '[]');
-        queue.push(payload);
-        localStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
-        onSubmitSuccess(true);
-      }catch(e2){
-        errBanner.textContent = 'We could not submit your response right now. Please try again in a moment.';
-        errBanner.classList.add('show');
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Submit survey ✓';
-      }
-    }
-  });
-
-  function onSubmitSuccess(queued){
-    localStorage.removeItem(STORAGE_KEY);
-    document.getElementById('surveyForm').style.display = 'none';
-    document.getElementById('resumeBanner').classList.remove('show');
-    progressWrap.style.display = 'none';
-    const panel = document.getElementById('successPanel');
-    if(queued){
-      panel.querySelector('.success-text').textContent = 'You appear to be offline. Your response has been saved on this device and will be sent automatically once you are back online. Thank you for taking part!';
-    }
-    panel.classList.add('show');
-    window.scrollTo({top:0, behavior:'smooth'});
-  }
-
-  // Try to flush queued offline submissions when back online
-  window.addEventListener('online', async ()=>{
-    try{
-      const queue = JSON.parse(localStorage.getItem(QUEUE_KEY) || '[]');
-      if(queue.length === 0) return;
-      const remaining = [];
-      for(const item of queue){
-        try{
-          const res = await fetch(SUBMIT_ENDPOINT, {
-            method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(item)
-          });
-          if(!res.ok) remaining.push(item);
-        }catch(e){ remaining.push(item); }
-      }
-      localStorage.setItem(QUEUE_KEY, JSON.stringify(remaining));
-    }catch(e){}
-  });
-
-  // ===== Online / offline status =====
-  function updateStatus(){
-    const dot = document.getElementById('statusDot');
-    const text = document.getElementById('statusText');
-    if(navigator.onLine){
-      dot.classList.remove('offline');
-      text.textContent = 'Online — your answers save automatically';
-    }else{
-      dot.classList.add('offline');
-      text.textContent = 'Offline — your answers are saved on this device';
-    }
-  }
-  window.addEventListener('online', updateStatus);
-  window.addEventListener('offline', updateStatus);
-  updateStatus();
-
-  // Init
-  showStep(0);
+    // Init
+    loadDraft();
+    showStep(currentStep);
 })();
 </script>
 </body>
