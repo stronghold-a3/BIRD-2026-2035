@@ -641,7 +641,96 @@ footer{background:var(--dark-green);color:#cfe9df;padding:2rem 1rem 1.4rem;margi
 </footer>
 
 <script>
-(function(){
+  <script>
+    const STORAGE_KEY = 'bird_survey_draft_v3';
+    const form = document.getElementById('surveyForm');
+    const resumeBanner = document.getElementById('resumeBanner'); // Ensure you have a div with this ID in your HTML
+
+    // 1. Parse HTML bracket notation into nested JSON for Netlify
+    function parseFormToJSON(formData) {
+        const result = {};
+        for (const [key, value] of formData.entries()) {
+            const keys = key.replace(/\]/g, '').split('[');
+            let current = result;
+            for (let i = 0; i < keys.length - 1; i++) {
+                const k = keys[i];
+                const nextK = keys[i + 1];
+                if (!current[k]) current[k] = (nextK === '') ? [] : {};
+                current = current[k];
+            }
+            const lastKey = keys[keys.length - 1];
+            if (lastKey === '') current.push(value);
+            else current[lastKey] = value;
+        }
+        return result;
+    }
+
+    // 2. Auto-Save Draft
+    function saveDraft() {
+        const formData = new FormData(form);
+        const data = parseFormToJSON(formData);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }
+    form.addEventListener('change', saveDraft);
+    form.addEventListener('input', saveDraft);
+
+    // 3. Load Draft on Page Load
+    function loadDraft() {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+            const data = JSON.parse(saved);
+            for (let key in data) {
+                const elements = form.elements[key];
+                if (!elements) continue;
+                if (elements.type === 'radio' || elements.type === 'checkbox') {
+                    const els = elements.length ? elements : [elements];
+                    els.forEach(el => {
+                        el.checked = Array.isArray(data[key]) ? data[key].includes(el.value) : (el.value === data[key]);
+                    });
+                } else {
+                    elements.value = data[key];
+                }
+            }
+            if(resumeBanner) resumeBanner.style.display = 'block';
+        }
+    }
+    loadDraft();
+
+    // 4. Handle Submission to Netlify
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.disabled = true;
+        submitBtn.innerText = 'Submitting...';
+
+        const formData = new FormData(form);
+        const surveyData = parseFormToJSON(formData);
+
+        try {
+            const response = await fetch('/.netlify/functions/submit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ surveyData })
+            });
+
+            const result = await response.json();
+            if (response.ok) {
+                localStorage.removeItem(STORAGE_KEY); // Clear draft on success
+                // Trigger your existing success screen logic here
+                alert('Thank you! Your response has been recorded.');
+                window.location.href = 'https://bird-dashboard.asilvainnovations.com'; // Or show your success UI
+            } else {
+                alert('Error: ' + (result.errors ? result.errors.join(', ') : result.message));
+                submitBtn.disabled = false;
+                submitBtn.innerText = 'Submit Survey';
+            }
+        } catch (err) {
+            alert('Network error. Your answers are safely saved locally and will submit when you reconnect.');
+            submitBtn.disabled = false;
+            submitBtn.innerText = 'Submit Survey';
+        }
+    });
+  (function(){
   "use strict";
   const STORAGE_KEY = 'bird_survey_progress_v1';
   const QUEUE_KEY = 'bird_survey_queue_v1';
