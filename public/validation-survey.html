@@ -1428,7 +1428,20 @@ footer{background:var(--dark-green);color:#cfe9df;padding:2rem 1rem 1.4rem;margi
   "use strict";
   const STORAGE_KEY = 'bird_survey_progress_v1';
   const QUEUE_KEY = 'bird_survey_queue_v1';
-  const SUBMIT_ENDPOINTS = ['/.netlify/functions/submit','/.netlify/functions/survey/submit'];
+
+  // ---- API endpoint configuration ----
+  // If this HTML file is deployed on the SAME domain/project as the API function,
+  // relative paths below work as-is. If this HTML is hosted separately (e.g. a
+  // static-only fallback on a different host than wherever /api/submit actually
+  // runs), set window.BIRD_API_BASE to that origin BEFORE this script runs, e.g.:
+  //   <script>window.BIRD_API_BASE = 'https://your-project.vercel.app';</script>
+  // Both Vercel- and Netlify-style paths are tried in order, so this works
+  // regardless of which platform is actually hosting the function.
+  const API_BASE = (window.BIRD_API_BASE || '').replace(/\/$/, '');
+  const SUBMIT_ENDPOINTS = [
+    API_BASE + '/api/submit',                 // Vercel convention
+    API_BASE + '/.netlify/functions/submit'   // Netlify convention
+  ];
 
   const steps = Array.from(document.querySelectorAll('.step'));
   const totalSteps = steps.length; // 0..16 => 17 steps
