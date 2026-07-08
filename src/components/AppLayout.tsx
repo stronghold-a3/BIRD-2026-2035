@@ -1,39 +1,31 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback, lazy, Suspense } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useAppContext } from '@/contexts/AppContext';
-import { useIsMobile } from '@/hooks/use-mobile';
 import { useStrategicPlan } from '@/hooks/useStrategicPlan';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { StratLogo } from '@/components/branding/Logo';
 
-// ─── CRITICAL PATH: Load HeroSection immediately (first screen)
+// ─── CRITICAL PATH: Load HeroSection immediately (first screen) ─────────────
 import HeroSection from './strategic/HeroSection';
 
-// ─── LAZY LOADED COMPONENTS ───────────────────────────────────────────────────
-// Sidebar & Topbar load first (shell), content components load after
-const Sidebar = lazy(() => import('./strategic/Sidebar'));
-const Validation = lazy(() => import('./strategic/SurveyWizard'));
-const Topbar  = lazy(() => import('./strategic/Topbar'));
-const AuthModal       = lazy(() => import('./auth/AuthModal'));
-const UserProfileModal = lazy(() => import('./auth/UserProfileModal'));
-const SettingsPage    = lazy(() => import('./settings/SettingsPage'));
-
-// ─── BIRD Validation Survey Wizard
-const SurveyWizard = lazy(() => import('./strategic/SurveyWizard'));
-
-// ─── Content views — each chunk is a separate JS bundle loaded on demand
-const MELDashboard      = lazy(() => import('./strategic/MELDashboard'));
-const SWOTAnalysis      = lazy(() => import('./strategic/SWOTAnalysis'));
-const SystemsThinking   = lazy(() => import('./strategic/SystemsThinking'));
-const StrategyMatrix    = lazy(() => import('./strategic/StrategyMatrix'));
-const BalancedScorecard = lazy(() => import('./strategic/BalancedScorecard'));
-const PAPsManagement    = lazy(() => import('./strategic/PAPsManagement'));
-const PlanExport        = lazy(() => import('./strategic/PlanExport'));
-const TeamCollaboration = lazy(() => import('./strategic/TeamCollaboration'));
-const TemplatesLibrary  = lazy(() => import('./strategic/TemplatesLibrary'));
-const NavigationTutorial = lazy(() => import('./strategic/NavigationTutorial'));
-const FloatingAIAssistant = lazy(() => import('./strategic/FloatingAIAssistant'));
+// ─── LAZY LOADED COMPONENTS ─────────────────────────────────────────────────
+const Sidebar              = lazy(() => import('./strategic/Sidebar'));
+const Topbar               = lazy(() => import('./strategic/Topbar'));
+const AuthModal            = lazy(() => import('./auth/AuthModal'));
+const UserProfileModal     = lazy(() => import('./auth/UserProfileModal'));
+const SettingsPage         = lazy(() => import('./settings/SettingsPage'));
+const SurveyWizard         = lazy(() => import('./strategic/SurveyWizard'));
+const MELDashboard         = lazy(() => import('./strategic/MELDashboard'));
+const SWOTAnalysis         = lazy(() => import('./strategic/SWOTAnalysis'));
+const SystemsThinking      = lazy(() => import('./strategic/SystemsThinking'));
+const StrategyMatrix       = lazy(() => import('./strategic/StrategyMatrix'));
+const BalancedScorecard    = lazy(() => import('./strategic/BalancedScorecard'));
+const PAPsManagement       = lazy(() => import('./strategic/PAPsManagement'));
+const PlanExport           = lazy(() => import('./strategic/PlanExport'));
+const TeamCollaboration    = lazy(() => import('./strategic/TeamCollaboration'));
+const TemplatesLibrary     = lazy(() => import('./strategic/TemplatesLibrary'));
+const NavigationTutorial   = lazy(() => import('./strategic/NavigationTutorial'));
+const FloatingAIAssistant  = lazy(() => import('./strategic/FloatingAIAssistant'));
 
 import { PlanTemplate } from '@/lib/templateData';
 import { Loader as Loader2 } from 'lucide-react';
@@ -57,20 +49,20 @@ const LazyFallback = React.memo(() => (
   </div>
 ));
 
-// ─── PATH / VIEW MAPS ─────────────────────────────────────────────────────────
+// ─── PATH / VIEW MAPS ───────────────────────────────────────────────────────
 
 const VIEW_TO_PATH: Record<string, string> = {
-  dashboard: '/mel-dashboard',
-  swot:      '/swot-analysis',
-  systems:   '/systems-thinking',
-  strategy:  '/strategy-matrix',
-  scorecard: '/balanced-scorecard',
-  paps:      '/paps-management',
-  templates: '/templates-library',
-  team:      '/team-collaboration',
-  settings:  '/settings',
-  export:    '/export-plan',
-  validation: '/survey-wizard', // ✅ Routes to the Survey Wizard
+  dashboard:  '/mel-dashboard',
+  swot:       '/swot-analysis',
+  systems:    '/systems-thinking',
+  strategy:   '/strategy-matrix',
+  scorecard:  '/balanced-scorecard',
+  paps:       '/paps-management',
+  templates:  '/templates-library',
+  team:       '/team-collaboration',
+  settings:   '/settings',
+  export:     '/export-plan',
+  validation: '/survey-wizard',
 };
 
 const PATH_TO_VIEW: Record<string, string> = Object.fromEntries(
@@ -78,10 +70,17 @@ const PATH_TO_VIEW: Record<string, string> = Object.fromEntries(
 );
 
 const COMPONENT_TO_VIEW: Record<string, string> = {
-  SWOTAnalysis: 'swot', MELDashboard: 'dashboard', StrategicPlanning: 'strategy',
-  SystemsThinking: 'systems', BalancedScorecard: 'scorecard', PAPsManagement: 'paps',
-  TemplatesLibrary: 'templates', TeamCollaboration: 'team', Settings: 'settings', PlanExport: 'export',
-  SurveyWizard: 'validation', // ✅ Maps the component name to the view ID
+  SWOTAnalysis: 'swot',
+  MELDashboard: 'dashboard',
+  StrategicPlanning: 'strategy',
+  SystemsThinking: 'systems',
+  BalancedScorecard: 'scorecard',
+  PAPsManagement: 'paps',
+  TemplatesLibrary: 'templates',
+  TeamCollaboration: 'team',
+  Settings: 'settings',
+  PlanExport: 'export',
+  SurveyWizard: 'validation',
 };
 
 // ─── MAIN LAYOUT ──────────────────────────────────────────────────────────────
@@ -239,47 +238,46 @@ const AppLayout: React.FC = () => {
   const renderContent = useCallback(() => {
     const common = { plan: currentPlan, onNavigate: navigateToView };
     switch (activeView) {
-      // ✅ VALIDATION SURVEY ROUTE
-      case 'validation': 
+      case 'validation':
         return <SurveyWizard />;
-      
-      case 'swot':       
+
+      case 'swot':
         return (
-          <SWOTAnalysis 
-            {...common} 
+          <SWOTAnalysis
+            {...common}
             onAddItem={addSWOTItem}
-            onUpdateItem={updateSWOTItem} 
+            onUpdateItem={updateSWOTItem}
             onRemoveItem={removeSWOTItem}
-            onBulkAdd={bulkAddSWOTItems} 
+            onBulkAdd={bulkAddSWOTItems}
           />
         );
-      
-      case 'systems':    
+
+      case 'systems':
         return <SystemsThinking {...common} onUpdateItem={updateSWOTItem} />;
-      
-      case 'strategy':   
+
+      case 'strategy':
         return <StrategyMatrix {...common} onUpdateOption={updateStrategicOption} onRemoveOption={removeStrategicOption} onBulkAdd={bulkAddStrategicOptions} />;
-      
-      case 'scorecard':  
+
+      case 'scorecard':
         return <BalancedScorecard {...common} onUpdateObjective={updateObjective} onAddKPI={addKPI} onUpdateKPI={updateKPI} onRemoveKPI={removeKPI} />;
-      
-      case 'paps':       
+
+      case 'paps':
         return <PAPsManagement {...common} onUpdatePAP={updatePAP} removePAP={removePAP} />;
-      
-      case 'templates':  
+
+      case 'templates':
         return <TemplatesLibrary currentPlan={currentPlan} onCreateFromTemplate={handleCreateFromTemplate} userId={user?.id} userEmail={user?.email} userName={userDisplayInfo.name} userOrganization={profile?.organization || ''} isAuthenticated={isAuthenticated} />;
-      
-      case 'team':       
+
+      case 'team':
         return <TeamCollaboration {...common} userId={user?.id} userEmail={user?.email} userName={userDisplayInfo.name} />;
-      
-      case 'settings':   
+
+      case 'settings':
         return <SettingsPage />;
-      
-      case 'export':     
+
+      case 'export':
         return <PlanExport {...common} />;
-      
+
       case 'dashboard':
-      default:           
+      default:
         return <MELDashboard {...common} />;
     }
   }, [activeView, currentPlan, user, profile, isAuthenticated, userDisplayInfo.name,
@@ -290,9 +288,11 @@ const AppLayout: React.FC = () => {
 
   const isLoading = authLoading || (isAuthenticated && plansLoading);
 
-  // ─── LANDING ──────────────────────────────────────────────────────────────
-  // HeroSection is loaded synchronously for instant first paint
-  if (uiState.showLanding && !currentPlan) {
+  // ─── BYPASS LANDING FOR DIRECT VALIDATION SURVEY ACCESS ───────────────────
+  const bypassLanding = location.pathname === '/survey-wizard';
+
+  // ─── LANDING PAGE ─────────────────────────────────────────────────────────
+  if (uiState.showLanding && !currentPlan && !bypassLanding) {
     return (
       <HeroSection
         onStartPlanning={handleStartPlanning}
@@ -308,7 +308,7 @@ const AppLayout: React.FC = () => {
     );
   }
 
-  // ─── MAIN LAYOUT ──────────────────────────────────────────────────────────
+  // ─── MAIN LAYOUT ────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-background text-foreground flex overflow-hidden transition-colors duration-300">
       <Suspense fallback={<div className={`w-16 lg:w-64 bg-sidebar shrink-0`} />}>
@@ -363,7 +363,7 @@ const AppLayout: React.FC = () => {
         </main>
       </div>
 
-      {/* MODALS — deferred until needed */}
+      {/* MODALS */}
       {uiState.showAuthModal && (
         <Suspense fallback={null}>
           <AuthModal isOpen onClose={() => updateUiState({ showAuthModal: false })} onSuccess={() => updateUiState({ showAuthModal: false })} signUp={signUp} signIn={signIn} resetPassword={resetPassword} signInWithMagicLink={signInWithMagicLink} />
@@ -386,7 +386,7 @@ const AppLayout: React.FC = () => {
         </div>
       )}
 
-      {/* ── Floating AI Strategy Assistant — visible on all authenticated views ── */}
+      {/* Floating AI Assistant */}
       <Suspense fallback={null}>
         <FloatingAIAssistant plan={currentPlan} activeView={activeView} />
       </Suspense>
