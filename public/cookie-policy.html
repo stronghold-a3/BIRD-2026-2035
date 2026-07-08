@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Cookie and Local Storage Policy for BIRD 2026-2035 Validation Survey. Learn how we use browser storage to preserve your progress and enhance your experience.">
+    <meta name="keywords" content="BIRD 2026-2035, cookie policy, local storage, BARMM, Bangsamoro Investment Roadmap, data privacy, validation survey">
+    <meta name="author" content="Bureau of Investments - Ministry of Trade, Investments and Tourism, BARMM">
+    <meta property="og:title" content="Cookie & Local Storage Policy | BIRD 2026-2035">
+    <meta property="og:description" content="Understanding how BIRD 2026-2035 uses browser storage to enhance your survey experience while protecting your privacy.">
+    <meta property="og:type" content="website">
+    <title>Cookie & Local Storage Policy | BIRD 2026-2035 Validation Survey</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #1f2937;
+            background: #f9fafb;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #064e3b 0%, #065f46 100%);
+            color: white;
+            padding: 2rem 1rem;
+            text-align: center;
+        }
+
+        .header img {
+            height: 60px;
+            margin-bottom: 1rem;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        .content {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        h2 {
+            color: #064e3b;
+            font-size: 1.5rem;
+            margin: 2rem 0 1rem 0;
+            border-bottom: 2px solid #C9A84C;
+            padding-bottom: 0.5rem;
+        }
+
+        h3 {
+            color: #065f46;
+            font-size: 1.2rem;
+            margin: 1.5rem 0 0.75rem 0;
+        }
+
+        p {
+            margin-bottom: 1rem;
+            text-align: justify;
+        }
+
+        ul {
+            margin: 1rem 0 1rem 2rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        .highlight {
+            background: #fdf6e3;
+            border-left: 4px solid #C9A84C;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 4px;
+        }
+
+        .info-box {
+            background: #ecfdf5;
+            border: 1px solid #6ee7b7;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+
+        .footer {
+            background: #022c22;
+            color: white;
+            padding: 2rem 1rem;
+            text-align: center;
+        }
+
+        .footer-links {
+            margin: 1rem 0;
+        }
+
+        .footer-links a {
+            color: #C9A84C;
+            text-decoration: none;
+            margin: 0 1rem;
+        }
+
+        .footer-links a:hover {
+            text-decoration: underline;
+        }
+
+        /* Cookie Consent Banner */
+        .cookie-banner {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(2, 44, 34, 0.98);
+            color: white;
+            padding: 1.5rem;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.3);
+            z-index: 9999;
+            display: none;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(100%);
+            }
+            to {
+                transform: translateY(0);
+            }
+        }
+
+        .cookie-banner.show {
+            display: block;
+        }
+
+        .cookie-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .cookie-text {
+            flex: 1;
+            min-width: 280px;
+        }
+
+        .cookie-text h3 {
+            color: #C9A84C;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .cookie-text p {
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin-bottom: 0;
+        }
+
+        .cookie-text a {
+            color: #C9A84C;
+            text-decoration: underline;
+        }
+
+        .cookie-buttons {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .cookie-btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .cookie-btn-accept {
+            background: linear-gradient(135deg, #C9A84C 0%, #E8C560 100%);
+            color: #022c22;
+        }
+
+        .cookie-btn-accept:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(201, 168, 76, 0.4);
+        }
+
+        .cookie-btn-decline {
+            background: transparent;
+            color: #6ee7b7;
+            border: 1px solid #6ee7b7;
+        }
+
+        .cookie-btn-decline:hover {
+            background: rgba(110, 231, 183, 0.1);
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .content {
+                padding: 1.5rem;
+            }
+
+            h2 {
+                font-size: 1.3rem;
+            }
+
+            .cookie-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .cookie-buttons {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <img src="https://mtit.bangsamoro.gov.ph/wp-content/uploads/2024/04/MTIT-HEADER-2024.png" alt="MTIT BARMM Logo">
+        <h1>Cookie & Local Storage Policy</h1>
+        <p>BIRD 2026-2035 Validation Survey Platform</p>
+    </header>
+
+    <div class="container">
+        <div class="content">
+            <p><strong>Effective Date:</strong> July 1, 2026 | <strong>Last Updated:</strong> July 1, 2026</p>
+
+            <h2>1. Introduction</h2>
+            <p>This Cookie and Local Storage Policy explains how the Bangsamoro Investment Roadmap Development (BIRD) 2026-2035 Validation Survey platform uses browser storage technologies to enhance your experience. This policy should be read in conjunction with our <a href="https://asilvainnovations.github.io/BIRD-2026-2035/public/privacy-policy.html" style="color: #C9A84C;">Privacy Policy</a>.</p>
+
+            <div class="highlight">
+                <strong>Important:</strong> The BIRD platform does <strong>NOT</strong> use traditional HTTP cookies for tracking, advertising, or analytics purposes. Instead, we use your browser's <strong>localStorage</strong> technology solely to improve your user experience.
+            </div>
+
+            <h2>2. What We Use: LocalStorage (Not Cookies)</h2>
+            <p>LocalStorage is a web technology that allows websites to store small amounts of data directly in your browser. Unlike traditional cookies, localStorage data:</p>
+            <ul>
+                <li>Is stored only on your device</li>
+                <li>Is never transmitted to our servers</li>
+                <li>Cannot be accessed by other websites</li>
+                <li>Does not expire automatically (you can clear it manually)</li>
+                <li>Does not track your browsing activity across sites</li>
+            </ul>
+
+            <h2>3. How We Use LocalStorage</h2>
+            <p>The BIRD platform uses localStorage for two specific purposes:</p>
+
+            <h3>3.1 Progress Preservation</h3>
+            <p>When you participate in the Validation Survey, your responses are automatically saved to your browser's localStorage as you work. This ensures that:</p>
+            <ul>
+                <li>You don't lose your progress if your browser crashes or closes accidentally</li>
+                <li>You can pause the survey and return later to complete it</li>
+                <li>Your partially completed responses are preserved between sessions</li>
+            </ul>
+
+            <h3>3.2 State Management</h3>
+            <p>When you interact with the BIRD Roadmap and Dashboard, localStorage remembers:</p>
+            <ul>
+                <li>Which sections you have expanded or collapsed</li>
+                <li>Your navigation preferences</li>
+                <li>Display settings you have chosen</li>
+            </ul>
+
+            <div class="info-box">
+                <strong>What We Do NOT Store:</strong> We do not store personal information, survey responses (once submitted), login credentials, or any data that could identify you in localStorage. All survey responses are transmitted securely to our servers and are not retained in your browser.
+            </div>
+
+            <h2>4. What We Do NOT Use</h2>
+            <p>The BIRD platform does <strong>NOT</strong> use:</p>
+            <ul>
+                <li>❌ Tracking cookies</li>
+                <li>❌ Advertising pixels or beacons</li>
+                <li>❌ Third-party analytics services (Google Analytics, Facebook Pixel, etc.)</li>
+                <li>❌ Social media tracking</li>
+                <li>❌ Cross-site tracking technologies</li>
+                <li>❌ Session cookies for user profiling</li>
+            </ul>
+
+            <h2>5. Your Control Over LocalStorage</h2>
+            <p>You have complete control over localStorage data. You can:</p>
+
+            <h3>5.1 Clear LocalStorage</h3>
+            <p>To clear all localStorage data from the BIRD platform:</p>
+            <ul>
+                <li><strong>Chrome/Edge:</strong> Settings → Privacy and Security → Clear Browsing Data → Select "Cookies and other site data" → Clear</li>
+                <li><strong>Firefox:</strong> Options → Privacy & Security → Cookies and Site Data → Clear Data</li>
+                <li><strong>Safari:</strong> Preferences → Privacy → Manage Website Data → Remove All</li>
+            </ul>
+
+            <h3>5.2 Disable LocalStorage</h3>
+            <p>You can disable localStorage in your browser settings. However, please note that disabling localStorage will:</p>
+            <ul>
+                <li>Prevent automatic saving of your survey progress</li>
+                <li>Require you to complete the survey in a single session</li>
+                <li>Reset your navigation preferences each time you visit</li>
+            </ul>
+
+            <h3>5.3 Use Private/Incognito Mode</h3>
+            <p>Browsing in private or incognito mode will automatically clear localStorage when you close the browser window.</p>
+
+            <h2>6. Data Security</h2>
+            <p>LocalStorage data is:</p>
+            <ul>
+                <li>Stored locally on your device only</li>
+                <li>Not transmitted over the internet</li>
+                <li>Not accessible to other websites or applications</li>
+                <li>Subject to your browser's built-in security features</li>
+            </ul>
+
+            <h2>7. Consent and Your Choices</h2>
+            <p>When you first visit the BIRD platform, you will see a consent banner asking for your permission to use localStorage. You can:</p>
+            <ul>
+                <li><strong>Accept:</strong> Allow localStorage to be used for progress preservation and state management</li>
+                <li><strong>Decline:</strong> Disable localStorage functionality (survey auto-save will not work)</li>
+            </ul>
+
+            <p>Your consent choice is stored in localStorage so you won't see the banner repeatedly. You can change your preference at any time by clearing your browser data.</p>
+
+            <h2>8. Impact of Declining</h2>
+            <p>If you decline the use of localStorage:</p>
+            <ul>
+                <li>✅ You can still access and use all BIRD platform features</li>
+                <li>✅ You can still complete and submit the Validation Survey</li>
+                <li>✅ Your privacy is fully protected</li>
+                <li>❌ Survey progress will not auto-save (you must complete in one session)</li>
+                <li>❌ Navigation preferences will not be remembered</li>
+            </ul>
+
+            <h2>9. Changes to This Policy</h2>
+            <p>We may update this Cookie and Local Storage Policy from time to time. Any changes will be posted on this page with an updated "Last Updated" date. We encourage you to review this policy periodically.</p>
+
+            <h2>10. Contact Us</h2>
+            <p>If you have questions about this Cookie and Local Storage Policy or our data practices, please contact:</p>
+            <div class="info-box">
+                <strong>Data Protection Officer – BOI-MTIT, BARMM</strong><br>
+                Email: <a href="mailto:boi@bangsamoro.gov.ph" style="color: #C9A84C;">boi@bangsamoro.gov.ph</a><br>
+                Telephone: (064) 557 2819<br>
+                Mobile: 0917.834.333<br>
+                Address: Bangsamoro Government Complex, Cotabato City, BARMM, Philippines
+            </div>
+
+            <p>For complaints that cannot be resolved directly with us, you may contact the National Privacy Commission (NPC) of the Philippines at <a href="https://privacy.gov.ph" style="color: #C9A84C;">privacy.gov.ph</a>.</p>
+
+            <h2>11. Related Policies</h2>
+            <p>This Cookie and Local Storage Policy is part of our broader privacy framework. Please also review:</p>
+            <ul>
+                <li><a href="https://asilvainnovations.github.io/BIRD-2026-2035/public/privacy-policy.html" style="color: #C9A84C; font-weight: 600;">Privacy Policy</a> - Comprehensive information about how we collect, use, and protect your personal data</li>
+            </ul>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-links">
+            <a href="https://asilvainnovations.github.io/BIRD-2026-2035/public/privacy-policy.html">Privacy Policy</a>
+            <a href="https://bird-survey.asilvainnovations.com">Validation Survey</a>
+            <a href="https://bird-roadmap.asilvainnovations.com">Read the Roadmap</a>
+            <a href="https://bird-contact.asilvainnovations.com">Contact Us</a>
+        </div>
+        <p>&copy; 2026 Bangsamoro Autonomous Region in Muslim Mindanao (BARMM). All rights reserved.</p>
+        <p style="margin-top: 0.5rem; font-size: 0.9rem; opacity: 0.8;">BIRD 2026-2035 Validation Survey — The Emerging Bangsamoro: A Hub for Resilient and Ethical Growth</p>
+    </footer>
+
+    <!-- Cookie Consent Banner -->
+    <div id="cookieBanner" class="cookie-banner">
+        <div class="cookie-content">
+            <div class="cookie-text">
+                <h3>🍪 We Use LocalStorage to Enhance Your Experience</h3>
+                <p>
+                    The BIRD platform uses your browser's localStorage (not traditional cookies) to automatically save your survey progress and remember your preferences. This data stays on your device and is never sent to our servers. 
+                    <a href="https://asilvainnovations.github.io/BIRD-2026-2035/public/privacy-policy.html">Learn more</a>
+                </p>
+            </div>
+            <div class="cookie-buttons">
+                <button id="acceptBtn" class="cookie-btn cookie-btn-accept">Accept</button>
+                <button id="declineBtn" class="cookie-btn cookie-btn-decline">Decline</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Cookie/LocalStorage Consent Management
+        (function() {
+            const CONSENT_KEY = 'bird_storage_consent';
+            const banner = document.getElementById('cookieBanner');
+            const acceptBtn = document.getElementById('acceptBtn');
+            const declineBtn = document.getElementById('declineBtn');
+
+            // Check if user has already made a choice
+            function checkConsent() {
+                const consent = localStorage.getItem(CONSENT_KEY);
+                if (!consent) {
+                    // Show banner if no consent recorded
+                    setTimeout(() => {
+                        banner.classList.add('show');
+                    }, 1000);
+                }
+            }
+
+            // Handle Accept
+            acceptBtn.addEventListener('click', function() {
+                localStorage.setItem(CONSENT_KEY, 'accepted');
+                banner.classList.remove('show');
+                console.log('LocalStorage consent accepted');
+            });
+
+            // Handle Decline
+            declineBtn.addEventListener('click', function() {
+                localStorage.setItem(CONSENT_KEY, 'declined');
+                banner.classList.remove('show');
+                
+                // Clear any existing localStorage data (except consent itself)
+                const keysToKeep = [CONSENT_KEY];
+                const allKeys = Object.keys(localStorage);
+                allKeys.forEach(key => {
+                    if (!keysToKeep.includes(key)) {
+                        localStorage.removeItem(key);
+                    }
+                });
+                
+                console.log('LocalStorage consent declined - existing data cleared');
+            });
+
+            // Initialize on page load
+            checkConsent();
+        })();
+    </script>
+</body>
+</html>
