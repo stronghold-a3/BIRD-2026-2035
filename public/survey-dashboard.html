@@ -165,6 +165,29 @@ footer { text-align: center; padding: 3rem 1rem; border-top: 1px solid var(--gla
                 <h3 class="chart-title">C.A.R.E. Framework Assessment (Avg. Likert)</h3>
                 <div class="chart-container"><canvas id="careChart"></canvas></div>
             </div>
+            <div class="glass-card">
+                <h3 class="chart-title">Key Response Themes</h3>
+                <div class="chart-container"><canvas id="themeChart"></canvas></div>
+            </div>
+        </div>
+
+        <div class="glass-card">
+            <h3 class="chart-title">Recent Responses</h3>
+            <div style="overflow-x:auto;">
+                <table style="width:100%; border-collapse:collapse; font-size:0.92rem;">
+                    <thead>
+                        <tr style="border-bottom:1px solid var(--glass-border); color: var(--gold-light); text-align:left;">
+                            <th style="padding:0.7rem 0.6rem;">Timestamp</th>
+                            <th style="padding:0.7rem 0.6rem;">Respondent</th>
+                            <th style="padding:0.7rem 0.6rem;">Category</th>
+                            <th style="padding:0.7rem 0.6rem;">Province</th>
+                            <th style="padding:0.7rem 0.6rem;">Strategy</th>
+                            <th style="padding:0.7rem 0.6rem;">Overall CARE</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recentResponsesBody"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 </main>
@@ -189,10 +212,10 @@ footer { text-align: center; padding: 3rem 1rem; border-top: 1px solid var(--gla
     // ==========================================
     async function loadDashboard() {
         try {
-            // Fetch all responses from the survey_responses table
             const { data, error } = await supabaseClient
                 .from('survey_responses')
-                .select('data, timestamp');
+                .select('data, timestamp, category, province, organization')
+                .order('timestamp', { ascending: false });
 
             if (error) throw error;
             if (!data || data.length === 0) {
@@ -200,51 +223,77 @@ footer { text-align: center; padding: 3rem 1rem; border-top: 1px solid var(--gla
                 return;
             }
 
-            // Aggregation Variables
             const provinces = {};
             const categories = {};
             const strategies = {};
             const careScores = { context: [], action: [], realtime: [], evidence: [], overall: [] };
+            const themeScores = { framework: [], feasibility: [], infrastructure: [], overall: [] };
+            const recentRows = [];
             let totalCareSum = 0;
             let totalCareCount = 0;
 
-            // Process each row
             data.forEach(row => {
-                const d = row.data;
-                
-                // Demographics
-                const prov = d.demographics?.province || 'Unknown';
+                const d = row.data || {};
+                const demographics = d.demographics || {};
+                const responses = d.responses || {};
+
+                const prov = row.province || demographics.province || 'Unknown';
                 provinces[prov] = (provinces[prov] || 0) + 1;
-                
-                const cat = d.demographics?.category || 'Unknown';
+
+                const cat = row.category || demographics.category || 'Unknown';
                 categories[cat] = (categories[cat] || 0) + 1;
-                
-                // Strategic Options
-                const strat = d.responses?.section8_StrategicOptions?.strategy || 'Unknown';
-                strategies[strat] = (strategies[strat] || 0) + 1;
-                
-                // C.A.R.E. Framework (Section 16)
-                const care = d.responses?.section16_CARE || {};
+
+                const strategy = responses.section8_options?.strategy || responses.section8_StrategicOptions?.strategy || 'Unknown';
+                strategies[strategy] = (strategies[strategy] || 0) + 1;
+
+                const care = responses.section16_care || responses.section16_CARE || {};
                 Object.keys(careScores).forEach(key => {
-                    if (care[key]) {
-                        const val = Number(care[key]);
+                    const val = Number(care[key]);
+                    if (!Number.isNaN(val)) {
                         careScores[key].push(val);
                         totalCareSum += val;
                         totalCareCount++;
                     }
                 });
+
+                const frameworkScore = Number(responses.section1_beie?.understanding || responses.section1_beie?.relevance || 0);
+                if (!Number.isNaN(frameworkScore) && frameworkScore > 0) {
+                    themeScores.framework.push(frameworkScore);
+                }
+
+                const feasibilityScore = Number(responses.section3_foundations?.feasibility || 0);
+                if (!Number.isNaN(feasibilityScore) && feasibilityScore > 0) {
+                    themeScores.feasibility.push(feasibilityScore);
+                }
+
+                const infraScore = Number(responses.section5_enablers?.infra_rating || 0);
+                if (!Number.isNaN(infraScore) && infraScore > 0) {
+                    themeScores.infrastructure.push(infraScore);
+                }
+
+                const overallScore = Number(care.overall || responses.section16_care?.overall || 0);
+                if (!Number.isNaN(overallScore) && overallScore > 0) {
+                    themeScores.overall.push(overallScore);
+                }
+
+                recentRows.push({
+                    timestamp: row.timestamp || null,
+                    respondent: demographics.name || demographics.email || 'Anonymous',
+                    category: cat,
+                    province: prov,
+                    strategy: strategy,
+                    careOverall: care.overall || responses.section16_care?.overall || '—'
+                });
             });
 
-            // Update Summary Metrics
             document.getElementById('totalResponses').textContent = data.length;
             document.getElementById('topProvince').textContent = getTopKey(provinces);
             document.getElementById('topStrategy').textContent = getTopKey(strategies);
             document.getElementById('careScore').textContent = totalCareCount > 0 ? (totalCareSum / totalCareCount).toFixed(1) : '0.0';
 
-            // Render Charts
-            renderCharts(provinces, categories, strategies, careScores);
+            renderCharts(provinces, categories, strategies, careScores, themeScores);
+            renderRecentResponses(recentRows);
 
-            // Show Dashboard
             document.getElementById('loadingState').style.display = 'none';
             document.getElementById('dashboardContent').style.display = 'block';
 
@@ -259,10 +308,34 @@ footer { text-align: center; padding: 3rem 1rem; border-top: 1px solid var(--gla
         return Object.keys(obj).reduce((a, b) => obj[a] > obj[b] ? a : b, 'None');
     }
 
+    function renderRecentResponses(rows) {
+        const tbody = document.getElementById('recentResponsesBody');
+        if (!tbody) return;
+
+        if (!rows.length) {
+            tbody.innerHTML = '<tr><td colspan="6" style="padding:1rem 0.6rem; color: var(--text-secondary);">No recent submissions yet.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = rows.slice(0, 8).map(row => {
+            const stamp = row.timestamp ? new Date(row.timestamp).toLocaleString() : '—';
+            return `
+                <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
+                    <td style="padding:0.7rem 0.6rem; color: var(--text-secondary);">${stamp}</td>
+                    <td style="padding:0.7rem 0.6rem;">${row.respondent}</td>
+                    <td style="padding:0.7rem 0.6rem;">${row.category}</td>
+                    <td style="padding:0.7rem 0.6rem;">${row.province}</td>
+                    <td style="padding:0.7rem 0.6rem;">${row.strategy}</td>
+                    <td style="padding:0.7rem 0.6rem;">${row.careOverall}</td>
+                </tr>
+            `;
+        }).join('');
+    }
+
     // ==========================================
     // 3. CHART.JS RENDERING
     // ==========================================
-    function renderCharts(provinces, categories, strategies, careScores) {
+    function renderCharts(provinces, categories, strategies, careScores, themeScores) {
         const goldColor = '#C9A84C';
         const greenColor = '#6ee7b7';
         const blueColor = '#3B82F6';
@@ -355,6 +428,32 @@ footer { text-align: center; padding: 3rem 1rem; border-top: 1px solid var(--gla
                 responsive: true, maintainAspectRatio: false,
                 scales: { r: { min: 0, max: 5, ticks: { stepSize: 1, color: '#94A3B8', backdropColor: 'transparent' }, grid: { color: gridColor }, pointLabels: { color: '#F8FAFC' } } },
                 plugins: { legend: { display: false } }
+            }
+        });
+
+        // 5. Key Theme Bar Chart
+        const themeLabels = ['Framework clarity', 'Feasibility', 'Infrastructure', 'Overall'];
+        const themeValues = themeLabels.map((_, i) => {
+            const key = Object.keys(themeScores)[i];
+            const arr = themeScores[key];
+            return arr.length > 0 ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
+        });
+
+        new Chart(document.getElementById('themeChart'), {
+            type: 'bar',
+            data: {
+                labels: themeLabels,
+                datasets: [{
+                    label: 'Average score',
+                    data: themeValues,
+                    backgroundColor: [goldColor, greenColor, blueColor, '#8B5CF6'],
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { min: 0, max: 5, grid: { color: gridColor } }, x: { grid: { display: false } } }
             }
         });
     }
