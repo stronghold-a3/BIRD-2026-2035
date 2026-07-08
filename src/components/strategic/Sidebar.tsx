@@ -1,23 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
-  LayoutDashboard,
-  Target,
-  Network,
-  Sparkles,
-  BarChart3,
-  FolderKanban,
-  FileText,
-  ChevronLeft,
-  ChevronRight,
-  Cloud,
-  Settings,
-  Users,
-  Layers,
-  X,
-  Bell,
-  User,
-  HelpCircle,
-  ClipboardCheck,
+  LayoutDashboard, Target, Network, Sparkles, BarChart3, FolderKanban, FileText,
+  ChevronLeft, ChevronRight, Cloud, Users, Layers, X, User,
+  HelpCircle, ClipboardCheck, Star
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { StratLogo } from '@/components/branding/Logo';
@@ -48,7 +33,6 @@ const mainMenuItems = [
   { id: 'export', label: 'Plan Generator', icon: FileText, description: 'Export Reports' },
 ];
 
-// ✅ Special item for Validation Survey (highlighted)
 const specialItems = [
   {
     id: 'validation',
@@ -73,27 +57,26 @@ const Sidebar: React.FC<SidebarProps> = ({
   onShowTutorial,
   onShowProfile,
 }) => {
-  const NavItem = ({ item, isSubItem = false }: { item: any, isSubItem?: boolean }) => {
+  const NavItem = ({ item, isSubItem = false }: { item: any; isSubItem?: boolean }) => {
     const Icon = item.icon;
     const isActive = activeView === item.id;
     const isHighlighted = item.highlight;
 
     return (
       <button
-        // ✅ Added Unique ID for Navigation Tutorial Spotlight
-        id={`nav-item-${item.id}`} 
+        id={`nav-item-${item.id}`}
         onClick={() => {
           onViewChange(item.id);
           if (window.innerWidth < 1024) onCloseMobileMenu();
         }}
         className={cn(
           "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group relative",
-          isActive 
+          isActive
             ? isHighlighted
-              ? "bg-emerald-600 text-white shadow-lg shadow-emerald-900/20"
+              ? "bg-[#C9A84C] text-[#022c22] shadow-lg shadow-[#C9A84C]/30"
               : "bg-cyan-600 text-white shadow-lg shadow-cyan-900/20"
             : isHighlighted
-              ? "text-emerald-400 hover:bg-emerald-900/20 hover:text-emerald-300 border border-emerald-500/20"
+              ? "text-[#E8C560] hover:bg-[#C9A84C]/10 hover:text-[#C9A84C] border border-[#C9A84C]/20"
               : "text-slate-400 hover:bg-slate-800 hover:text-slate-100",
           isSubItem && !isCollapsed ? "pl-9 py-2" : ""
         )}
@@ -101,10 +84,10 @@ const Sidebar: React.FC<SidebarProps> = ({
       >
         <Icon className={cn(
           "w-5 h-5 flex-shrink-0 transition-colors",
-          isActive 
-            ? "text-white" 
+          isActive
+            ? "text-[#022c22]"
             : isHighlighted
-              ? "group-hover:text-emerald-300"
+              ? "group-hover:text-[#C9A84C]"
               : "group-hover:text-cyan-400"
         )} />
         {(!isCollapsed || isMobileMenuOpen) && (
@@ -112,30 +95,29 @@ const Sidebar: React.FC<SidebarProps> = ({
             <div className="flex items-center gap-2">
               <p className="text-sm font-semibold truncate leading-none mb-1">{item.label}</p>
               {item.badge && (
-                <span className="px-1.5 py-0.5 text-[9px] font-bold bg-emerald-500 text-white rounded-full uppercase tracking-wider">
+                <span className="px-1.5 py-0.5 text-[9px] font-bold bg-[#C9A84C] text-[#022c22] rounded-full uppercase tracking-wider">
                   {item.badge}
                 </span>
               )}
             </div>
             {!isSubItem && (
               <p className={cn(
-                "text-[10px] truncate", 
-                isActive 
-                  ? isHighlighted ? "text-emerald-100" : "text-cyan-100"
-                  : isHighlighted ? "text-emerald-500/70" : "text-slate-500"
+                "text-[10px] truncate",
+                isActive
+                  ? isHighlighted ? "text-[#022c22]/80" : "text-cyan-100"
+                  : isHighlighted ? "text-[#E8C560]/70" : "text-slate-500"
               )}>
                 {item.description}
               </p>
             )}
           </div>
         )}
-        {/* Tooltip for collapsed state */}
         {isCollapsed && !isMobileMenuOpen && (
           <div className="absolute left-full ml-4 px-3 py-2 bg-slate-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 border border-slate-700 shadow-xl">
             <div className="flex items-center gap-2">
               <p className="font-semibold text-sm">{item.label}</p>
               {item.badge && (
-                <span className="px-1.5 py-0.5 text-[9px] font-bold bg-emerald-500 text-white rounded-full uppercase tracking-wider">
+                <span className="px-1.5 py-0.5 text-[9px] font-bold bg-[#C9A84C] text-[#022c22] rounded-full uppercase tracking-wider">
                   {item.badge}
                 </span>
               )}
@@ -156,15 +138,14 @@ const Sidebar: React.FC<SidebarProps> = ({
           onClick={onCloseMobileMenu}
         />
       )}
-      
-      {/* ✅ Added Unique ID for Main Aside Container */}
-      <aside 
-        id="app-sidebar" 
+
+      <aside
+        id="app-sidebar"
         className={cn(
-           "fixed left-0 top-0 h-full bg-slate-900 text-white transition-all duration-300 z-50 flex flex-col border-r border-slate-800",
-           isCollapsed ? "w-16" : "w-64",
-           isMobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
-         )}
+          "fixed left-0 top-0 h-full bg-slate-900 text-white transition-all duration-300 z-50 flex flex-col border-r border-slate-800",
+          isCollapsed ? "w-16" : "w-64",
+          isMobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+        )}
       >
         {/* Header/Logo */}
         <div className="p-4 border-b border-slate-800 flex items-center justify-between">
@@ -194,18 +175,67 @@ const Sidebar: React.FC<SidebarProps> = ({
           </div>
         )}
 
+        {/* ═══════════════════════════════════════════════════════════════
+            GOLDEN VALIDATION SURVEY CTA — PROMINENT & ALWAYS VISIBLE
+        ═══════════════════════════════════════════════════════════════ */}
+        {(!isCollapsed || isMobileMenuOpen) && (
+          <div className="px-4 py-3 border-b border-slate-800/50">
+            <button
+              onClick={() => {
+                onViewChange('validation');
+                if (window.innerWidth < 1024) onCloseMobileMenu();
+              }}
+              className={cn(
+                "w-full flex items-center gap-2 px-4 py-3 rounded-xl font-bold text-sm transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5",
+                activeView === 'validation'
+                  ? "bg-[#E8C560] text-[#022c22] shadow-[#C9A84C]/40"
+                  : "bg-gradient-to-r from-[#C9A84C] to-[#B8943F] hover:from-[#E8C560] hover:to-[#C9A84C] text-[#022c22] shadow-[#C9A84C]/20"
+              )}
+            >
+              <Star className="w-5 h-5 fill-current" />
+              <span className="flex-1 text-left">Validation Survey</span>
+              <span className="px-1.5 py-0.5 text-[9px] bg-[#022c22]/20 text-[#022c22] rounded-full uppercase tracking-wider font-black">
+                NEW
+              </span>
+            </button>
+            <p className="text-[10px] text-[#C9A84C]/60 text-center mt-2 leading-tight">
+              Help shape BARMM 2026–2035
+            </p>
+          </div>
+        )}
+
+        {/* Collapsed state: golden icon button */}
+        {isCollapsed && !isMobileMenuOpen && (
+          <div className="px-2 py-3 border-b border-slate-800/50 flex justify-center">
+            <button
+              onClick={() => onViewChange('validation')}
+              className={cn(
+                "relative p-2.5 rounded-xl transition-all",
+                activeView === 'validation'
+                  ? "bg-[#E8C560] text-[#022c22]"
+                  : "bg-[#C9A84C]/10 text-[#C9A84C] hover:bg-[#C9A84C]/20 border border-[#C9A84C]/30"
+              )}
+              title="Validation Survey"
+            >
+              <Star className="w-5 h-5" />
+              {activeView !== 'validation' && (
+                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-[#C9A84C] rounded-full border-2 border-slate-900" />
+              )}
+            </button>
+          </div>
+        )}
+
         {/* Navigation */}
         <nav className="flex-1 py-4 overflow-y-auto custom-scrollbar px-3 space-y-1">
-          {/* Main Menu Items */}
           {mainMenuItems.map((item) => (
             <NavItem key={item.id} item={item} />
           ))}
 
-          {/* ✅ Special Items Section (Validation Survey) */}
+          {/* Special Items (Validation Survey) */}
           <div className="my-4 border-t border-slate-800/50 pt-4">
             <p className={cn(
               "text-[10px] uppercase tracking-widest font-bold mb-2 px-3",
-              !isCollapsed || isMobileMenuOpen ? "text-emerald-400" : "sr-only"
+              !isCollapsed || isMobileMenuOpen ? "text-[#C9A84C]" : "sr-only"
             )}>
               Special
             </p>
@@ -214,19 +244,18 @@ const Sidebar: React.FC<SidebarProps> = ({
             ))}
           </div>
 
-          {/* Settings & Tutorial */}
+          {/* Tutorial */}
           <div className="my-4 border-t border-slate-800/50 pt-4">
-             {/* Tutorial Button Integration */}
-             <button 
-               onClick={onShowTutorial}
-               id="sidebar-btn-tutorial"
-               className="w-full flex items-center gap-3 px-3 py-2.5 mt-1 rounded-xl text-slate-400 hover:bg-cyan-900/20 hover:text-cyan-400 transition-all"
-             >
-               <HelpCircle className="w-5 h-5 flex-shrink-0" />
-               {(!isCollapsed || isMobileMenuOpen) && (
-                 <span className="text-sm font-semibold">Guided Tour</span>
-               )}
-             </button>
+            <button
+              onClick={onShowTutorial}
+              id="sidebar-btn-tutorial"
+              className="w-full flex items-center gap-3 px-3 py-2.5 mt-1 rounded-xl text-slate-400 hover:bg-cyan-900/20 hover:text-cyan-400 transition-all"
+            >
+              <HelpCircle className="w-5 h-5 flex-shrink-0" />
+              {(!isCollapsed || isMobileMenuOpen) && (
+                <span className="text-sm font-semibold">Guided Tour</span>
+              )}
+            </button>
           </div>
         </nav>
 
@@ -244,7 +273,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 </div>
               )}
             </div>
-            <button 
+            <button
               onClick={onToggleCollapse}
               className="hidden lg:flex w-full items-center gap-3 px-2 py-2 rounded-lg hover:bg-slate-800 text-slate-500 hover:text-white transition-colors"
             >
