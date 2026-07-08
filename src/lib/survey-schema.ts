@@ -1,442 +1,152 @@
-// src/components/strategic/SurveyWizard.tsx
-"use client";
+// src/lib/survey-schema.ts
+// BIRD 2026–2035 · Validation Survey Zod Schema
+// Single source of truth for all 16 survey sections
 
-import { useState } from "react";
-import { useForm, useWatch } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { surveySchema, SurveySchemaType } from "@/lib/survey-schema";
-import { submitSurvey } from "@/lib/api";
+import { z } from "zod";
 
-import { Form } from "@/components/ui/form";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { toast } from "@/components/ui/use-toast";
-import { ArrowRight, ArrowLeft, Send, CheckCircle2, AlertTriangle, AlertCircle } from "lucide-react";
+// ── Reusable field validators ───────────────────────────────────────────────
 
-// Import all sections
-import { Section1_BEIE } from "./Section1_BEIE";
-import { Section2_MoralGov } from "./Section2_MoralGov";
-import { Section3_Foundations } from "./Section3_Foundations";
-import { Section4_Transformers } from "./Section4_Transformers";
-import { Section5_Enablers } from "./Section5_Enablers";
-import { Section6_Connectors } from "./Section6_Connectors";
-import { Section7_Financiers } from "./Section7_Financiers";
-import { Section8_StrategicOptions } from "./Section8_StrategicOptions";
-import { Section9_BudgetTargets } from "./Section9_BudgetTargets";
-import { Section10_IEDSMatrix } from "./Section10_IEDSMatrix";
-import { Section11_Equity } from "./Section11_Equity";
-import { Section12_Climate } from "./Section12_Climate";
-import { Section13_Policy } from "./Section13_Policy";
-import { Section14_Demographics } from "./Section14_Demographics";
-import { Section15_Submission } from "./Section15_Submission";
-import { Section16_CARE } from "./Section16_CARE";
+const requiredString = z.string().min(1, "This field is required");
+const optionalString = z.string().optional();
+const requiredNumber = z.number().min(1, "Required").max(5, "Max 5");
+const optionalNumber = z.number().min(1).max(5).optional();
+const requiredBoolean = z.boolean();
+const requiredArray = <T extends z.ZodTypeAny>(schema: T) => z.array(schema).min(1, "Select at least one option");
 
-const TOTAL_STEPS = 16;
+// ── IEDS Matrix sub-schema ──────────────────────────────────────────────────
 
-// Kill switch prerequisites by section
-const killSwitchPrerequisites: Record<number, string[]> = {
-  1: ["q1_1", "q1_2"], // BEIE Framework
-  2: ["q2_1", "q2_2", "q2_3_archetype"], // Moral Governance
-  10: ["q10_matrix"], // IEDS Matrix - must be completed
-  15: ["consent_final"], // Final consent
+const matrixRowSchema = z.object({
+  economic_impact: z.number().min(0).max(10).default(5),
+  feasibility: z.number().min(0).max(10).default(5),
+  identity_alignment: z.number().min(0).max(10).default(5),
+  systems_leverage: z.number().min(0).max(10).default(5),
+  risk_return: z.number().min(0).max(10).default(5),
+  inclusivity: z.number().min(0).max(10).default(5),
+  sustainability: z.number().min(0).max(10).default(5),
+});
+
+const iedsMatrixSchema = z.object({
+  heds: matrixRowSchema,
+  gems: matrixRowSchema,
+  ifes: matrixRowSchema,
+  ieds: matrixRowSchema,
+});
+
+// ── Conditional rules type (for UI logic, not validation) ───────────────────
+
+export type ConditionalRules = Record<string, (values: Record<string, unknown>) => boolean>;
+
+export const conditionalRules: ConditionalRules = {
+  // Section 3: Basilan-specific questions
+  showBasilanAlert: (v) => v.demo_province === "basilan",
+  // Section 3: El Niño questions
+  showElNino: (v) => Array.isArray(v.q3_1_priorities) && v.q3_1_priorities.includes("agriculture"),
+  // Section 4: Show commodity impact only if halal selected
+  showCommodityImpact: (v) => v.q4_2_halal_park === "yes",
 };
 
-export function SurveyWizard() {
-  const [currentStep, setCurrentStep] = useState(1);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
-  const [completedSections, setCompletedSections] = useState<Set<number>>(new Set());
-  const [sectionValidationErrors, setSectionValidationErrors] = useState<Record<number, string[]>>({});
+// ── Main Survey Schema ──────────────────────────────────────────────────────
 
-  const form = useForm<SurveySchemaType>({
-    resolver: zodResolver(surveySchema),
-    defaultValues: {
-      // Section 1
-      q1_1: undefined,
-      q1_2: undefined,
-      // Section 2
-      q2_1: undefined,
-      q2_2: undefined,
-      q2_3_archetype: undefined,
-      q2_4_peace: [],
-      // Section 3
-      q3_1_priorities: [],
-      q3_2_feasibility: undefined,
-      q3_el_nino_impact: undefined,
-      q3_el_nino_like: undefined,
-      q3_pestalotiopsis_impact: undefined,
-      q3_pestalotiopsis_like: undefined,
-      q3_postharvest_impact: undefined,
-      q3_postharvest_like: undefined,
-      q3_limits_growth: undefined,
-      // Section 4
-      q4_1_barrier: undefined,
-      q4_2_halal_park: undefined,
-      q4_3_fixes_fail: undefined,
-      q4_4_commodity_impact: undefined,
-      q4_5_heds_ranking: [],
-      // Section 5
-      q5_1_infra: undefined,
-      q5_2_sectors: [],
-      q5_3_broadband: undefined,
-      q5_4_literacy: undefined,
-      q5_5_stunting: undefined,
-      q5_6_digital_divide: undefined,
-      // Section 6
-      q6_1_bimpeaga: undefined,
-      q6_2_markets: [],
-      q6_3_export_target: undefined,
-      q6_4_uae_feasibility: undefined,
-      q6_5_perception: undefined,
-      // Section 7
-      q7_1_criticality: undefined,
-      q7_2_instruments: [],
-      q7_3_inclusion_target: undefined,
-      q7_4_asset_paradox: undefined,
-      q7_5_block_grant: undefined,
-      // Section 8
-      q8_1_strategy: undefined,
-      q8_2_sequencing: undefined,
-      q8_3_comments: "",
-      // Section 9-10
-      q9_1_budget: undefined,
-      q10_1_ambition: undefined,
-      q10_matrix: {
-        heds: { economic_impact: 5, feasibility: 5, identity_alignment: 5, systems_leverage: 5, risk_return: 5, inclusivity: 5, sustainability: 5 },
-        gems: { economic_impact: 5, feasibility: 5, identity_alignment: 5, systems_leverage: 5, risk_return: 5, inclusivity: 5, sustainability: 5 },
-        ifes: { economic_impact: 5, feasibility: 5, identity_alignment: 5, systems_leverage: 5, risk_return: 5, inclusivity: 5, sustainability: 5 },
-        ieds: { economic_impact: 5, feasibility: 5, identity_alignment: 5, systems_leverage: 5, risk_return: 5, inclusivity: 5, sustainability: 5 },
-      },
-      // Section 11
-      q11_1_affirmative: undefined,
-      q11_2_mechanisms: [],
-      // Section 12
-      q12_1_green_priority: undefined,
-      q12_2_adaptation: [],
-      // Section 13
-      q13_1_legislation: [],
-      q13_2_bicc: undefined,
-      // Section 14
-      demo_category: "",
-      demo_province: "",
-      demo_expertise: [],
-      demo_name: "",
-      demo_email: "",
-      demo_organization: "",
-      // Province-specific (conditional)
-      basilan_peace_questions: undefined,
-      maguindanao_halal_questions: undefined,
-      tawitawi_seaweed_questions: undefined,
-      lanao_lake_questions: undefined,
-      // Section 15
-      consent_final: false as never,
-      // Section 16
-      care_context: undefined,
-      care_action: undefined,
-      care_realtime: undefined,
-      care_evidence: undefined,
-      care_overall: undefined,
-    },
-    mode: "onTouched",
-  });
+export const surveySchema = z.object({
+  // ═══ Section 1: BEIE Framework Context ═══
+  q1_1: requiredString.describe("Understanding of BEIE Framework"),
+  q1_2: requiredString.describe("Relevance of BEIE to BARMM"),
 
-  // Watch form values for conditional logic
-  const formValues = useWatch({ control: form.control });
+  // ═══ Section 2: Moral Governance Operating System ═══
+  q2_1: requiredNumber.describe("Importance of Moral Governance"),
+  q2_2: requiredNumber.describe("Implementation readiness"),
+  q2_3_archetype: requiredString.describe("Dominant systems archetype"),
+  q2_4_peace: z.array(z.string()).default([]).describe("Peace milestones"),
 
-  // Calculate progress
-  const progressPercentage = (currentStep / TOTAL_STEPS) * 100;
+  // ═══ Section 3: Cluster 1 — Foundations ═══
+  q3_1_priorities: z.array(z.string()).min(1, "Select at least one priority"),
+  q3_2_feasibility: requiredNumber,
+  q3_el_nino_impact: optionalNumber,
+  q3_el_nino_like: optionalNumber,
+  q3_pestalotiopsis_impact: optionalNumber,
+  q3_pestalotiopsis_like: optionalNumber,
+  q3_postharvest_impact: optionalNumber,
+  q3_postharvest_like: optionalNumber,
+  q3_limits_growth: optionalString,
 
-  // Check if current section has kill switch prerequisites
-  const checkKillSwitchPrerequisites = async (): Promise<boolean> => {
-    const prerequisites = killSwitchPrerequisites[currentStep];
-    if (!prerequisites) return true;
+  // ═══ Section 4: Cluster 2 — Transformers ═══
+  q4_1_barrier: requiredString,
+  q4_2_halal_park: requiredString,
+  q4_3_fixes_fail: requiredString,
+  q4_4_commodity_impact: optionalString,
+  q4_5_heds_ranking: z.array(z.string()).default([]),
 
-    const values = form.getValues();
-    const missingFields = prerequisites.filter((field) => {
-      const value = values[field as keyof SurveySchemaType];
-      if (Array.isArray(value)) return value.length === 0;
-      return value === undefined || value === "" || value === false;
-    });
+  // ═══ Section 5: Cluster 3 — Enablers ═══
+  q5_1_infra: requiredNumber,
+  q5_2_sectors: z.array(z.string()).min(1, "Select at least one sector"),
+  q5_3_broadband: requiredNumber,
+  q5_4_literacy: requiredNumber,
+  q5_5_stunting: requiredNumber,
+  q5_6_digital_divide: requiredString,
 
-    if (missingFields.length > 0) {
-      setSectionValidationErrors({
-        ...sectionValidationErrors,
-        [currentStep]: missingFields,
-      });
-      return false;
-    }
-    
-    // Clear errors if prerequisites are met
-    if (sectionValidationErrors[currentStep]) {
-      const newErrors = { ...sectionValidationErrors };
-      delete newErrors[currentStep];
-      setSectionValidationErrors(newErrors);
-    }
+  // ═══ Section 6: Cluster 4 — Connectors ═══
+  q6_1_bimpeaga: requiredNumber,
+  q6_2_markets: z.array(z.string()).min(1, "Select at least one market"),
+  q6_3_export_target: requiredNumber,
+  q6_4_uae_feasibility: requiredNumber,
+  q6_5_perception: requiredString,
 
-    return true;
-  };
+  // ═══ Section 7: Cluster 5 — Financiers ═══
+  q7_1_criticality: requiredNumber,
+  q7_2_instruments: z.array(z.string()).min(1, "Select at least one instrument"),
+  q7_3_inclusion_target: requiredNumber,
+  q7_4_asset_paradox: requiredString,
+  q7_5_block_grant: requiredString,
 
-  // Determine if section should be shown based on conditional logic
-  const shouldShowSection = (step: number): boolean => {
-    // Always show main sections 1-14 and 16
-    if (step <= 14 || step === 16) return true;
-    
-    // Conditional sections based on province (Step 15 maps to CARE, but we can inject province logic here if needed)
-    // For now, we show all steps sequentially as the province-specific questions are handled inside the sections or via alerts.
-    return true;
-  };
+  // ═══ Section 8: Strategic Options ═══
+  q8_1_strategy: requiredString,
+  q8_2_sequencing: requiredString,
+  q8_3_comments: z.string().default(""),
 
-  const handleNext = async () => {
-    // Validate current section
-    const isValid = await form.trigger();
-    
-    // Check kill switch prerequisites
-    const prerequisitesMet = await checkKillSwitchPrerequisites();
-    
-    if (isValid && prerequisitesMet) {
-      // Mark section as completed
-      setCompletedSections((prev) => new Set(prev).add(currentStep));
-      
-      // Find next visible section
-      let nextStep = currentStep + 1;
-      while (nextStep <= TOTAL_STEPS && !shouldShowSection(nextStep)) {
-        nextStep++;
-      }
-      
-      if (nextStep <= TOTAL_STEPS) {
-        setCurrentStep(nextStep);
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      }
-    } else {
-      const errorMsg = !prerequisitesMet 
-        ? "Please complete all required critical fields in this section before proceeding."
-        : "Please review and correct the errors before proceeding.";
-      
-      toast({
-        title: "Validation Required",
-        description: errorMsg,
-        variant: "destructive",
-      });
-    }
-  };
+  // ═══ Section 9: Budget & Targets ═══
+  q9_1_budget: requiredNumber,
 
-  const handleBack = () => {
-    if (currentStep > 1) {
-      // Find previous visible section
-      let prevStep = currentStep - 1;
-      while (prevStep >= 1 && !shouldShowSection(prevStep)) {
-        prevStep--;
-      }
-      
-      if (prevStep >= 1) {
-        setCurrentStep(prevStep);
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      }
-    }
-  };
+  // ═══ Section 10: IEDS Matrix Evaluation ═══
+  q10_1_ambition: requiredNumber,
+  q10_matrix: iedsMatrixSchema,
 
-  async function onSubmit(data: SurveySchemaType) {
-    setIsSubmitting(true);
-    try {
-      await submitSurvey(data);
-      setIsSuccess(true);
-      toast({
-        title: "Validation Submitted Successfully",
-        description: "Your strategic input has been securely recorded in the BIRD repository.",
-      });
-    } catch (error) {
-      console.error("Submission failed:", error);
-      toast({
-        title: "Submission Failed",
-        description: "Please check your connection and try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
+  // ═══ Section 11: Provincial Equity ═══
+  q11_1_affirmative: requiredString,
+  q11_2_mechanisms: z.array(z.string()).default([]),
 
-  // Success State UI
-  if (isSuccess) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-8">
-        <Card className="w-full max-w-2xl border-[#C9A84C]/30 bg-[#022c22]/70 shadow-2xl backdrop-blur-xl">
-          <CardHeader className="items-center">
-            <CheckCircle2 className="w-20 h-20 text-[#C9A84C] mb-4 animate-pulse" />
-            <CardTitle className="text-3xl font-serif text-[#C9A84C]">Validation Received</CardTitle>
-            <CardDescription className="text-[#ecfdf5]/80 text-lg max-w-md">
-              Thank you for shaping the Emerging Bangsamoro through the C.A.R.E. principles of Khalifa stewardship.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col items-center gap-4">
-            <Badge className="border-[#C9A84C]/40 bg-[#C9A84C]/10 text-[#E8C560] px-4 py-1.5">
-              Secure submission completed
-            </Badge>
-            <Button 
-              onClick={() => window.open("https://strategy-ai-planner-1.deploypad.app/", "_blank")}
-              className="bg-[#C9A84C] hover:bg-[#E8C560] text-[#022c22] font-bold shadow-lg shadow-[#C9A84C]/20"
-            >
-              Access BIRD App →
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  // ═══ Section 12: Climate Resilience ═══
+  q12_1_green_priority: requiredNumber,
+  q12_2_adaptation: z.array(z.string()).min(1, "Select at least one adaptation measure"),
 
-  // Section Renderer
-  const renderSection = () => {
-    switch (currentStep) {
-      case 1: return <Section1_BEIE />;
-      case 2: return <Section2_MoralGov />;
-      case 3: return <Section3_Foundations />;
-      case 4: return <Section4_Transformers />;
-      case 5: return <Section5_Enablers />;
-      case 6: return <Section6_Connectors />;
-      case 7: return <Section7_Financiers />;
-      case 8: return <Section8_StrategicOptions />;
-      case 9: return <Section9_BudgetTargets />;
-      case 10: return <Section10_IEDSMatrix />;
-      case 11: return <Section11_Equity />;
-      case 12: return <Section12_Climate />;
-      case 13: return <Section13_Policy />;
-      case 14: return <Section14_Demographics />;
-      case 15: return <Section16_CARE />;  // CARE before final consent
-      case 16: return <Section15_Submission isSubmitting={isSubmitting} isSuccess={false} />;
-      default: return <Section1_BEIE />;
-    }
-  };
+  // ═══ Section 13: Policy & Governance ═══
+  q13_1_legislation: z.array(z.string()).min(1, "Select at least one legislation priority"),
+  q13_2_bicc: requiredNumber,
 
-  // Get current section title
-  const getSectionTitle = (step: number) => {
-    const titles: Record<number, string> = {
-      1: "BEIE Framework Context",
-      2: "Moral Governance Operating System",
-      3: "Cluster 1: Foundations",
-      4: "Cluster 2: Transformers",
-      5: "Cluster 3: Enablers",
-      6: "Cluster 4: Connectors",
-      7: "Cluster 5: Financiers",
-      8: "Strategic Options",
-      9: "Budget & Targets",
-      10: "IEDS Matrix Evaluation",
-      11: "Provincial Equity",
-      12: "Climate Resilience",
-      13: "Policy & Governance",
-      14: "Demographics",
-      15: "C.A.R.E. Validation",
-      16: "Final Submission",
-    };
-    return titles[step] || `Section ${step}`;
-  };
+  // ═══ Section 14: Demographics ═══
+  demo_category: requiredString,
+  demo_province: requiredString,
+  demo_expertise: z.array(z.string()).min(1, "Select at least one area of expertise"),
+  demo_name: requiredString,
+  demo_email: z.string().email("Valid email required"),
+  demo_organization: optionalString,
 
-  return (
-    <div className="w-full max-w-5xl mx-auto p-4 md:p-8 space-y-6">
-      {/* Header & Progress */}
-      <div className="text-center space-y-4">
-        <div className="flex flex-wrap items-center justify-center gap-3">
-          <Badge variant="outline" className="border-[#C9A84C]/50 text-[#C9A84C] px-4 py-1.5 text-sm font-serif tracking-wide">
-            BIRD 2026–2035 Validation Survey
-          </Badge>
-          {completedSections.size > 0 && (
-            <Badge className="border-green-500/40 bg-green-500/10 text-green-400">
-              {completedSections.size} sections completed
-            </Badge>
-          )}
-        </div>
-        
-        <h1 className="text-3xl md:text-4xl font-serif text-[#C9A84C]">
-          The Emerging Bangsamoro
-        </h1>
-        <p className="text-[#ecfdf5]/60">
-          Step {currentStep} of {TOTAL_STEPS} • {getSectionTitle(currentStep)}
-        </p>
-        
-        <Progress value={progressPercentage} className="h-2 bg-[#064e3b] [&>div]:bg-[#C9A84C]" />
-      </div>
+  // ═══ Province-specific conditional fields ═══
+  basilan_peace_questions: z.string().optional(),
+  maguindanao_halal_questions: z.string().optional(),
+  tawitawi_seaweed_questions: z.string().optional(),
+  lanao_lake_questions: z.string().optional(),
 
-      {/* 🐘 DYNAMIC CONTEXT ALERT (Conditional Logic) */}
-      {currentStep === 3 && formValues.demo_province === "basilan" && (
-        <Alert className="bg-amber-950/40 border-amber-500/50 text-amber-100 backdrop-blur-sm">
-          <AlertTriangle className="h-5 w-5 text-amber-400" />
-          <AlertTitle className="text-amber-400 font-serif">Provincial Context: Basilan</AlertTitle>
-          <AlertDescription>
-            As a Basilan stakeholder, please pay special attention to the <strong>Pestalotiopsis fungal disease</strong> impact on rubber plantations and the <strong>ZBIP</strong> energy interconnection in your assessment.
-          </AlertDescription>
-        </Alert>
-      )}
+  // ═══ Section 15: Final Consent ═══
+  consent_final: z.literal(true, {
+    errorMap: () => ({ message: "You must consent to submit" }),
+  }),
 
-      {/* Kill Switch Alert */}
-      {sectionValidationErrors[currentStep] && (
-        <Alert className="border-red-500/30 bg-red-500/10 text-red-200 backdrop-blur-sm">
-          <AlertCircle className="h-4 w-4 text-red-400" />
-          <AlertTitle className="text-red-400">Required Critical Fields Missing</AlertTitle>
-          <AlertDescription>
-            This section contains critical prerequisites (Kill Switches) that must be completed before proceeding to the next phase.
-          </AlertDescription>
-        </Alert>
-      )}
+  // ═══ Section 16: C.A.R.E. Validation ═══
+  care_context: requiredNumber,
+  care_action: requiredNumber,
+  care_realtime: requiredNumber,
+  care_evidence: requiredNumber,
+  care_overall: requiredNumber,
+});
 
-      {/* Main Form Card (Glassmorphism) */}
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
-          <Card className="bg-[#022c22]/60 backdrop-blur-xl border-[#C9A84C]/30 shadow-2xl shadow-black/40 overflow-hidden">
-            <CardHeader className="border-b border-[#C9A84C]/10">
-              <CardTitle className="text-2xl font-serif text-[#C9A84C]">
-                {getSectionTitle(currentStep)}
-              </CardTitle>
-              <CardDescription className="text-[#ecfdf5]/70">
-                {currentStep <= 10 
-                  ? "Core BEIE Framework Assessment" 
-                  : currentStep <= 14 
-                  ? "Strategic Evaluation & Planning" 
-                  : "Final Validation & Submission"}
-              </CardDescription>
-            </CardHeader>
-            
-            <CardContent className="p-6 md:p-10">
-              <div className="min-h-[500px]">{renderSection()}</div>
-            </CardContent>
-            
-            <Separator className="bg-[#C9A84C]/20" />
-            
-            {/* Navigation Footer */}
-            <div className="bg-[#011a12]/80 backdrop-blur-md p-4 md:p-6 flex justify-between items-center">
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={handleBack} 
-                disabled={currentStep === 1}
-                className="border-[#C9A84C]/40 text-[#C9A84C] hover:bg-[#C9A84C]/10 disabled:opacity-30"
-              >
-                <ArrowLeft className="w-4 h-4 mr-2" /> Previous
-              </Button>
-              
-              {currentStep < TOTAL_STEPS ? (
-                <Button 
-                  type="button" 
-                  onClick={handleNext} 
-                  className="bg-[#C9A84C] hover:bg-[#E8C560] text-[#022c22] font-bold shadow-lg shadow-[#C9A84C]/20"
-                >
-                  Next Section <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              ) : (
-                <Button 
-                  type="submit" 
-                  disabled={isSubmitting} 
-                  className="bg-[#C9A84C] hover:bg-[#E8C560] text-[#022c22] font-bold shadow-lg shadow-[#C9A84C]/20"
-                >
-                  {isSubmitting ? "Securing Data..." : "Submit Validation"} <Send className="w-4 h-4 ml-2" />
-                </Button>
-              )}
-            </div>
-          </Card>
-        </form>
-      </Form>
-    </div>
-  );
-}
+export type SurveySchemaType = z.infer<typeof surveySchema>;
