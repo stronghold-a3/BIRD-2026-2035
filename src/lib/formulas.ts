@@ -4,77 +4,146 @@
 // Derived from BIRD 2026–2035 Chapter 3: SWOT Analysis and Systems Mapping.
 // ─────────────────────────────────────────────────────────────────────────────
 
-// ── Resilience Index (BIRD SWOT Methodology) ─────────────────────────────────
+import type { SWOTCategory } from "./strategicPlanStore";
+
+// ── Resilience Index (BIRD SWOT Methodology) ──────────────────────────────
 // For Strengths: RI = (Impact × Likelihood) / 5
 // For Opportunities: RI = √(Impact × Likelihood)
+// For Weaknesses: Risk = Impact × Likelihood
+// For Threats: VI = (Impact² × Likelihood) / 25
 // Reference: BIRD 2026–2035 Chapter 3-A, SWOT Scoring Framework.
-
+ 
 export interface ResilienceScore {
   resilienceIndex: number;
   riskLevel: string;
   vulnerabilityIndex: number;
   interpretation: string;
-  birdCategory: 'strength' | 'opportunity' | 'weakness' | 'threat';
+  category: SWOTCategory;
 }
-
-/** RI for Strengths: (Impact × Likelihood) / 5 */
+ 
+/** Resilience Index for Strengths: (Impact × Likelihood) / 5 */
 export function calculateStrengthRI(impact: number, likelihood: number): number {
   return Number(((impact * likelihood) / 5).toFixed(2));
 }
-
-/** RI for Opportunities: √(Impact × Likelihood) */
+ 
+/** Resilience Index for Opportunities: √(Impact × Likelihood) */
 export function calculateOpportunityRI(impact: number, likelihood: number): number {
   return Number(Math.sqrt(impact * likelihood).toFixed(2));
 }
-
-/** General resilience index (opportunity formula, used across analysis) */
-export function calculateResilienceIndex(impact: number, likelihood: number): number {
-  return calculateOpportunityRI(impact, likelihood);
+ 
+/** Risk score for Weaknesses: Impact × Likelihood */
+export function calculateWeaknessRisk(impact: number, likelihood: number): number {
+  return Number((impact * likelihood).toFixed(2));
 }
-
-export function calculateRiskLevel(impact: number, likelihood: number): string {
-  const riskScore = impact * likelihood;
-  if (riskScore >= 20) return 'Critical';
-  if (riskScore >= 15) return 'High';
-  if (riskScore >= 10) return 'Medium';
-  if (riskScore >= 5)  return 'Low';
-  return 'Minimal';
+ 
+/** Vulnerability Index for Threats: (Impact² × Likelihood) / 25 */
+export function calculateThreatVI(impact: number, likelihood: number): number {
+  return Number(((Math.pow(impact, 2) * likelihood) / 25).toFixed(2));
 }
-
-export function calculateVulnerabilityIndex(
+ 
+/** Universal SWOT metric calculator (routes to category-specific formula) */
+export function calculateSWOTMetric(
+  category: SWOTCategory,
   impact: number,
-  likelihood: number,
-  control = 1,
+  likelihood: number
 ): number {
-  return Number(((impact * likelihood) / Math.max(control, 1)).toFixed(2));
+  switch (category) {
+    case "strength":
+      return calculateStrengthRI(impact, likelihood);
+    case "opportunity":
+      return calculateOpportunityRI(impact, likelihood);
+    case "weakness":
+      return calculateWeaknessRisk(impact, likelihood);
+    case "threat":
+      return calculateThreatVI(impact, likelihood);
+    default:
+      return 0;
+  }
+}
+ 
+/** Compute full resilience score with interpretation */
+export function scoreResilience(
+  category: SWOTCategory = "opportunity",
+  impact: number,
+  likelihood: number
+): ResilienceScore {
+  const score = calculateSWOTMetric(category, impact, likelihood);
+ 
+  let riskLevel = "low";
+  let interpretation = "";
+ 
+  if (score < 2) {
+    riskLevel = "low";
+    interpretation = "Minimal impact expected";
+  } else if (score < 4) {
+    riskLevel = "moderate";
+    interpretation = "Attention recommended";
+  } else if (score < 6) {
+    riskLevel = "elevated";
+    interpretation = "Close monitoring required";
+  } else {
+    riskLevel = "critical";
+    interpretation = "Immediate action necessary";
+  }
+ 
+  return {
+    resilienceIndex: score,
+    riskLevel,
+    vulnerabilityIndex: score,
+    interpretation,
+    category,
+  };
 }
 
-export function calculateResilience(
-  impact: number,
-  likelihood: number,
-  control = 1,
-  birdCategory: ResilienceScore['birdCategory'] = 'opportunity',
-): ResilienceScore {
-  const resilienceIndex =
-    birdCategory === 'strength'
-      ? calculateStrengthRI(impact, likelihood)
-      : calculateOpportunityRI(impact, likelihood);
-
-  const riskLevel = calculateRiskLevel(impact, likelihood);
-  const vulnerabilityIndex = calculateVulnerabilityIndex(impact, likelihood, control);
-
-  let interpretation: string;
-  if (resilienceIndex >= 4.0) {
-    interpretation = 'Strong resilience capacity; maintain momentum';
-  } else if (resilienceIndex >= 3.0) {
-    interpretation = 'Moderate resilience; targeted interventions recommended';
-  } else if (resilienceIndex >= 2.0) {
-    interpretation = 'Vulnerable; requires priority resource allocation';
-  } else {
-    interpretation = 'High vulnerability; immediate corrective action required';
-  }
-
-  return { resilienceIndex, riskLevel, vulnerabilityIndex, interpretation, birdCategory };
+// ── Strategic Option Scoring (IEDS Matrix) ────────────────────────────────
+interface StrategyScores {
+  economic_impact: number;
+  feasibility: number;
+  identity_alignment: number;
+  systems_leverage: number;
+  risk_return: number;
+  inclusivity: number;
+  sustainability: number;
+}
+ 
+export function calculateStrategyOverallScore(scores: StrategyScores): number {
+  const weights = {
+    economic_impact: 0.20,
+    feasibility: 0.18,
+    identity_alignment: 0.15,
+    systems_leverage: 0.15,
+    risk_return: 0.16,
+    inclusivity: 0.10,
+    sustainability: 0.06,
+  };
+ 
+  const weightedSum = (Object.keys(scores) as (keyof StrategyScores)[]).reduce((sum, key) => {
+    return sum + scores[key] * weights[key];
+  }, 0);
+ 
+  return Number(weightedSum.toFixed(2));
+}
+ 
+// ── BSC (Balanced Scorecard) Aggregations ─────────────────────────────────
+/** Weighted average of perspective objectives */
+export function calculatePerspectiveScore(
+  objectives: Array<{ weight: number; kpiProgress: number }>
+): number {
+  if (objectives.length === 0) return 0;
+  const totalWeight = objectives.reduce((sum, obj) => sum + obj.weight, 0);
+  if (totalWeight === 0) return 0;
+  const weightedSum = objectives.reduce((sum, obj) => sum + obj.kpiProgress * obj.weight, 0);
+  return Number((weightedSum / totalWeight).toFixed(1));
+}
+ 
+/** Overall balanced scorecard health (0-100) */
+export function calculateBSCHealth(
+  perspectiveScores: Record<string, number>
+): number {
+  const scores = Object.values(perspectiveScores);
+  if (scores.length === 0) return 0;
+  const average = scores.reduce((a, b) => a + b, 0) / scores.length;
+  return Number(average.toFixed(1));
 }
 
 // ── KPI Progress ─────────────────────────────────────────────────────────────
@@ -184,3 +253,24 @@ export const PHASE1_BUDGET_ALLOCATION: BudgetAllocation[] = [
   { cluster: 'Islamic Finance',          amount:  2_000_000_000, percentage:  5, label: '₱2B'  },
   { cluster: 'Tourism & BIMP-EAGA',      amount:  1_600_000_000, percentage:  4, label: '₱1.6B'},
 ];
+
+// ── Trend Analysis ────────────────────────────────────────────────────────
+export function calculateTrend(
+  values: number[],
+  periods: number = 3
+): "improving" | "stable" | "declining" {
+  if (values.length < periods) {
+    return "stable";
+  }
+ 
+  const recent = values.slice(-periods);
+  const older = values.slice(-periods * 2, -periods);
+ 
+  const recentAvg = recent.reduce((a, b) => a + b, 0) / recent.length;
+  const olderAvg = older.reduce((a, b) => a + b, 0) / older.length;
+ 
+  const changePercent = ((recentAvg - olderAvg) / olderAvg) * 100;
+ 
+  if (Math.abs(changePercent) < 5) return "stable";
+  return changePercent > 0 ? "improving" : "declining";
+}
