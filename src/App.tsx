@@ -1,19 +1,16 @@
 import React, { lazy, Suspense } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider } from '@/components/theme-provider';
 import { AppProvider } from '@/contexts/AppContext';
 import { Toaster } from '@/components/ui/toaster';
 import { Toaster as Sonner } from '@/components/ui/sonner';
 
-// ─── Core Pages (lazy loaded) ──────────────────────────────────────────────
-const Index = lazy(() => import('@/pages/Index'));
+const Index          = lazy(() => import('@/pages/Index'));
 const AdminDashboard = lazy(() => import('@/pages/AdminDashboard'));
-const NotFound = lazy(() => import('@/pages/NotFound'));
+const NotFound       = lazy(() => import('@/pages/NotFound'));
 const SharedPlanView = lazy(() => import('@/pages/SharedPlanView'));
 
-
-// ─── Loading Fallback ───────────────────────────────────────────────────────
 const AppLoadingFallback = React.memo(() => (
   <div className="min-h-screen bg-[#0A1628] flex flex-col items-center justify-center p-6">
     <div className="relative mb-6">
@@ -31,7 +28,6 @@ const AppLoadingFallback = React.memo(() => (
   </div>
 ));
 
-// ─── Error Boundary for Better Error Handling ────────────────────────────────
 class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean }> {
   constructor(props: { children: React.ReactNode }) {
     super(props);
@@ -53,7 +49,7 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
           <div className="text-center">
             <h1 className="text-3xl font-bold mb-4">Something went wrong</h1>
             <p className="text-slate-400 mb-4">We're sorry, but an unexpected error occurred.</p>
-            <button 
+            <button
               onClick={() => window.location.reload()}
               className="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 rounded-lg"
             >
@@ -67,7 +63,6 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
   }
 }
 
-// ─── Query Client Setup ──────────────────────────────────────────────────────
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -81,7 +76,6 @@ const queryClient = new QueryClient({
   },
 });
 
-// ─── Main Application Component ───────────────────────────────────────────────
 const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
@@ -91,22 +85,14 @@ const App: React.FC = () => {
             <ErrorBoundary>
               <Suspense fallback={<AppLoadingFallback />}>
                 <Routes>
-                  {/* Landing page + All authenticated routes handled by Index/AppLayout */}
                   <Route path="/*" element={<Index />} />
-                  
-                  {/* Admin Dashboard */}
                   <Route path="/admin" element={<AdminDashboard />} />
-                  
-                  {/* Shared Plan View (public sharing) */}
                   <Route path="/shared/:shareId" element={<SharedPlanView />} />
-                  
-                  {/* 404 Not Found */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </Suspense>
             </ErrorBoundary>
-            
-            {/* Global Toast Notifications */}
+
             <Toaster
               position="top-right"
               toastOptions={{
@@ -121,7 +107,7 @@ const App: React.FC = () => {
                 },
               }}
             />
-            
+
             <Sonner richColors position="top-right" duration={4000} closeButton theme="dark" />
           </BrowserRouter>
         </AppProvider>
