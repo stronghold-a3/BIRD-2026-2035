@@ -154,7 +154,30 @@ function buildDefaultValues(): SurveySchemaType {
     care_overall: undefined as unknown as number,
   };
 }
+// NEW FUNCTION: Add to SurveyWizard or a new survey-converter.ts
+function convertSurveyToPlan(data: SurveySchemaType, userInfo: UserInfo): StrategicPlan {
+  const plan = createEmptyPlan({
+    name: `BIRD Survey — ${data.demo_organization || "Anonymous"}`,
+    organization: data.demo_organization || "",
+    vision: "Emerging Bangsamoro — Survey-derived strategic plan",
+    mission: data.q8_1 || "",
+    strategicIntent: data.q1_2 || "",
+  }, userInfo);
 
+  // Map SWOT items from survey responses
+  plan.swotItems = buildSwotItemsFromSurvey(data);
+
+  // Map strategic options
+  plan.strategicOptions = buildStrategicOptionsFromSurvey(data);
+
+  // Map objectives + KPIs
+  plan.objectives = buildObjectivesFromSurvey(data);
+
+  // Map PAPs
+  plan.paps = buildPAPsFromSurvey(data);
+
+  return plan;
+}
 // ═════════════════════════════════════════════════════════════════════════════
 // MAIN COMPONENT
 // ═════════════════════════════════════════════════════════════════════════════
