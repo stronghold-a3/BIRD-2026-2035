@@ -1,15 +1,17 @@
 {
-  "version": 2,
-  "outputDirectory": ".next",
+  "buildCommand": "yarn build",
+  "installCommand": "yarn install",
+  "outputDirectory": "dist",
+  "framework": "vite",
   "headers": [
     {
-      "source": "/_next/static/(.*)",
+      "source": "/assets/(.*)",
       "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
       ]
     }
+  ],
+  "rewrites": [
+    { "source": "/((?!api/|.*\\..*).*)", "destination": "/index.html" }
   ]
 }
