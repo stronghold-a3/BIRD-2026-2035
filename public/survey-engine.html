@@ -1,0 +1,621 @@
+<script>
+    // ═══════════════════════════════════════════════════════════════════════
+    // BIRD 2026–2035 Validation Survey — Alpine Engine
+    // Field IDs and backend paths follow BIRD_Survey_Data_Map.xlsx exactly.
+    // Formulas mirror /lib/bird/formulas.ts (Chapter 3 SWOT scoring methodology).
+    // ═══════════════════════════════════════════════════════════════════════
+
+    // ── Config: flip these on when a real backend is ready ─────────────────
+    const CONFIG = {
+        SUPABASE_ENABLED: false,          // set true + fill in values below to enable live sync
+        SUPABASE_URL: '',                  // e.g. 'https://xxxx.supabase.co'
+        SUPABASE_ANON_KEY: '',
+        AI_ASSISTANT_ENABLED: false,       // set true once an Edge Function URL is available
+        AI_ASSISTANT_URL: '',              // e.g. '.../functions/v1/ai-strategy-assistant'
+        STORAGE_KEY: 'bird_survey_draft_v1',
+        SUBMISSIONS_KEY: 'bird_survey_responses_v1', // local mirror read by survey-dashboard.html fallback
+        AUTOSAVE_DEBOUNCE_MS: 1000,
+    };
+
+    // ── BIRD Formulas (mirrors formulas.ts) ─────────────────────────────────
+    function calcStrengthRI(impact, likelihood) { return Number(((impact * likelihood) / 5).toFixed(2)); }
+    function calcOpportunityRI(impact, likelihood) { return Number(Math.sqrt(impact * likelihood).toFixed(2)); }
+    function calcWeaknessRisk(impact, likelihood) { return Number((impact * likelihood).toFixed(2)); }
+    function calcThreatVI(impact, likelihood) { return Number(((Math.pow(impact, 2) * likelihood) / 25).toFixed(2)); }
+
+    function formatCurrencyPHP(value, symbol = '₱') {
+        if (value >= 1e12) return `${symbol}${(value / 1e12).toFixed(1)}T`;
+        if (value >= 1e9) return `${symbol}${(value / 1e9).toFixed(1)}B`;
+        if (value >= 1e6) return `${symbol}${(value / 1e6).toFixed(0)}M`;
+        if (value >= 1e3) return `${symbol}${(value / 1e3).toFixed(0)}K`;
+        return `${symbol}${value.toLocaleString()}`;
+    }
+
+    const ROI_MULTIPLIERS = {
+        heds: { m: 3.2, t: '5-8 years' },   // halal
+        gems: { m: 4.5, t: '8-15 years' },  // green economy
+        ifes: { m: 2.2, t: '10-15 years' }, // infrastructure
+        ieds: { m: 3.0, t: '6-10 years' },  // integrated
+    };
+    function estimateROI(investmentPhp, strategyKey) {
+        const cfg = ROI_MULTIPLIERS[strategyKey] || { m: 2.5, t: '5-10 years' };
+        return { estimatedReturn: investmentPhp * cfg.m, multiplier: cfg.m, timeframe: cfg.t };
+    }
+
+    // ── bird-urls.ts context data (trimmed to what the survey needs) ───────
+    const BIRD_IMAGES = [
+        { title: 'BIRD Vision 2026-2035', url: 'https://lydsisparsmvextskevw.supabase.co/storage/v1/object/public/validation-survey-images/18.%20Vision.png', category: 'framework', section: 'section1' },
+        { title: 'Bangsamoro BEIE Framework', url: 'https://rgvteytgkugdqdodedxq.databasepad.com/storage/v1/object/public/images-context-beie-framewoek/public/19.%20Bangsamoro%20BEIE%20Framework.png', category: 'framework', section: 'section1' },
+        { title: 'Operating Systems: Trust as the Currency', url: 'https://rgvteytgkugdodedxq.databasepad.com/storage/v1/object/public/images-context-beie-framewoek/public/20.%20Operating%20Systems_%20Trust%20as%20the%20Currency.png', category: 'framework', section: 'section2' },
+        { title: 'Iceberg Paradigm', url: 'https://lydsisparsmvextskevw.supabase.co/storage/v1/object/public/validation-survey-images/5-Paradigm.png', category: 'systems', section: 'section2' },
+        { title: 'Fixes that Fail', url: 'https://lydsisparsmvextskevw.supabase.co/storage/v1/object/public/validation-survey-images/8-FtF.png', category: 'archetype', section: 'section2' },
+        { title: 'Cluster 1: Foundations', url: 'https://rgvteytgkugdqdodedxq.databasepad.com/storage/v1/object/public/images-context-beie-framewoek/public/25.%20Cluster%201_%20Foundations.png', category: 'cluster', section: 'section3' },
+        { title: 'Cluster 2: Transformers', url: 'https://rgvteytgkugdodedxq.databasepad.com/storage/v1/object/public/images-context-beie-framewoek/public/26.%20Cluster%202%20_%20Transformers.png', category: 'cluster', section: 'section4' },
+        { title: 'Cluster 3: Enablers', url: 'https://rgvteytgkugdodedxq.databasepad.com/storage/v1/object/public/images-context-beie-framewoek/public/28.%20Cluster%203%20_%20Enablers.png', category: 'cluster', section: 'section5' },
+        { title: 'Cluster 4: Connectors', url: 'https://rgvteytgkugdodedxq.databasepad.com/storage/v1/object/public/images-context-beie-framewoek/public/33.%20Cluster%204_%20Connectors.png', category: 'cluster', section: 'section6' },
+        { title: 'Cluster 5: Financiers', url: 'https://rgvteytgkugdodedxq.databasepad.com/storage/v1/object/public/images-context-beie-framewoek/public/38.%20Cluster%205_%20Financiers.png', category: 'cluster', section: 'section7' },
+        { title: 'BARMM Strategic Connectivity vis-à-vis UAE', url: 'https://lydsisparsmvextskevw.supabase.co/storage/v1/object/public/BEIE-images/UAE%20&%20GCC.png', category: 'connectivity', section: 'section6' },
+        { title: 'Meadows Hierarchy of Leverage Points', url: 'https://rgvteytgkugdqdodedxq.databasepad.com/storage/v1/object/public/images-swot-systems-maps/public/24.%20Meadows%20Hierarchy%20of%20Leverage%20Points.png', category: 'leverage', section: 'section8' },
+        { title: 'BIRD Investment Roadmap', url: 'https://lydsisparsmvextskevw.supabase.co/storage/v1/object/public/validation-survey-images/28.png', category: 'roadmap', section: 'section8' },
+        { title: 'Provincial Diagnostics Overview', url: 'https://lydsisparsmvextskevw.supabase.co/storage/v1/object/public/BEIE-images/Provincial%20Diagnostics.png', category: 'provincial', section: 'section11' },
+        { title: 'Provincial Endowments Leverages', url: 'https://lydsisparsmvextskevw.supabase.co/storage/v1/object/public/BEIE-images/13.%20Provincial%20Endowments-Mainlands.png', category: 'provincial', section: 'section11' },
+    ];
+    const BIRD_VIDEOS = [
+        { title: "Bangsamoro Investment Roadmap 2026-2035 Overview", url: 'https://youtu.be/UCi2dVUmSbE', duration: '~15 min', section: 'general' },
+        { title: 'Context Analysis and the BEIE Framework', url: 'https://youtu.be/Li7lpyWWMcE', duration: '~12 min', section: 'section1' },
+        { title: 'SWOT Analysis and Systems Mapping', url: 'https://youtu.be/LSmBzwyX2uw', duration: '~18 min', section: 'section2' },
+        { title: 'On Systems Thinking', url: 'https://youtu.be/VBAHk0WYz_c', duration: '~10 min', section: 'section2' },
+        { title: 'Strategic Options and the Investment Roadmap', url: 'https://youtu.be/kb_snh8mo1k', duration: '~20 min', section: 'section8' },
+    ];
+    const BIRD_SITES = {
+        section1: 'https://bird-resources.asilvainnovations.com',
+        section2: 'https://bird-resources.asilvainnovations.com',
+        section8: 'https://bird-roadmap.asilvainnovations.com',
+        section10: 'https://bird-roadmap.asilvainnovations.com',
+        section11: 'https://bird-dashboard.asilvainnovations.com',
+    };
+
+    // step (1-16) → bird-urls "section" key used for image/video/site lookups
+    const STEP_TO_SECTION = {
+        1: 'section1', 2: 'section2', 3: 'section3', 4: 'section4', 5: 'section5',
+        6: 'section6', 7: 'section7', 8: 'section8', 9: 'section8', 10: 'section10',
+        11: 'section11', 12: 'section11', 13: 'section8', 14: 'general', 15: 'general', 16: 'general',
+    };
+
+    function surveyWizard() {
+        return {
+            // ── Core state ───────────────────────────────────────────────
+            currentStep: 1,
+            totalSteps: 16,
+            completedSections: new Set(),
+            killSwitchErrors: [],
+            isOnline: navigator.onLine,
+            isSubmitting: false,
+            submitted: false,
+            submissionId: '',
+            autosaveStatus: 'idle', // idle | saving | saved
+            toast: { show: false, message: '', type: 'success' },
+            showDraftPrompt: false,
+            draftMeta: { savedAt: '', completed: 0 },
+            _saveTimer: null,
+            _pendingDraft: null,
+
+            stepToSection: STEP_TO_SECTION,
+
+            stepTitles: {
+                1: 'BEIE Framework Context', 2: 'Moral Governance Operating System',
+                3: 'Cluster 1: Foundations', 4: 'Cluster 2: Transformers',
+                5: 'Cluster 3: Enablers', 6: 'Cluster 4: Connectors',
+                7: 'Cluster 5: Financiers', 8: 'Strategic Options',
+                9: 'Budget & Targets', 10: 'IEDS Matrix Evaluation',
+                11: 'Provincial Equity', 12: 'Climate Resilience',
+                13: 'Policy & Governance', 14: 'Demographics',
+                15: 'C.A.R.E. Validation', 16: 'Final Submission',
+            },
+
+            stepHelperText: {
+                1: 'No wrong answers here — we just want to know your familiarity with the framework.',
+                2: 'Think about how decisions actually get made in BARMM today.',
+                3: 'Foundations = the raw materials BARMM works with: farms, fisheries, forests, energy.',
+                4: 'Transformers = turning raw materials into finished, sellable products.',
+                5: 'Enablers = the roads, power, and connectivity that let everything else work.',
+                6: 'Connectors = how BARMM trades and connects with markets outside the region.',
+                7: 'Financiers = where the money comes from, especially Shariah-compliant sources.',
+                8: 'There is no single correct strategy — tell us which one you find most convincing.',
+                9: 'Budgets are estimates, not promises. Rate how realistic the scale feels to you.',
+                10: 'Slide each dimension from 0 (very weak) to 10 (very strong) for all 4 strategies.',
+                11: 'BARMM\'s provinces are not equally developed. Should support be equal, or targeted?',
+                12: 'Climate shocks like El Niño already cost BARMM hundreds of millions of pesos.',
+                13: 'Good rules and institutions decide whether good plans actually happen.',
+                14: 'A few quick details about you — this stays confidential.',
+                15: 'Rate the roadmap itself using the C.A.R.E. stewardship lens.',
+                16: 'Review your summary, give consent, and submit.',
+            },
+
+            matrixDimensions: [
+                { key: 'economic_impact', label: 'Econ. Impact' },
+                { key: 'feasibility', label: 'Feasibility' },
+                { key: 'identity_alignment', label: 'Identity' },
+                { key: 'systems_leverage', label: 'Leverage' },
+                { key: 'risk_return', label: 'Risk-Return' },
+                { key: 'inclusivity', label: 'Inclusivity' },
+                { key: 'sustainability', label: 'Sustainability' },
+            ],
+
+            // ── Form data — field IDs match BIRD_Survey_Data_Map.xlsx exactly ──
+            formData: {
+                q1_1: '', q1_2: '',
+                q2_1: 3, q2_2: 3, q2_3_archetype: '', q2_4_peace: [],
+                q3_1_priorities: [], q3_2_feasibility: 3,
+                q3_el_nino_impact: null, q3_el_nino_like: null,
+                q3_pestalotiopsis_impact: null, q3_pestalotiopsis_like: null,
+                q3_postharvest_impact: null, q3_postharvest_like: null,
+                q3_limits_growth: '',
+                q4_1_barrier: '', q4_2_halal_park: '', q4_3_fixes_fail: '',
+                q4_4_commodity_impact: '',
+                q4_5_heds_ranking: ['Halal Certification (BHB)', 'Halal Park (Matanog)', 'UAE Export Corridor', 'Islamic Finance for Halal MSMEs'],
+                q5_1_infra: 3, q5_2_sectors: [], q5_3_broadband: 3, q5_4_literacy: 3, q5_5_stunting: 3, q5_6_digital_divide: '',
+                q6_1_bimpeaga: 3, q6_2_markets: [], q6_3_export_target: 3, q6_4_uae_feasibility: 3, q6_5_perception: '',
+                q7_1_criticality: 3, q7_2_instruments: [], q7_3_inclusion_target: 3, q7_4_asset_paradox: '', q7_5_block_grant: '',
+                q8_1_strategy: '', q8_2_sequencing: '', q8_3_comments: '',
+                q9_1_budget: 3,
+                q10_1_ambition: 3,
+                q10_matrix: {
+                    heds: { economic_impact: 5, feasibility: 5, identity_alignment: 5, systems_leverage: 5, risk_return: 5, inclusivity: 5, sustainability: 5 },
+                    gems: { economic_impact: 5, feasibility: 5, identity_alignment: 5, systems_leverage: 5, risk_return: 5, inclusivity: 5, sustainability: 5 },
+                    ifes: { economic_impact: 5, feasibility: 5, identity_alignment: 5, systems_leverage: 5, risk_return: 5, inclusivity: 5, sustainability: 5 },
+                    ieds: { economic_impact: 5, feasibility: 5, identity_alignment: 5, systems_leverage: 5, risk_return: 5, inclusivity: 5, sustainability: 5 },
+                },
+                q11_1_affirmative: '', q11_2_mechanisms: [],
+                q12_1_green_priority: 3, q12_2_adaptation: [],
+                q13_1_legislation: [], q13_2_bicc: 3,
+                demo_category: '', demo_province: '', demo_expertise: [], demo_name: '', demo_email: '', demo_organization: '',
+                provincial_basilan: '', provincial_maguindanao: '', provincial_tawitawi: '', provincial_lanao: '',
+                care_context: 3, care_action: 3, care_realtime: 3, care_evidence: 3, care_overall: 3,
+                consent_final: false,
+            },
+
+            // ── Init ─────────────────────────────────────────────────────
+            init() {
+                window.addEventListener('online', () => { this.isOnline = true; this.attemptBackgroundSync(); });
+                window.addEventListener('offline', () => { this.isOnline = false; });
+
+                // Draft restore check
+                try {
+                    const raw = localStorage.getItem(CONFIG.STORAGE_KEY);
+                    if (raw) {
+                        const parsed = JSON.parse(raw);
+                        if (parsed && parsed.formData) {
+                            this._pendingDraft = parsed;
+                            this.draftMeta.savedAt = parsed.savedAt ? new Date(parsed.savedAt).toLocaleString() : '';
+                            this.draftMeta.completed = (parsed.completedSections || []).length;
+                            this.showDraftPrompt = true;
+                        }
+                    }
+                } catch (e) { console.warn('Draft read failed', e); }
+
+                // Watch for changes -> debounced autosave
+                this.$watch('formData', () => this.scheduleAutosave(), { deep: true });
+                this.$watch('currentStep', () => {
+                    this.killSwitchErrors = [];
+                    this.$nextTick(() => { if (this.currentStep === 10) this.renderMatrixChart(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
+                });
+
+                // Register service worker for offline capability
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.register('sw.js').catch(err => console.warn('SW registration failed', err));
+                }
+
+                // Try background sync of any previously-queued offline submissions
+                this.attemptBackgroundSync();
+            },
+
+            restoreDraft() {
+                if (this._pendingDraft) {
+                    this.formData = Object.assign({}, this.formData, this._pendingDraft.formData);
+                    this.completedSections = new Set(this._pendingDraft.completedSections || []);
+                    this.currentStep = this._pendingDraft.currentStep || 1;
+                }
+                this.showDraftPrompt = false;
+                this.showToast('Draft restored', 'success');
+            },
+            discardDraft() {
+                localStorage.removeItem(CONFIG.STORAGE_KEY);
+                this.showDraftPrompt = false;
+            },
+
+            // ── Autosave (debounced ~1s) ─────────────────────────────────
+            scheduleAutosave() {
+                if (this.showDraftPrompt) return; // don't overwrite draft before user decides
+                this.autosaveStatus = 'saving';
+                clearTimeout(this._saveTimer);
+                this._saveTimer = setTimeout(() => this.saveDraft(), CONFIG.AUTOSAVE_DEBOUNCE_MS);
+            },
+            saveDraft() {
+                try {
+                    const payload = {
+                        formData: this.formData,
+                        completedSections: Array.from(this.completedSections),
+                        currentStep: this.currentStep,
+                        savedAt: new Date().toISOString(),
+                    };
+                    localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(payload));
+                    this.autosaveStatus = 'saved';
+                    setTimeout(() => { if (this.autosaveStatus === 'saved') this.autosaveStatus = 'idle'; }, 2000);
+                } catch (e) {
+                    console.warn('Autosave failed (storage may be full)', e);
+                    this.autosaveStatus = 'idle';
+                }
+            },
+
+            // ── Navigation ───────────────────────────────────────────────
+            jumpToStep(n) {
+                if (n <= this.currentStep || this.completedSections.has(n - 1) || n === 1) {
+                    this.currentStep = n;
+                }
+            },
+            nextStep() {
+                const errors = this.validateStep(this.currentStep);
+                if (errors.length > 0) {
+                    this.killSwitchErrors = errors;
+                    return;
+                }
+                this.completedSections.add(this.currentStep);
+                this.killSwitchErrors = [];
+                if (this.currentStep < this.totalSteps) this.currentStep++;
+            },
+            prevStep() {
+                this.killSwitchErrors = [];
+                if (this.currentStep > 1) this.currentStep--;
+            },
+
+            // ── Validation / Kill Switches (per Validation & Kill Switches sheet) ──
+            validateStep(step) {
+                const f = this.formData;
+                const errs = [];
+                const req = (cond, msg) => { if (!cond) errs.push(msg); };
+
+                switch (step) {
+                    case 1: // Hard stop
+                        req(!!f.q1_1, 'Understanding of BEIE Framework is required.');
+                        req(!!f.q1_2, 'Relevance of BEIE to BARMM is required.');
+                        break;
+                    case 2: // Hard stop
+                        req(!!f.q2_1, 'Importance rating is required.');
+                        req(!!f.q2_2, 'Implementation readiness is required.');
+                        req(!!f.q2_3_archetype, 'Dominant systems archetype is required.');
+                        break;
+                    case 3:
+                        req(f.q3_1_priorities.length > 0, 'Select at least one priority sector.');
+                        req(!!f.q3_2_feasibility, 'Feasibility rating is required.');
+                        break;
+                    case 4:
+                        req(!!f.q4_1_barrier, 'Primary barrier is required.');
+                        req(!!f.q4_2_halal_park, 'Halal park viability is required.');
+                        req(!!f.q4_3_fixes_fail, 'Please select why fixes fail.');
+                        break;
+                    case 5:
+                        req(!!f.q5_1_infra, 'Infrastructure rating is required.');
+                        req(f.q5_2_sectors.length > 0, 'Select at least one priority sector.');
+                        req(!!f.q5_3_broadband, 'Broadband readiness is required.');
+                        req(!!f.q5_4_literacy, 'Digital literacy rating is required.');
+                        req(!!f.q5_5_stunting, 'Stunting reduction priority is required.');
+                        req(!!f.q5_6_digital_divide, 'Digital divide assessment is required.');
+                        break;
+                    case 6:
+                        req(!!f.q6_1_bimpeaga, 'BIMP-EAGA importance is required.');
+                        req(f.q6_2_markets.length > 0, 'Select at least one target market.');
+                        req(!!f.q6_3_export_target, 'Export target rating is required.');
+                        req(!!f.q6_4_uae_feasibility, 'UAE market feasibility is required.');
+                        req(!!f.q6_5_perception, 'Investment perception is required.');
+                        break;
+                    case 7:
+                        req(!!f.q7_1_criticality, 'Finance criticality is required.');
+                        req(f.q7_2_instruments.length > 0, 'Select at least one finance instrument.');
+                        req(!!f.q7_3_inclusion_target, 'Inclusion target rating is required.');
+                        req(!!f.q7_4_asset_paradox, 'Asset paradox assessment is required.');
+                        req(!!f.q7_5_block_grant, 'Block grant effectiveness is required.');
+                        break;
+                    case 8:
+                        req(!!f.q8_1_strategy, 'Preferred strategy is required.');
+                        req(!!f.q8_2_sequencing, 'Sequencing preference is required.');
+                        break;
+                    case 9:
+                        req(!!f.q9_1_budget, 'Budget realism rating is required.');
+                        break;
+                    case 10: // Hard stop — full matrix required
+                        req(!!f.q10_1_ambition, 'Ambition level is required.');
+                        ['heds', 'gems', 'ifes', 'ieds'].forEach(c => {
+                            this.matrixDimensions.forEach(d => {
+                                const v = f.q10_matrix[c][d.key];
+                                if (v === null || v === undefined || v === '') errs.push(`IEDS matrix: ${c.toUpperCase()} / ${d.label} is required.`);
+                            });
+                        });
+                        break;
+                    case 11:
+                        req(!!f.q11_1_affirmative, 'Affirmative action stance is required.');
+                        break;
+                    case 12:
+                        req(!!f.q12_1_green_priority, 'Green economy priority is required.');
+                        req(f.q12_2_adaptation.length > 0, 'Select at least one adaptation measure.');
+                        break;
+                    case 13:
+                        req(f.q13_1_legislation.length > 0, 'Select at least one legislation priority.');
+                        req(!!f.q13_2_bicc, 'BICC effectiveness rating is required.');
+                        break;
+                    case 14:
+                        req(!!f.demo_category, 'Stakeholder category is required.');
+                        req(!!f.demo_province, 'Province is required.');
+                        req(f.demo_expertise.length > 0, 'Select at least one area of expertise.');
+                        req(!!f.demo_name, 'Full name is required.');
+                        req(!!f.demo_email && this.isValidEmail(f.demo_email), 'A valid email address is required.');
+                        break;
+                    case 15: // Hard stop
+                        req(!!f.care_context, 'Context rating is required.');
+                        req(!!f.care_action, 'Action rating is required.');
+                        req(!!f.care_realtime, 'Real-time rating is required.');
+                        req(!!f.care_evidence, 'Evidence rating is required.');
+                        req(!!f.care_overall, 'Overall rating is required.');
+                        break;
+                    case 16: // Hard stop
+                        req(f.consent_final === true, 'You must provide consent to submit.');
+                        break;
+                }
+                return errs;
+            },
+
+            isValidEmail(email) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email); },
+
+            moveRanking(key, idx, dir) {
+                const arr = this.formData[key];
+                const newIdx = idx + dir;
+                if (newIdx < 0 || newIdx >= arr.length) return;
+                [arr[idx], arr[newIdx]] = [arr[newIdx], arr[idx]];
+            },
+
+            // ── Real-time scoring helpers used in templates ──────────────
+            calculateThreatVI(impact, likelihood) {
+                if (!impact || !likelihood) return 0;
+                return calcThreatVI(Number(impact), Number(likelihood));
+            },
+            riskLevelLabel(score) {
+                if (score < 2) return 'Low risk — minimal impact expected';
+                if (score < 4) return 'Moderate risk — attention recommended';
+                if (score < 6) return 'Elevated risk — close monitoring required';
+                return 'Critical risk — immediate action necessary';
+            },
+            careAverage() {
+                const f = this.formData;
+                const vals = [f.care_context, f.care_action, f.care_realtime, f.care_evidence, f.care_overall].filter(v => v !== null && v !== undefined && v !== '');
+                if (vals.length === 0) return 0;
+                return vals.reduce((a, b) => a + Number(b), 0) / vals.length;
+            },
+            getClusterTotal(cluster) {
+                const m = this.formData.q10_matrix[cluster];
+                return this.matrixDimensions.reduce((sum, d) => sum + (Number(m[d.key]) || 0), 0);
+            },
+            getHeatmapClass(value) {
+                const v = Number(value) || 0;
+                if (v <= 2) return 'heatmap-intensity-1';
+                if (v <= 4) return 'heatmap-intensity-2';
+                if (v <= 6) return 'heatmap-intensity-3';
+                if (v <= 8) return 'heatmap-intensity-4';
+                return 'heatmap-intensity-5';
+            },
+            leadingClusterLabel() {
+                const totals = { heds: this.getClusterTotal('heds'), gems: this.getClusterTotal('gems'), ifes: this.getClusterTotal('ifes'), ieds: this.getClusterTotal('ieds') };
+                const top = Object.keys(totals).reduce((a, b) => totals[a] >= totals[b] ? a : b);
+                return top.toUpperCase() + ' (' + totals[top] + '/70)';
+            },
+            formatCurrency(v) { return formatCurrencyPHP(v); },
+            estimateROI(investmentPhp, strategyKey) { return estimateROI(investmentPhp, strategyKey); },
+
+            strategyLabel(key) {
+                const map = {
+                    heds: 'HEDS — Halal Economy Dominance', gems: 'GEMS — Green Economy Monetization',
+                    ifes: 'IFES — Infrastructure-First Enabling', ieds: 'IEDS — Integrated Ecosystem Development',
+                };
+                return map[key] || '—';
+            },
+            provinceLabel(key) {
+                const map = {
+                    lanao_del_sur: 'Lanao del Sur', maguindanao_del_norte: 'Maguindanao del Norte',
+                    maguindanao_del_sur: 'Maguindanao del Sur', basilan: 'Basilan', sulu: 'Sulu',
+                    tawi_tawi: 'Tawi-Tawi', sga: 'Special Geographic Area (SGA)', outside_barmm: 'Outside BARMM',
+                };
+                return map[key] || '—';
+            },
+
+            // ── Context strip helpers (bird-urls.ts) ─────────────────────
+            getImagesForSection(section) { return BIRD_IMAGES.filter(i => i.section === section).slice(0, 3); },
+            getVideosForSection(section) { return BIRD_VIDEOS.filter(v => v.section === section || v.section === 'general').slice(0, 1); },
+            siteLinkForSection(section) { return BIRD_SITES[section] || null; },
+            openImage(img) {
+                document.getElementById('lightbox-content').innerHTML =
+                    `<img src="${img.url}" alt="${img.title}" class="w-full h-auto rounded-lg border border-bird-gold/30">
+                     <p class="text-center text-bird-cream/80 text-sm mt-2">${img.title}</p>`;
+                document.getElementById('lightbox').classList.add('active');
+            },
+            openVideo(vid) {
+                const id = (vid.url.split('/').pop() || '').split('?')[0];
+                document.getElementById('lightbox-content').innerHTML =
+                    `<div class="aspect-video w-full"><iframe class="w-full h-full rounded-lg" src="https://www.youtube.com/embed/${id}" title="${vid.title}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
+                     <p class="text-center text-bird-cream/80 text-sm mt-2">${vid.title}</p>`;
+                document.getElementById('lightbox').classList.add('active');
+            },
+            closeLightbox() {
+                document.getElementById('lightbox').classList.remove('active');
+                document.getElementById('lightbox-content').innerHTML = '';
+            },
+
+            // ── ECharts matrix visualization ─────────────────────────────
+            renderMatrixChart() {
+                const el = document.getElementById('matrixChart');
+                if (!el || typeof echarts === 'undefined') return;
+                if (this._matrixChartInstance) { this._matrixChartInstance.dispose(); }
+                const chart = echarts.init(el, null, { renderer: 'svg' });
+                this._matrixChartInstance = chart;
+                const clusters = ['heds', 'gems', 'ifes', 'ieds'];
+                const totals = clusters.map(c => this.getClusterTotal(c));
+                chart.setOption({
+                    backgroundColor: 'transparent',
+                    grid: { left: 40, right: 20, top: 20, bottom: 30 },
+                    xAxis: { type: 'category', data: clusters.map(c => c.toUpperCase()), axisLabel: { color: '#ecfdf5' }, axisLine: { lineStyle: { color: '#C9A84C55' } } },
+                    yAxis: { type: 'value', max: 70, axisLabel: { color: '#ecfdf5' }, splitLine: { lineStyle: { color: '#ffffff15' } } },
+                    series: [{ type: 'bar', data: totals, itemStyle: { color: '#C9A84C', borderRadius: [6, 6, 0, 0] }, barWidth: '45%' }],
+                    tooltip: { trigger: 'axis' },
+                });
+                window.addEventListener('resize', () => chart.resize());
+            },
+
+            // ── Submission ────────────────────────────────────────────────
+            buildPayload() {
+                const f = this.formData;
+                return {
+                    metadata: {
+                        timestamp: new Date().toISOString(),
+                        userAgent: navigator.userAgent,
+                        platform: navigator.platform || 'unknown',
+                        language: navigator.language || 'en',
+                    },
+                    responses: {
+                        section1_beie: { understanding: f.q1_1, relevance: f.q1_2 },
+                        section2_mg: { importance: f.q2_1, implementation: f.q2_2, archetype: f.q2_3_archetype, peace_milestones: f.q2_4_peace },
+                        section3_foundations: {
+                            priorities: f.q3_1_priorities, feasibility: f.q3_2_feasibility,
+                            el_nino_impact: f.q3_el_nino_impact, el_nino_likelihood: f.q3_el_nino_like,
+                            pestalotiopsis_impact: f.q3_pestalotiopsis_impact, pestalotiopsis_likelihood: f.q3_pestalotiopsis_like,
+                            postharvest_impact: f.q3_postharvest_impact, postharvest_likelihood: f.q3_postharvest_like,
+                            limits_growth: f.q3_limits_growth || null,
+                        },
+                        section4_transformers: { barrier: f.q4_1_barrier, halal_park: f.q4_2_halal_park, fixes_fail: f.q4_3_fixes_fail, commodity_impact: f.q4_4_commodity_impact || null, heds_ranking: f.q4_5_heds_ranking },
+                        section5_enablers: { infra_rating: f.q5_1_infra, sectors: f.q5_2_sectors, broadband: f.q5_3_broadband, literacy: f.q5_4_literacy, stunting: f.q5_5_stunting, digital_divide: f.q5_6_digital_divide },
+                        section6_connectors: { bimpeaga_importance: f.q6_1_bimpeaga, markets: f.q6_2_markets, export_target: f.q6_3_export_target, uae_feasibility: f.q6_4_uae_feasibility, perception: f.q6_5_perception },
+                        section7_financiers: { criticality: f.q7_1_criticality, instruments: f.q7_2_instruments, inclusion_target: f.q7_3_inclusion_target, asset_paradox: f.q7_4_asset_paradox, block_grant: f.q7_5_block_grant },
+                        section8_options: { strategy: f.q8_1_strategy, sequencing: f.q8_2_sequencing, comments: f.q8_3_comments || null },
+                        section9_budget: { realism: f.q9_1_budget },
+                        section10_targets: { ambition: f.q10_1_ambition, matrix: f.q10_matrix },
+                        section11_equity: { affirmative: f.q11_1_affirmative, mechanisms: f.q11_2_mechanisms },
+                        section12_climate: { green_priority: f.q12_1_green_priority, adaptation: f.q12_2_adaptation },
+                        section13_policy: { legislation: f.q13_1_legislation, bicc: f.q13_2_bicc },
+                        section16_care: { context: f.care_context, action: f.care_action, realtime: f.care_realtime, evidence: f.care_evidence, overall: f.care_overall },
+                        provincial: {
+                            basilan: f.provincial_basilan || null,
+                            maguindanao: f.provincial_maguindanao || null,
+                            tawitawi: f.provincial_tawitawi || null,
+                            lanao: f.provincial_lanao || null,
+                        },
+                    },
+                    demographics: {
+                        category: f.demo_category, province: f.demo_province, expertise: f.demo_expertise,
+                        name: f.demo_name, email: f.demo_email, organization: f.demo_organization || null,
+                    },
+                    consent: f.consent_final,
+                };
+            },
+
+            async submitSurvey() {
+                const errors = this.validateStep(16);
+                if (errors.length > 0) { this.killSwitchErrors = errors; return; }
+
+                this.isSubmitting = true;
+                const surveyData = this.buildPayload();
+                const localId = 'BIRD-' + Date.now().toString(36).toUpperCase();
+
+                // Local mirror row shaped exactly like the `survey_responses` table
+                // that survey-dashboard.html expects: {data, timestamp, category, province, organization}
+                const row = {
+                    id: localId,
+                    data: surveyData,
+                    timestamp: surveyData.metadata.timestamp,
+                    category: surveyData.demographics.category,
+                    province: surveyData.demographics.province,
+                    organization: surveyData.demographics.organization,
+                    _synced: false,
+                };
+
+                try {
+                    const existing = JSON.parse(localStorage.getItem(CONFIG.SUBMISSIONS_KEY) || '[]');
+                    existing.unshift(row);
+                    localStorage.setItem(CONFIG.SUBMISSIONS_KEY, JSON.stringify(existing));
+                } catch (e) {
+                    console.warn('Local submission mirror failed', e);
+                }
+
+                // Notify any open dashboard tab in this browser immediately (same-device real-time)
+                try {
+                    localStorage.setItem('bird_survey_last_update', String(Date.now()));
+                } catch (e) { /* ignore */ }
+
+                let syncedToServer = false;
+                if (CONFIG.SUPABASE_ENABLED && this.isOnline && CONFIG.SUPABASE_URL && CONFIG.SUPABASE_ANON_KEY) {
+                    try {
+                        const client = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+                        const { error } = await client.from('survey_responses').insert([{
+                            data: surveyData, timestamp: row.timestamp, category: row.category, province: row.province, organization: row.organization,
+                        }]);
+                        if (error) throw error;
+                        syncedToServer = true;
+                    } catch (e) {
+                        console.warn('Supabase submit failed, kept locally for retry', e);
+                    }
+                }
+
+                // Optional: AI Strategy Assistant (stub falls back to local heuristic)
+                try { await this.callStrategyAssistant(surveyData); } catch (e) { console.warn('Strategy assistant skipped', e); }
+
+                this.submissionId = localId;
+                this.isSubmitting = false;
+                this.submitted = true;
+                localStorage.removeItem(CONFIG.STORAGE_KEY); // clear draft, submission is recorded separately
+                this.showToast(syncedToServer ? 'Submitted and synced' : 'Submitted (saved on device)', 'success');
+            },
+
+            async callStrategyAssistant(surveyData) {
+                if (CONFIG.AI_ASSISTANT_ENABLED && this.isOnline && CONFIG.AI_ASSISTANT_URL) {
+                    const res = await fetch(CONFIG.AI_ASSISTANT_URL, {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ surveyData }),
+                    });
+                    if (!res.ok) throw new Error('Assistant request failed');
+                    return res.json();
+                }
+                // Local heuristic fallback — no network required, matches formulas.ts weighting
+                const totals = { heds: this.getClusterTotal('heds'), gems: this.getClusterTotal('gems'), ifes: this.getClusterTotal('ifes'), ieds: this.getClusterTotal('ieds') };
+                return { recommendation: Object.keys(totals).reduce((a, b) => totals[a] >= totals[b] ? a : b, 'ieds'), scores: totals, source: 'local-heuristic' };
+            },
+
+            async attemptBackgroundSync() {
+                if (!CONFIG.SUPABASE_ENABLED || !this.isOnline || !CONFIG.SUPABASE_URL) return;
+                try {
+                    const existing = JSON.parse(localStorage.getItem(CONFIG.SUBMISSIONS_KEY) || '[]');
+                    const unsynced = existing.filter(r => !r._synced);
+                    if (unsynced.length === 0) return;
+                    const client = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+                    for (const row of unsynced) {
+                        const { error } = await client.from('survey_responses').insert([{
+                            data: row.data, timestamp: row.timestamp, category: row.category, province: row.province, organization: row.organization,
+                        }]);
+                        if (!error) row._synced = true;
+                    }
+                    localStorage.setItem(CONFIG.SUBMISSIONS_KEY, JSON.stringify(existing));
+                } catch (e) { console.warn('Background sync failed', e); }
+            },
+
+            startNewResponse() {
+                localStorage.removeItem(CONFIG.STORAGE_KEY);
+                this.submitted = false;
+                this.currentStep = 1;
+                this.completedSections = new Set();
+                location.reload();
+            },
+
+            showToast(message, type = 'success') {
+                this.toast = { show: true, message, type };
+                setTimeout(() => { this.toast.show = false; }, 3000);
+            },
+        };
+    }
+    </script>
+</body>
+</html>
