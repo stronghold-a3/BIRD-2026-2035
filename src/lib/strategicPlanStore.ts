@@ -229,6 +229,9 @@ export interface PlanKPI {
   }[];
 }
 
+/** Type alias for backward compatibility — components import KPI from this module */
+export type KPI = PlanKPI;
+
 export interface BSCObjective {
   id: string;
   perspective: BSCPerspective;
