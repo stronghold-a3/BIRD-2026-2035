@@ -7,8 +7,8 @@
 
 const CACHE_VERSION = 'bird-survey-v1';
 const APP_SHELL = [
-    '.survey/engine.html',
-    '.survey/dashboard.html',
+    '.public/survey.html',
+    '.public/dashboard.html',
     './manifest.webmanifest',
 ];
 
