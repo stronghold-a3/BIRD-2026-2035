@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#022c22">
+<meta name="description" content="Live aggregate results from the BIRD 2026-2035 Stakeholder Validation Survey.">
+<title>BIRD Dashboard | Live Validation Results</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=DM+Sans:wght@400;500;600&display=swap">
+
+<!-- Chart.js for Data Visualization -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+<!-- Supabase JS Client -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+:root {
+    --bg-primary: #0A1628;
+    --bg-secondary: #022c22;
+    --glass-bg: rgba(255, 255, 255, 0.05);
+    --glass-border: rgba(201, 168, 76, 0.32);
+    --gold: #C9A84C;
+    --gold-light: #E8C560;
+    --light-green: #6ee7b7;
+    --text-primary: #F8FAFC;
+    --text-secondary: #94A3B8;
+    --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    font-family: 'DM Sans', sans-serif;
+    background: linear-gradient(160deg, #011a12 0%, #022c22 45%, #0a1628 100%);
+    color: var(--text-primary);
+    min-height: 100vh;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Navigation */
+.main-nav {
+    position: sticky; top: 0; z-index: 1000;
+    background: rgba(2, 44, 34, 0.95);
+    backdrop-filter: blur(18px);
+    border-bottom: 2px solid var(--glass-border);
+    padding: 1rem;
+}
+.nav-container { max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+.nav-logo { font-family: 'Cinzel', serif; font-size: 1.2rem; font-weight: 700; color: var(--gold); text-decoration: none; }
+.nav-links { display: flex; gap: 1rem; list-style: none; flex-wrap: wrap; }
+.nav-links a { color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: color 0.3s; }
+.nav-links a:hover, .nav-links a.active { color: var(--gold); }
+
+/* Layout */
+.container { max-width: 1400px; margin: 0 auto; padding: 2rem 1.5rem; }
+.page-header { text-align: center; margin-bottom: 3rem; }
+.page-header h1 { font-family: 'Cinzel', serif; font-size: clamp(1.8rem, 4vw, 2.5rem); color: var(--gold); margin-bottom: 0.5rem; }
+.page-header p { color: var(--text-secondary); font-size: 1.1rem; }
+
+/* Glass Cards */
+.glass-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: var(--card-shadow);
+    margin-bottom: 2rem;
+}
+
+/* Summary Metrics Grid */
+.metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 3rem; }
+.metric-card { text-align: center; padding: 2rem 1rem; }
+.metric-value { font-family: 'Cinzel', serif; font-size: 2.5rem; font-weight: 700; color: var(--gold-light); display: block; }
+.metric-label { color: var(--text-secondary); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.5rem; }
+
+/* Charts Grid */
+.charts-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; }
+@media (min-width: 900px) { .charts-grid { grid-template-columns: repeat(2, 1fr); } }
+.chart-container { position: relative; height: 350px; width: 100%; }
+.chart-title { font-family: 'Cinzel', serif; color: var(--gold); font-size: 1.2rem; margin-bottom: 1rem; text-align: center; }
+
+/* Loading & Error States */
+.status-message { text-align: center; padding: 4rem 2rem; font-size: 1.2rem; color: var(--text-secondary); }
+.status-message.error { color: #fca5a5; }
+
+/* Footer */
+footer { text-align: center; padding: 3rem 1rem; border-top: 1px solid var(--glass-border); margin-top: 4rem; color: var(--text-secondary); font-size: 0.85rem; }
+</style>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav class="main-nav">
+    <div class="nav-container">
+        <a href="https://bangsamoro-investment-roadmap.asilvainnovations.com" class="nav-logo">BIRD Dashboard</a>
+        <ul class="nav-links">
+            <li><a href="https://bangsamoro-investment-roadmap.asilvainnovations.com">Home</a></li>
+            <li><a href="https://bird-roadmap.asilvainnovations.com">Roadmap</a></li>
+            <li><a href="https://bird-survey.asilvainnovations.com">Survey</a></li>
+            <li><a href="https://bird-resources.asilvainnovations.com">Resources</a></li>
+            <li><a href="https://bird-contact.asilvainnovations.com">Contact</a></li>
+        </ul>
+    </div>
+</nav>
+
+<main class="container">
+    <header class="page-header">
+        <h1>Live Validation Results</h1>
+        <p>Real-time aggregate data from the BIRD 2026–2035 Stakeholder Validation Survey</p>
+    </header>
+
+    <!-- Loading State -->
+    <div id="loadingState" class="status-message">
+        <p>🔄 Connecting to Supabase and aggregating live survey data...</p>
+    </div>
+
+    <!-- Error State -->
+    <div id="errorState" class="status-message error" style="display: none;">
+        <p>⚠️ Unable to load dashboard data. Please check your Supabase credentials and RLS policies.</p>
+    </div>
+
+    <!-- Dashboard Content (Hidden until data loads) -->
+    <div id="dashboardContent" style="display: none;">
+        
+        <!-- Summary Metrics -->
+        <div class="metrics-grid">
+            <div class="glass-card metric-card">
+                <span class="metric-value" id="totalResponses">0</span>
+                <div class="metric-label">Total Responses</div>
+            </div>
+            <div class="glass-card metric-card">
+                <span class="metric-value" id="topProvince">-</span>
+                <div class="metric-label">Top Province</div>
+            </div>
+            <div class="glass-card metric-card">
+                <span class="metric-value" id="topStrategy">-</span>
+                <div class="metric-label">Preferred Strategy</div>
+            </div>
+            <div class="glass-card metric-card">
+                <span class="metric-value" id="careScore">0.0</span>
+                <div class="metric-label">Avg. C.A.R.E. Score (out of 5)</div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="charts-grid">
+            <div class="glass-card">
+                <h3 class="chart-title">Responses by Province</h3>
+                <div class="chart-container"><canvas id="provinceChart"></canvas></div>
+            </div>
+            <div class="glass-card">
+                <h3 class="chart-title">Stakeholder Categories</h3>
+                <div class="chart-container"><canvas id="categoryChart"></canvas></div>
+            </div>
+            <div class="glass-card">
+                <h3 class="chart-title">Preferred Strategic Option</h3>
+                <div class="chart-container"><canvas id="strategyChart"></canvas></div>
+            </div>
+            <div class="glass-card">
+                <h3 class="chart-title">C.A.R.E. Framework Assessment (Avg. Likert)</h3>
+                <div class="chart-container"><canvas id="careChart"></canvas></div>
+            </div>
+            <div class="glass-card">
+                <h3 class="chart-title">Key Response Themes</h3>
+                <div class="chart-container"><canvas id="themeChart"></canvas></div>
+            </div>
+        </div>
+
+        <div class="glass-card">
+            <h3 class="chart-title">Recent Responses</h3>
+            <div style="overflow-x:auto;">
+                <table style="width:100%; border-collapse:collapse; font-size:0.92rem;">
+                    <thead>
+                        <tr style="border-bottom:1px solid var(--glass-border); color: var(--gold-light); text-align:left;">
+                            <th style="padding:0.7rem 0.6rem;">Timestamp</th>
+                            <th style="padding:0.7rem 0.6rem;">Respondent</th>
+                            <th style="padding:0.7rem 0.6rem;">Category</th>
+                            <th style="padding:0.7rem 0.6rem;">Province</th>
+                            <th style="padding:0.7rem 0.6rem;">Strategy</th>
+                            <th style="padding:0.7rem 0.6rem;">Overall CARE</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recentResponsesBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer>
+    <p>© 2026 BARMM · Ministry of Trade, Investments and Tourism · The Emerging Bangsamoro · Investment Roadmap 2026–2035</p>
+    <p style="margin-top: 0.5rem;">Data is updated in real-time as stakeholders submit their validation surveys.</p>
+</footer>
+
+<script>
+    // ==========================================
+    // 1. SUPABASE CONFIGURATION
+    // ==========================================
+    // REPLACE THESE WITH YOUR ACTUAL PUBLIC SUPABASE CREDENTIALS
+    const SUPABASE_URL = 'https://lydsisparsmvextskevw.supabase.co'; 
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx5ZHNpc3BhcnNtdmV4dHNrZXZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE5NzIxNzEsImV4cCI6MjA5NzU0ODE3MX0.VM8BPXPLw7wGYCcUvwlTGeP4qB-M02Nq3x720OG5jIs'; 
+
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // ==========================================
+    // 2. DATA FETCHING & AGGREGATION
+    // ==========================================
+    // Local mirror key written by survey.html on every submission (offline-first).
+    // Same shape as a `survey_responses` row: {data, timestamp, category, province, organization}
+    const LOCAL_SUBMISSIONS_KEY = 'bird_survey_responses_v1';
+
+    function getLocalSubmissions() {
+        try {
+            return JSON.parse(localStorage.getItem(LOCAL_SUBMISSIONS_KEY) || '[]');
+        } catch (e) {
+            console.warn('Could not read local submissions', e);
+            return [];
+        }
+    }
+
+    // Merge remote (Supabase) rows with local-only rows (offline submissions not yet
+    // synced, or submitted on a device with Supabase disabled), de-duplicating on timestamp.
+    function mergeRemoteAndLocal(remoteRows) {
+        const local = getLocalSubmissions();
+        const seenTimestamps = new Set((remoteRows || []).map(r => r.timestamp));
+        const localOnly = local.filter(r => !seenTimestamps.has(r.timestamp));
+        return [...(remoteRows || []), ...localOnly];
+    }
+
+    async function loadDashboard() {
+        let data = [];
+        let remoteOk = false;
+
+        try {
+            const { data: remoteData, error } = await supabaseClient
+                .from('survey_responses')
+                .select('data, timestamp, category, province, organization')
+                .order('timestamp', { ascending: false });
+
+            if (error) throw error;
+            data = mergeRemoteAndLocal(remoteData || []);
+            remoteOk = true;
+        } catch (err) {
+            console.warn('Supabase fetch failed, falling back to on-device data only:', err);
+            data = getLocalSubmissions();
+        }
+
+        try {
+            const existingBanner = document.getElementById('offlineBanner');
+            if (!remoteOk) {
+                if (!existingBanner) {
+                    const banner = document.createElement('div');
+                    banner.id = 'offlineBanner';
+                    banner.style.cssText = 'text-align:center;padding:0.6rem;background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.4);border-radius:8px;color:#fcd34d;font-size:0.85rem;margin-bottom:1.5rem;';
+                    banner.textContent = '⚠️ Showing on-device data only — could not reach the live Supabase backend right now.';
+                    document.querySelector('.page-header').after(banner);
+                }
+            } else if (existingBanner) {
+                existingBanner.remove();
+            }
+
+            if (!data || data.length === 0) {
+                document.getElementById('loadingState').innerHTML = '<p>📊 No survey responses have been submitted yet. Check back soon!</p>';
+                return;
+            }
+
+            const provinces = {};
+            const categories = {};
+            const strategies = {};
+            const careScores = { context: [], action: [], realtime: [], evidence: [], overall: [] };
+            const themeScores = { framework: [], feasibility: [], infrastructure: [], overall: [] };
+            const recentRows = [];
+            let totalCareSum = 0;
+            let totalCareCount = 0;
+
+            data.forEach(row => {
+                const d = row.data || {};
+                const demographics = d.demographics || {};
+                const responses = d.responses || {};
+
+                const prov = row.province || demographics.province || 'Unknown';
+                provinces[prov] = (provinces[prov] || 0) + 1;
+
+                const cat = row.category || demographics.category || 'Unknown';
+                categories[cat] = (categories[cat] || 0) + 1;
+
+                const strategy = responses.section8_options?.strategy || responses.section8_StrategicOptions?.strategy || 'Unknown';
+                strategies[strategy] = (strategies[strategy] || 0) + 1;
+
+                const care = responses.section16_care || responses.section16_CARE || {};
+                Object.keys(careScores).forEach(key => {
+                    const val = Number(care[key]);
+                    if (!Number.isNaN(val)) {
+                        careScores[key].push(val);
+                        totalCareSum += val;
+                        totalCareCount++;
+                    }
+                });
+
+                const frameworkScore = Number(responses.section1_beie?.understanding || responses.section1_beie?.relevance || 0);
+                if (!Number.isNaN(frameworkScore) && frameworkScore > 0) {
+                    themeScores.framework.push(frameworkScore);
+                }
+
+                const feasibilityScore = Number(responses.section3_foundations?.feasibility || 0);
+                if (!Number.isNaN(feasibilityScore) && feasibilityScore > 0) {
+                    themeScores.feasibility.push(feasibilityScore);
+                }
+
+                const infraScore = Number(responses.section5_enablers?.infra_rating || 0);
+                if (!Number.isNaN(infraScore) && infraScore > 0) {
+                    themeScores.infrastructure.push(infraScore);
+                }
+
+                const overallScore = Number(care.overall || responses.section16_care?.overall || 0);
+                if (!Number.isNaN(overallScore) && overallScore > 0) {
+                    themeScores.overall.push(overallScore);
+                }
+
+                recentRows.push({
+                    timestamp: row.timestamp || null,
+                    respondent: demographics.name || demographics.email || 'Anonymous',
+                    category: cat,
+                    province: prov,
+                    strategy: strategy,
+                    careOverall: care.overall || responses.section16_care?.overall || '—'
+                });
+            });
+
+            document.getElementById('totalResponses').textContent = data.length;
+            document.getElementById('topProvince').textContent = getTopKey(provinces);
+            document.getElementById('topStrategy').textContent = getTopKey(strategies);
+            document.getElementById('careScore').textContent = totalCareCount > 0 ? (totalCareSum / totalCareCount).toFixed(1) : '0.0';
+
+            renderCharts(provinces, categories, strategies, careScores, themeScores);
+            renderRecentResponses(recentRows);
+
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('dashboardContent').style.display = 'block';
+
+        } catch (err) {
+            console.error('Dashboard Error:', err);
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('errorState').style.display = 'block';
+        }
+    }
+
+    function getTopKey(obj) {
+        return Object.keys(obj).reduce((a, b) => obj[a] > obj[b] ? a : b, 'None');
+    }
+
+    function renderRecentResponses(rows) {
+        const tbody = document.getElementById('recentResponsesBody');
+        if (!tbody) return;
+
+        if (!rows.length) {
+            tbody.innerHTML = '<tr><td colspan="6" style="padding:1rem 0.6rem; color: var(--text-secondary);">No recent submissions yet.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = rows.slice(0, 8).map(row => {
+            const stamp = row.timestamp ? new Date(row.timestamp).toLocaleString() : '—';
+            return `
+                <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
+                    <td style="padding:0.7rem 0.6rem; color: var(--text-secondary);">${stamp}</td>
+                    <td style="padding:0.7rem 0.6rem;">${row.respondent}</td>
+                    <td style="padding:0.7rem 0.6rem;">${row.category}</td>
+                    <td style="padding:0.7rem 0.6rem;">${row.province}</td>
+                    <td style="padding:0.7rem 0.6rem;">${row.strategy}</td>
+                    <td style="padding:0.7rem 0.6rem;">${row.careOverall}</td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    // ==========================================
+    // 3. CHART.JS RENDERING
+    // ==========================================
+    function renderCharts(provinces, categories, strategies, careScores, themeScores) {
+        const goldColor = '#C9A84C';
+        const greenColor = '#6ee7b7';
+        const blueColor = '#3B82F6';
+        const gridColor = 'rgba(255, 255, 255, 0.1)';
+
+        // Global Chart Defaults
+        Chart.defaults.color = '#94A3B8';
+        Chart.defaults.font.family = 'DM Sans';
+
+        // Destroy any existing chart instances on these canvases before
+        // re-rendering (needed since loadDashboard() can now run repeatedly
+        // on a timer and on cross-tab storage events).
+        ['provinceChart', 'categoryChart', 'strategyChart', 'careChart', 'themeChart'].forEach((id) => {
+            const existing = Chart.getChart(id);
+            if (existing) existing.destroy();
+        });
+
+        // 1. Province Bar Chart
+        new Chart(document.getElementById('provinceChart'), {
+            type: 'bar',
+            data: {
+                labels: Object.keys(provinces),
+                datasets: [{
+                    label: 'Responses',
+                    data: Object.values(provinces),
+                    backgroundColor: goldColor,
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { grid: { color: gridColor } }, x: { grid: { display: false } } }
+            }
+        });
+
+        // 2. Category Doughnut Chart
+        new Chart(document.getElementById('categoryChart'), {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(categories),
+                datasets: [{
+                    data: Object.values(categories),
+                    backgroundColor: [goldColor, greenColor, blueColor, '#8B5CF6', '#EC4899', '#F59E0B', '#64748B'],
+                    borderColor: '#0A1628',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom', labels: { boxWidth: 12 } } }
+            }
+        });
+
+        // 3. Strategy Bar Chart
+        new Chart(document.getElementById('strategyChart'), {
+            type: 'bar',
+            data: {
+                labels: Object.keys(strategies),
+                datasets: [{
+                    label: 'Votes',
+                    data: Object.values(strategies),
+                    backgroundColor: greenColor,
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { grid: { color: gridColor } }, x: { grid: { display: false } } }
+            }
+        });
+
+        // 4. C.A.R.E. Radar Chart
+        const careLabels = ['Context', 'Action', 'Real-time', 'Evidence', 'Overall'];
+        const careAverages = careLabels.map((_, i) => {
+            const key = Object.keys(careScores)[i];
+            const arr = careScores[key];
+            return arr.length > 0 ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
+        });
+
+        new Chart(document.getElementById('careChart'), {
+            type: 'radar',
+            data: {
+                labels: careLabels,
+                datasets: [{
+                    label: 'Average Score',
+                    data: careAverages,
+                    backgroundColor: 'rgba(201, 168, 76, 0.2)',
+                    borderColor: goldColor,
+                    pointBackgroundColor: goldColor,
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: goldColor
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                scales: { r: { min: 0, max: 5, ticks: { stepSize: 1, color: '#94A3B8', backdropColor: 'transparent' }, grid: { color: gridColor }, pointLabels: { color: '#F8FAFC' } } },
+                plugins: { legend: { display: false } }
+            }
+        });
+
+        // 5. Key Theme Bar Chart
+        const themeLabels = ['Framework clarity', 'Feasibility', 'Infrastructure', 'Overall'];
+        const themeValues = themeLabels.map((_, i) => {
+            const key = Object.keys(themeScores)[i];
+            const arr = themeScores[key];
+            return arr.length > 0 ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
+        });
+
+        new Chart(document.getElementById('themeChart'), {
+            type: 'bar',
+            data: {
+                labels: themeLabels,
+                datasets: [{
+                    label: 'Average score',
+                    data: themeValues,
+                    backgroundColor: [goldColor, greenColor, blueColor, '#8B5CF6'],
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { min: 0, max: 5, grid: { color: gridColor } }, x: { grid: { display: false } } }
+            }
+        });
+    }
+
+    // ==========================================
+    // 4. LIVE REFRESH
+    // ==========================================
+    // Same-device, cross-tab: survey.html bumps 'bird_survey_last_update' in
+    // localStorage on every submission, so a dashboard tab open at the same
+    // time refreshes immediately without waiting on a network round-trip.
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'bird_survey_last_update' || e.key === LOCAL_SUBMISSIONS_KEY) {
+            loadDashboard();
+        }
+    });
+
+    // Periodic refresh to pick up submissions from OTHER devices via Supabase
+    // (skipped automatically if Supabase is unreachable — loadDashboard degrades gracefully).
+    setInterval(loadDashboard, 60000);
+
+    // Register service worker (shared with survey.html) for offline app-shell caching
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js').catch((err) => console.warn('SW registration failed', err));
+    }
+
+    // Initialize Dashboard on Load
+    document.addEventListener('DOMContentLoaded', loadDashboard);
+</script>
+</body>
+</html>
