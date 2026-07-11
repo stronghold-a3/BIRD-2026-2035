@@ -4,8 +4,7 @@ import { useStrategicPlan } from '@/hooks/useStrategicPlan';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { StratLogo } from '@/components/branding/Logo';
-import { Loader as Loader2 } from 'lucide-react';
-import { PlanTemplate } from '@/lib/templateData';
+import { Loader2 } from 'lucide-react';
 
 // ─── CRITICAL PATH: Load HeroSection immediately (first screen) ─────────────
 import HeroSection from './strategic/HeroSection';
