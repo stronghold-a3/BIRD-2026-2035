@@ -74,7 +74,7 @@ export const useStrategicPlan = () => {
   const [cursors, setCursors] = useState<Record<string, CursorPosition>>({});
 
   // Sync management refs
-  const syncTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const syncTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isInitialSyncDone = useRef(false);
   const isSyncingRef = useRef(false);
 
@@ -1000,8 +1000,8 @@ export const useStrategicPlan = () => {
   // ── PAPs ───────────────────────────────────────────────
 
   const addPAP = useCallback(
-    (pap: Omit<PAP, 'id'>) => {
-      const newPap = { ...pap, id: generateId() };
+    (objectiveId: string | undefined, pap: Omit<PAP, 'id' | 'objectiveId'>) => {
+      const newPap = { ...pap, id: generateId(), objectiveId };
       applyPlanUpdate((plan) => ({
         ...plan,
         paps: [...plan.paps, newPap],
@@ -1015,7 +1015,9 @@ export const useStrategicPlan = () => {
     (id: string, updates: Partial<PAP>) => {
       applyPlanUpdate((plan) => ({
         ...plan,
-        paps: plan.paps.map((pap) => (pap.id === id ? { ...pap, ...updates } : pap)),
+        paps: plan.paps.map((pap) =>
+          pap.id === id ? { ...pap, ...updates } : pap
+        ),
       }));
       broadcastChange('pap_change', { type: 'UPDATE', data: { id, ...updates } });
     },
@@ -1033,159 +1035,177 @@ export const useStrategicPlan = () => {
     [applyPlanUpdate, broadcastChange]
   );
 
-  // ── Systems thinking ───────────────────────────────────
+  // ── CLD (Systems Thinking) ─────────────────────────────
 
-  /**
-   * Replace the live CLD canvas (nodes + links) on the current plan.
-   * Call this whenever the user finishes a drag, adds a node, or draws
-   * a link so the canvas state is always persisted.
-   */
-  const updateCLD = useCallback(
-    (nodes: CLDNode[], links: CLDLink[]) => {
+  const addCLDNode = useCallback(
+    (node: Omit<CLDNode, 'id'>) => {
+      const newNode = { ...node, id: generateId() };
       applyPlanUpdate((plan) => ({
         ...plan,
-        cldNodes: nodes,
-        cldLinks: links,
+        cldNodes: [...(plan.cldNodes || []), newNode],
       }));
     },
     [applyPlanUpdate]
   );
 
-  /**
-   * Capture the current canvas state as a named snapshot.
-   *
-   * @param label - Human-readable name for this snapshot
-   * @returns The generated snapshot id (use to highlight it in the UI)
-   */
-  const saveCLDSnapshot = useCallback(
-    (label: string): string | null => {
-      if (!currentPlan) return null;
-
-      const snapshotId = generateId();
-      const snapshot: CLDSnapshot = {
-        id: snapshotId,
-        label: label.trim() || `Snapshot ${new Date().toLocaleTimeString()}`,
-        nodes: currentPlan.cldNodes ?? [],
-        links: currentPlan.cldLinks ?? [],
-        createdAt: new Date().toISOString(),
-      };
-
+  const updateCLDNode = useCallback(
+    (id: string, updates: Partial<CLDNode>) => {
       applyPlanUpdate((plan) => ({
         ...plan,
-        cldSnapshots: [...(plan.cldSnapshots ?? []), snapshot],
-      }));
-
-      return snapshotId;
-    },
-    [currentPlan, applyPlanUpdate]
-  );
-
-  /**
-   * Restore the canvas to a previously saved snapshot.
-   * The snapshot data itself is never mutated — load is non-destructive
-   * to the snapshot list.
-   *
-   * @param snapshotId - id of the CLDSnapshot to restore
-   */
-  const loadCLDSnapshot = useCallback(
-    (snapshotId: string) => {
-      if (!currentPlan) return;
-
-      const snapshot = (currentPlan.cldSnapshots ?? []).find((s) => s.id === snapshotId);
-      if (!snapshot) return;
-
-      applyPlanUpdate((plan) => ({
-        ...plan,
-        cldNodes: snapshot.nodes,
-        cldLinks: snapshot.links,
-        // Record which snapshot is currently displayed so the UI can highlight it
-        activeCLDSnapshotId: snapshotId,
-      }));
-    },
-    [currentPlan, applyPlanUpdate]
-  );
-
-  /**
-   * Rename an existing snapshot in place.
-   */
-  const renameCLDSnapshot = useCallback(
-    (snapshotId: string, newLabel: string) => {
-      applyPlanUpdate((plan) => ({
-        ...plan,
-        cldSnapshots: (plan.cldSnapshots ?? []).map((s) =>
-          s.id === snapshotId ? { ...s, label: newLabel.trim() || s.label } : s
+        cldNodes: (plan.cldNodes || []).map((n) =>
+          n.id === id ? { ...n, ...updates } : n
         ),
       }));
     },
     [applyPlanUpdate]
   );
 
-  /**
-   * Permanently remove a snapshot from the plan.
-   * Clears activeCLDSnapshotId if it pointed at the deleted snapshot.
-   */
-  const deleteCLDSnapshot = useCallback(
-    (snapshotId: string) => {
+  const removeCLDNode = useCallback(
+    (id: string) => {
       applyPlanUpdate((plan) => ({
         ...plan,
-        cldSnapshots: (plan.cldSnapshots ?? []).filter((s) => s.id !== snapshotId),
-        activeCLDSnapshotId:
-          plan.activeCLDSnapshotId === snapshotId ? undefined : plan.activeCLDSnapshotId,
+        cldNodes: (plan.cldNodes || []).filter((n) => n.id !== id),
+        cldLinks: (plan.cldLinks || []).filter(
+          (l) => l.from !== id && l.to !== id
+        ),
       }));
     },
     [applyPlanUpdate]
   );
 
-  /**
-   * Toggle a systems archetype id on/off for the current plan.
-   * Applied archetypes are persisted on `StrategicPlan.appliedArchetypes`
-   * and survive plan switches, sync, and export.
-   */
-  const toggleArchetype = useCallback(
-    (archetypeId: string) => {
+  const addCLDLink = useCallback(
+    (link: Omit<CLDLink, 'id'>) => {
+      applyPlanUpdate((plan) => ({
+        ...plan,
+        cldLinks: [...(plan.cldLinks || []), link as CLDLink],
+      }));
+    },
+    [applyPlanUpdate]
+  );
+
+  const removeCLDLink = useCallback(
+    (from: string, to: string) => {
+      applyPlanUpdate((plan) => ({
+        ...plan,
+        cldLinks: (plan.cldLinks || []).filter(
+          (l) => !(l.from === from && l.to === to)
+        ),
+      }));
+    },
+    [applyPlanUpdate]
+  );
+
+  const saveCLDSnapshot = useCallback(
+    (snapshot: CLDSnapshot) => {
       applyPlanUpdate((plan) => {
-        const applied = plan.appliedArchetypes ?? [];
-        const exists = applied.includes(archetypeId);
+        const existing = plan.cldSnapshots?.find((s) => s.id === snapshot.id);
+        const snapshots = existing
+          ? (plan.cldSnapshots || []).map((s) =>
+              s.id === snapshot.id ? snapshot : s
+            )
+          : [...(plan.cldSnapshots || []), snapshot];
+        return { ...plan, cldSnapshots: snapshots, activeCLDSnapshotId: snapshot.id };
+      });
+    },
+    [applyPlanUpdate]
+  );
+
+  const loadCLDSnapshot = useCallback(
+    (snapshotId: string) => {
+      applyPlanUpdate((plan) => {
+        const snapshot = plan.cldSnapshots?.find((s) => s.id === snapshotId);
+        if (!snapshot) return plan;
         return {
           ...plan,
-          appliedArchetypes: exists
-            ? applied.filter((id) => id !== archetypeId)
-            : [...applied, archetypeId],
+          cldNodes: snapshot.nodes,
+          cldLinks: snapshot.links,
+          activeCLDSnapshotId: snapshotId,
         };
       });
     },
     [applyPlanUpdate]
   );
 
-  // ── Public API ─────────────────────────────────────────
+  const renameCLDSnapshot = useCallback(
+    (snapshotId: string, newName: string) => {
+      applyPlanUpdate((plan) => ({
+        ...plan,
+        cldSnapshots: (plan.cldSnapshots || []).map((s) =>
+          s.id === snapshotId ? { ...s, name: newName } : s
+        ),
+      }));
+    },
+    [applyPlanUpdate]
+  );
+
+  const deleteCLDSnapshot = useCallback(
+    (snapshotId: string) => {
+      applyPlanUpdate((plan) => {
+        const filtered = (plan.cldSnapshots || []).filter((s) => s.id !== snapshotId);
+        const updated: Partial<StrategicPlan> = { cldSnapshots: filtered };
+        if (plan.activeCLDSnapshotId === snapshotId) {
+          updated.activeCLDSnapshotId = undefined;
+          updated.cldNodes = [];
+          updated.cldLinks = [];
+        }
+        return { ...plan, ...updated };
+      });
+    },
+    [applyPlanUpdate]
+  );
+
+  // ── Archetypes ─────────────────────────────────────────
+
+  const toggleArchetype = useCallback(
+    (archetypeId: string) => {
+      applyPlanUpdate((plan) => {
+        const existing = plan.appliedArchetypes?.find(
+          (a) => a.archetypeId === archetypeId
+        );
+        if (existing) {
+          return {
+            ...plan,
+            appliedArchetypes: plan.appliedArchetypes?.filter(
+              (a) => a.archetypeId !== archetypeId
+            ),
+          };
+        }
+        return {
+          ...plan,
+          appliedArchetypes: [
+            ...(plan.appliedArchetypes || []),
+            {
+              archetypeId,
+              appliedBy: user?.id || 'unknown',
+              appliedByName: user?.email || 'Unknown',
+              appliedAt: new Date().toISOString(),
+            },
+          ],
+        };
+      });
+    },
+    [applyPlanUpdate, user]
+  );
+
+  // ── Return ─────────────────────────────────────────────
   return {
-    // State
     plans,
     currentPlan,
     activeView,
     isOnline,
-    syncStatus,
     lastSynced,
-    isLoading: isLoading || authLoading,
+    syncStatus,
+    isLoading,
     conflicts,
-    isAuthenticated: isAuthenticated && !authLoading,
-
-    // Realtime collaboration
+    unsyncedChanges,
     presenceUsers,
     cursors,
-    onlineUsers: useMemo(() => {
-      return Object.values(presenceUsers)
-        .flat()
-        .filter((u, i, arr) => arr.findIndex((x) => x.user_id === u.user_id) === i);
-    }, [presenceUsers]),
-    updateCursor,
 
     // Navigation
     setActiveView,
-    setLastSynced,
-
-    // Plan management
     setCurrentPlan,
+
+    // Plan CRUD
     createPlan,
     updatePlan,
     deletePlan,
@@ -1196,27 +1216,33 @@ export const useStrategicPlan = () => {
     removeSWOTItem,
     bulkAddSWOTItems,
 
-    // Strategy matrix
+    // Strategic options
     addStrategicOption,
     updateStrategicOption,
     removeStrategicOption,
     bulkAddStrategicOptions,
 
-    // Balanced Scorecard
+    // Objectives
     addObjective,
     updateObjective,
     removeObjective,
+
+    // KPIs
     addKPI,
     updateKPI,
     removeKPI,
 
-    // Initiatives (PAP)
+    // PAPs
     addPAP,
     updatePAP,
     removePAP,
 
-    // Systems thinking — CLD canvas
-    updateCLD,
+    // CLD / Systems Thinking
+    addCLDNode,
+    updateCLDNode,
+    removeCLDNode,
+    addCLDLink,
+    removeCLDLink,
     saveCLDSnapshot,
     loadCLDSnapshot,
     renameCLDSnapshot,
