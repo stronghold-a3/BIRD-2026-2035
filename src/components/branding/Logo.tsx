@@ -113,4 +113,40 @@ export const MTITLogo: React.FC<LogoProps> = ({
   );
 };
 
+// BIRD AI Strategist Avatar — used in FloatingAIAssistant
+export const AIStrategistAvatar: React.FC<LogoProps> = ({
+  size = 'md',
+  className = '',
+}) => {
+  const sizeMap = {
+    sm: 'w-6 h-6',
+    md: 'w-10 h-10',
+    lg: 'w-16 h-16',
+  };
+
+  return (
+    <div className={`${sizeMap[size]} ${className} rounded-full bg-gradient-to-br from-fuchsia-600 via-violet-600 to-cyan-500 flex items-center justify-center`}>
+      <svg
+        viewBox="0 0 100 100"
+        className="w-3/5 h-3/5"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        {/* AI Bot face */}
+        <rect x="20" y="25" width="60" height="45" rx="12" fill="white" />
+        {/* Eyes */}
+        <circle cx="38" cy="47" r="6" fill="#7c3aed" />
+        <circle cx="62" cy="47" r="6" fill="#7c3aed" />
+        {/* Eye highlights */}
+        <circle cx="40" cy="45" r="2" fill="white" />
+        <circle cx="64" cy="45" r="2" fill="white" />
+        {/* Mouth */}
+        <path d="M40 60 Q50 68 60 60" stroke="#7c3aed" strokeWidth="3" fill="none" strokeLinecap="round" />
+        {/* Antenna */}
+        <line x1="50" y1="25" x2="50" y2="12" stroke="white" strokeWidth="3" strokeLinecap="round" />
+        <circle cx="50" cy="10" r="4" fill="#06b6d4" />
+      </svg>
+    </div>
+  );
+};
+
 export default StratLogo;
