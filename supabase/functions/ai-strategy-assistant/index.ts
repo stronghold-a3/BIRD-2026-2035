@@ -20,11 +20,11 @@ const SUPABASE_DATA_URL = 'https://lydsisparsmvextskevw.supabase.co';
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
 const supabase = createClient(SUPABASE_DATA_URL, supabaseServiceKey);
 
-// ─── OpenAI Configuration ─────────────────────────────────────────────────────
-// Env var name in Supabase secrets dashboard: OPENAI_API_KEY
+// ─── Moonshot AI Configuration ────────────────────────────────────────────────
+// Env var name in Supabase secrets dashboard: MOONSHOT_API_KEY
 // (Supabase env var names cannot contain hyphens — use underscore form)
-const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
-const DEFAULT_MODEL  = 'gpt-4o';
+const MOONSHOT_API_URL = 'https://api.moonshot.cn/v1/chat/completions';
+const DEFAULT_MODEL    = 'moonshot-v1-128k';
 
 // ─── Platform Constants ───────────────────────────────────────────────────────
 const PLATFORM_NAME = 'BIRD 2026-2035';
@@ -501,7 +501,7 @@ Deno.serve(async (req: Request) => {
           features: {
             strategic_planning: ['SWOT Analysis', 'TOWS Strategy Matrix', 'Balanced Scorecard', 'PAPs Management', 'MEL Dashboard'],
             systems_thinking: ['Causal Loop Diagram Builder', 'Meadows Leverage Points (LP1-LP5)', 'System Archetypes Library (7 archetypes)', 'TOWS × Systems Integration'],
-            ai_assistant: 'BIRD AI — BARMM investment, strategy & systems-thinking consultant (GPT-4o)',
+            ai_assistant: 'BIRD AI — BARMM investment, strategy & systems-thinking consultant (Moonshot AI)',
             export_options: ['PDF', 'Word Document', 'Excel Spreadsheet'],
             implementation: 'Three-phase: Foundation (2026-28), Acceleration (2029-32), Consolidation (2033-35)',
           },
@@ -524,17 +524,17 @@ Deno.serve(async (req: Request) => {
     if ('_error' in config) return errorResponse(config._error as string, 400);
 
     // ── Resolve API key ────────────────────────────────────────────────────
-    // In Supabase Secrets dashboard, set the key as: OPENAI_API_KEY
+    // In Supabase Secrets dashboard, set the key as: MOONSHOT_API_KEY
     // (hyphens not supported in Supabase secret names)
-    const openAiApiKey = Deno.env.get('OPENAI_API_KEY') ??
-                         Deno.env.get('OPEN_AI_API_KEY') ??
-                         Deno.env.get('OPEN_AI_BIRD_2026_2035_PROJECT_API_KEY');
-    if (!openAiApiKey) {
-      console.error('BIRD AI: OpenAI API key not configured. Set OPENAI_API_KEY in Supabase Secrets.');
+    const moonshotApiKey = Deno.env.get('MOONSHOT_API_KEY') ??
+                           Deno.env.get('MOONSHOT_API_KEY_BIRD') ??
+                           Deno.env.get('OPENAI_API_KEY'); // fallback for migration compatibility
+    if (!moonshotApiKey) {
+      console.error('BIRD AI: Moonshot API key not configured. Set MOONSHOT_API_KEY in Supabase Secrets.');
       return errorResponse('AI service not configured. Contact the platform administrator.', 503);
     }
 
-    // ── Call OpenAI ────────────────────────────────────────────────────────
+    // ── Call Moonshot AI ───────────────────────────────────────────────────
     const payload: Record<string, unknown> = {
       model: DEFAULT_MODEL,
       messages: (config as any).messages,
@@ -543,18 +543,18 @@ Deno.serve(async (req: Request) => {
     };
     if ((config as any).expectJson) payload.response_format = { type: 'json_object' };
 
-    const aiRes = await fetch(OPENAI_API_URL, {
+    const aiRes = await fetch(MOONSHOT_API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${openAiApiKey}`,
+        'Authorization': `Bearer ${moonshotApiKey}`,
       },
       body: JSON.stringify(payload),
     });
 
     if (!aiRes.ok) {
       const errText = await aiRes.text().catch(() => 'unknown');
-      console.error(`OpenAI API error ${aiRes.status}:`, errText.substring(0, 400));
+      console.error(`Moonshot API error ${aiRes.status}:`, errText.substring(0, 400));
       const userMsg = aiRes.status === 429
         ? 'AI rate limit reached. Please wait a moment and try again.'
         : `AI service error (HTTP ${aiRes.status}). Please try again.`;
